@@ -14,6 +14,7 @@ namespace DynamicChecklist
 
     public class MainClass : Mod
     {
+        public ObjectCollection objectCollection;
         public Keys OpenMenuKey = Keys.NumPad1;
         private ModConfig Config; 
 
@@ -45,7 +46,7 @@ namespace DynamicChecklist
             }
             else
             {
-                Game1.activeClickableMenu = new ChecklistMenu();
+                Game1.activeClickableMenu = new ChecklistMenu(objectCollection);
             }
 
         }
@@ -60,14 +61,14 @@ namespace DynamicChecklist
         }
         public void GameLoadedEvent(object sender, EventArgs e)
         {
+            objectCollection = new ObjectCollection();
             var locs = Game1.locations;
             foreach (GameLocation loc in locs)
             {
                 var o = loc.Objects;
                 if (loc is Farm)
                 {
-                    var farm = (Farm)loc;
-                    
+                    objectCollection.cropList.update((Farm)loc);
                 }
             }
         }
