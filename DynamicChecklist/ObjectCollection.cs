@@ -15,14 +15,67 @@ namespace DynamicChecklist
     {
         public List<StardewValley.TerrainFeatures.HoeDirt> hoeDirts;
         public CropList cropList;
+        public CrabTrapList crabTrapList;
         public Texture2D cropSpriteSheet;
         
         public ObjectCollection(Texture2D cropSpriteSheet)
         {
             this.cropSpriteSheet = cropSpriteSheet;
             cropList = new CropList();
+            crabTrapList = new CrabTrapList();
         }
 
+    }
+    public class CrabTrapList
+    {
+        public List<CrabPot> crabTraps;
+        public List<CrabTrapsLoc> crabTrapsLoc = new List<CrabTrapsLoc>();
+        
+        public CrabTrapList()
+        {
+            foreach(GameLocation loc in Game1.locations)
+            {
+                crabTrapsLoc.Add(new CrabTrapsLoc(loc));
+            }
+        }
+        public void update(GameLocation l)
+        {
+            int nCrabPots = 0;
+            int nCrabPotsReadyForHarvest = 0;
+            int nCrabPotsNotBaited = 0;
+            foreach(StardewValley.Object o in l.Objects.Values)
+            {
+                if (o is CrabPot)
+                {
+                    nCrabPots++;
+                    CrabPot currentCrabPot = (CrabPot)o;
+                    if (currentCrabPot.readyForHarvest)
+                    {
+                        nCrabPotsReadyForHarvest++;
+                    }
+                    if (currentCrabPot.bait==null){
+                        nCrabPotsNotBaited++;
+                    }
+                }
+            }
+
+        }
+
+        public class CrabTrapsLoc
+        {
+            public List<CrabPot> crabTraps;
+            public GameLocation loc;
+
+            public CrabTrapsLoc(GameLocation loc)
+            {
+                this.loc = loc;
+            }
+            public void update()
+            {
+                var locObjects = loc.Objects;
+
+            }
+        }
     }
     public class CropList
     {
@@ -94,15 +147,6 @@ namespace DynamicChecklist
 
             }
             updateCropStruct();
-        }
-        public void  getCropTypes()
-        {
-            
-            foreach (Crop c in crops)
-            {
-
-            }
-
         }
 
         private void updateCropStruct()
