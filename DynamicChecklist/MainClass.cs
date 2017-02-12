@@ -63,7 +63,8 @@ namespace DynamicChecklist
             else
             {
                 updateObjectCollection();
-                Game1.activeClickableMenu = new ChecklistMenu(objectCollection);
+                ChecklistMenu.objectCollection = objectCollection;
+                ChecklistMenu.Open();
             }
 
         }

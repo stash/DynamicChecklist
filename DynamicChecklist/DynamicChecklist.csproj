@@ -43,6 +43,7 @@
     <Compile Include="ChecklistMenu.cs" />
     <Compile Include="ObjectCollection.cs" />
     <Compile Include="MainClass.cs" />
+    <Compile Include="OverviewDropdown.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework;
 using StardewModdingAPI;
@@ -10,20 +11,49 @@ namespace DynamicChecklist
 {    
     public class ChecklistMenu : IClickableMenu
     {
-        private ObjectCollection objectCollection;
+        public static ObjectCollection objectCollection;
         private Rectangle MenuRect;
         public OptionsElement options;
+        public OptionsDropDown overviewSelect;
 
-        public ChecklistMenu(ObjectCollection objectCollection)
+        //public int tabHeight;
+        //public int tabX;
+        //public int tabY;
+
+        private static int iSelectedTab = 0;
+
+        private List<ClickableComponent> tabs = new List<ClickableComponent>();
+
+        public ChecklistMenu()
         {
-            this.objectCollection = objectCollection;
             MenuRect = createCenteredRectangle(Game1.viewport, 800, 600);
             //this.xPositionOnScreen = MenuRect.X;
             //this.yPositionOnScreen = MenuRect.Y;
             //this.width = MenuRect.Width;
             //this.height = MenuRect.Height;
-
             initialize(MenuRect.X, MenuRect.Y, MenuRect.Width, MenuRect.Height, true);
+
+            overviewSelect = new OptionsDropDown("", 0);
+            int i = 0;
+            //int lblx = (int)(this.xPositionOnScreen - Game1.tileSize * 2f);
+            //int lbly = (int)(this.yPositionOnScreen + Game1.tileSize * 2f);
+            //int lblHeight = (int)(Game1.tileSize * 0.9F);
+
+            int lblWidth = Game1.tileSize * 3;
+            int lblx = (int)(this.xPositionOnScreen - lblWidth);
+            int lbly = (int)(this.yPositionOnScreen + Game1.tileSize * 2f);
+            int lblSeperation = (int)(Game1.tileSize * 0.9F);
+            int lblHeight = 40;
+
+            this.tabs.Add(new ClickableComponent(new Rectangle(lblx, lbly + lblSeperation * i++, lblWidth, lblHeight), "Crops"));
+            this.tabs.Add(new ClickableComponent(new Rectangle(lblx, lbly + lblSeperation * i++, lblWidth, lblHeight), "Crabs"));
+
+            if (iSelectedTab == 0)
+            {
+                
+            }
+
+            
         }
         public override void receiveRightClick(int x, int y, bool playSound = true)
         {
@@ -35,12 +65,32 @@ namespace DynamicChecklist
             // Crop menu
             var mouseX = Game1.getMouseX();
             var mouseY = Game1.getMouseY();
-                     
+
+            // TODO: Draw tabs
+            int tabWidth = 150;
+            int tabHeight = 30;
+            int j = 0;
+            foreach(ClickableComponent t in tabs)
+            {
+                
+                IClickableMenu.drawTextureBox(Game1.spriteBatch, t.bounds.X, t.bounds.Y, t.bounds.Width, t.bounds.Height, Color.White* (iSelectedTab == j ? 1F : 0.7F));
+                //IClickableMenu.drawTextureBox(Game1.spriteBatch, MenuRect.X-tabWidth, MenuRect.Y + 50 + j*tabHeight*3/2, tabWidth, tabHeight, Color.White);
+                b.DrawString(Game1.smallFont, t.name, new Vector2(t.bounds.X+5, t.bounds.Y+5), Color.Black);
+                j++;
+            }
+
             objectCollection.cropList.crops[0].drawInMenu(b, new Vector2(1000,500), Color.Black, 0, 1, -100);
             //objectCollection.cropList.crops[0].drawInMenu(b, new Vector2(MenuRect.X, MenuRect.Y), Color.Black, 0, 1, 0);
             //objectCollection.cropList.crops[10].draw(b, new Vector2(MenuRect.X, MenuRect.Y), Color.Black, 0);
-            
+
             //this.drawHorizontalPartition(b, MenuRect.Y+50, true);
+            overviewSelect.bounds.X = MenuRect.X;
+            overviewSelect.bounds.Y = MenuRect.Y - overviewSelect.bounds.Height;
+            overviewSelect.bounds.Width = 300;
+            //overviewSelect.bounds.Height = 50;
+            overviewSelect.dropDownOptions = new List<string>{"Crops", "Crabs" };
+            //overviewSelect.
+            overviewSelect.draw(b, 0, 0);            
             int i = 1;
             foreach(CropStruct cropStruct in objectCollection.cropList.cropStructs)
             {
@@ -93,6 +143,30 @@ namespace DynamicChecklist
                 return new Rectangle(192 + 0 % 4 * 16, 384, 16, 32);
             }
             return new Rectangle(Math.Min(240, (crop.fullyGrown ? ((crop.dayOfCurrentPhase <= 0) ? 6 : 7) : (((crop.phaseToShow != -1) ? crop.phaseToShow : crop.currentPhase) + ((((crop.phaseToShow != -1) ? crop.phaseToShow : crop.currentPhase) == 0 && 0 % 2 == 0) ? -1 : 0) + 1)) * 16 + ((crop.rowInSpriteSheet % 2 != 0) ? 128 : 0)), crop.rowInSpriteSheet / 2 * 16 * 2, 16, 32);
+        }
+
+        public override void receiveLeftClick(int x, int y, bool playSound = true)
+        {
+            base.receiveLeftClick(x, y, playSound);
+            //overviewSelect.receiveLeftClick(x-overviewSelect.bounds.X, y-overviewSelect.bounds.Y);
+            for(int i=0; i<tabs.Count; i++ )
+            {
+                if (tabs[i].bounds.Contains(x, y))
+                {
+                    iSelectedTab = i;
+                    Game1.playSound("dwop");
+                    Game1.activeClickableMenu = new ChecklistMenu();
+                }
+            }
+        }
+        public override void releaseLeftClick(int x, int y)
+        {
+            base.releaseLeftClick(x, y);
+            overviewSelect.leftClickReleased(x, y);
+        }
+        public static void Open()
+        {
+            Game1.activeClickableMenu = new ChecklistMenu();
         }
     }
 
