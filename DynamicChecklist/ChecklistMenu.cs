@@ -14,11 +14,6 @@ namespace DynamicChecklist
         public static ObjectCollection objectCollection;
         private Rectangle MenuRect;
         public OptionsElement options;
-        public OptionsDropDown overviewSelect;
-
-        //public int tabHeight;
-        //public int tabX;
-        //public int tabY;
 
         private static int iSelectedTab = 0;
 
@@ -27,17 +22,10 @@ namespace DynamicChecklist
         public ChecklistMenu()
         {
             MenuRect = createCenteredRectangle(Game1.viewport, 800, 600);
-            //this.xPositionOnScreen = MenuRect.X;
-            //this.yPositionOnScreen = MenuRect.Y;
-            //this.width = MenuRect.Width;
-            //this.height = MenuRect.Height;
+
             initialize(MenuRect.X, MenuRect.Y, MenuRect.Width, MenuRect.Height, true);
 
-            overviewSelect = new OptionsDropDown("", 0);
             int i = 0;
-            //int lblx = (int)(this.xPositionOnScreen - Game1.tileSize * 2f);
-            //int lbly = (int)(this.yPositionOnScreen + Game1.tileSize * 2f);
-            //int lblHeight = (int)(Game1.tileSize * 0.9F);
 
             int lblWidth = Game1.tileSize * 3;
             int lblx = (int)(this.xPositionOnScreen - lblWidth);
@@ -74,23 +62,12 @@ namespace DynamicChecklist
             {
                 
                 IClickableMenu.drawTextureBox(Game1.spriteBatch, t.bounds.X, t.bounds.Y, t.bounds.Width, t.bounds.Height, Color.White* (iSelectedTab == j ? 1F : 0.7F));
-                //IClickableMenu.drawTextureBox(Game1.spriteBatch, MenuRect.X-tabWidth, MenuRect.Y + 50 + j*tabHeight*3/2, tabWidth, tabHeight, Color.White);
                 b.DrawString(Game1.smallFont, t.name, new Vector2(t.bounds.X+5, t.bounds.Y+5), Color.Black);
                 j++;
             }
 
             objectCollection.cropList.crops[0].drawInMenu(b, new Vector2(1000,500), Color.Black, 0, 1, -100);
-            //objectCollection.cropList.crops[0].drawInMenu(b, new Vector2(MenuRect.X, MenuRect.Y), Color.Black, 0, 1, 0);
-            //objectCollection.cropList.crops[10].draw(b, new Vector2(MenuRect.X, MenuRect.Y), Color.Black, 0);
 
-            //this.drawHorizontalPartition(b, MenuRect.Y+50, true);
-            overviewSelect.bounds.X = MenuRect.X;
-            overviewSelect.bounds.Y = MenuRect.Y - overviewSelect.bounds.Height;
-            overviewSelect.bounds.Width = 300;
-            //overviewSelect.bounds.Height = 50;
-            overviewSelect.dropDownOptions = new List<string>{"Crops", "Crabs" };
-            //overviewSelect.
-            overviewSelect.draw(b, 0, 0);            
             int i = 1;
             foreach(CropStruct cropStruct in objectCollection.cropList.cropStructs)
             {
@@ -109,15 +86,9 @@ namespace DynamicChecklist
 
             var destRect = new Rectangle(30 + MenuRect.X, lineHeight*line-32*3 + MenuRect.Y, 16*4, 32*4);
             var sourceRect = new Rectangle(16 * 4, 32 * (texRow-1), 16, 32);
-            //b.Draw(objectCollection.cropSpriteSheet, destRect, sourceRect, Color.White);
 
             var posVect = new Vector2(destRect.X, destRect.Y);
-            //cropStruct.uniqueCrop.drawInMenu(b, posVect, Color.White, 0, 1, 0);
-            //posVect.X -= -Game1.viewport.X; // wrong, dont need viewport
-            //posVect.Y -= Game1.viewport.Y;
-            //cropStruct.uniqueCrop.drawInMenu(b, posVect, Color.White, 0, 1, 0);
 
-            //cropStruct.uniqueCrop.drawInMenu(b, posVect, Color.White, 1.6f, 1, 0);
             var oldPhaseToShow = cropStruct.uniqueCrop.phaseToShow;
             cropStruct.uniqueCrop.phaseToShow = 100;
             b.Draw(Game1.cropSpriteSheet, posVect, new Rectangle?(getSourceRect(cropStruct.uniqueCrop)), Color.White, 0, Vector2.Zero,4, SpriteEffects.None, 0);
@@ -148,7 +119,6 @@ namespace DynamicChecklist
         public override void receiveLeftClick(int x, int y, bool playSound = true)
         {
             base.receiveLeftClick(x, y, playSound);
-            //overviewSelect.receiveLeftClick(x-overviewSelect.bounds.X, y-overviewSelect.bounds.Y);
             for(int i=0; i<tabs.Count; i++ )
             {
                 if (tabs[i].bounds.Contains(x, y))
@@ -162,7 +132,6 @@ namespace DynamicChecklist
         public override void releaseLeftClick(int x, int y)
         {
             base.releaseLeftClick(x, y);
-            overviewSelect.leftClickReleased(x, y);
         }
         public static void Open()
         {
