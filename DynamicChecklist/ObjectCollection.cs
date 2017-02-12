@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using StardewValley.Objects;
 using StardewValley;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace DynamicChecklist
 {
@@ -14,9 +15,11 @@ namespace DynamicChecklist
     {
         public List<StardewValley.TerrainFeatures.HoeDirt> hoeDirts;
         public CropList cropList;
-
-        public ObjectCollection()
+        public Texture2D cropSpriteSheet;
+        
+        public ObjectCollection(Texture2D cropSpriteSheet)
         {
+            this.cropSpriteSheet = cropSpriteSheet;
             cropList = new CropList();
         }
 
@@ -24,14 +27,17 @@ namespace DynamicChecklist
     public class CropList
     {
         public List<Crop> crops;
+        public List<bool> watered;
         public List<Vector2> cropLocations;
         public List<Vector2> unwateredCropLocations;
-        public List<int> cropTypes = new List<int>();
-        public int[] numberOfCrops = new int[1000];
+        public List<int> cropTypes;
+        private List<Crop> cropsUnique;
+        public List<CropStruct> cropStructs;
+        public int[] numberOfCrops;
 
         public CropList()
         {
-
+           
         }
 
         public void update(Farm f)
@@ -43,6 +49,11 @@ namespace DynamicChecklist
             crops = new List<Crop>();
             cropLocations = new List<Vector2>();
             unwateredCropLocations = new List<Vector2>();
+            watered = new List<bool>();
+            cropTypes = new List<int>();
+            cropsUnique = new List<Crop>();
+            numberOfCrops = new int[1000];
+
             Array.Clear(numberOfCrops, 0, numberOfCrops.Length);
 
             foreach (KeyValuePair<Vector2, StardewValley.TerrainFeatures.TerrainFeature> entry in allTerrainFeatures)
@@ -63,14 +74,17 @@ namespace DynamicChecklist
                         if (!cropTypes.Contains(crop.rowInSpriteSheet))
                         {
                             cropTypes.Add(crop.rowInSpriteSheet);
+                            cropsUnique.Add(crop);
                         }
                         var isWatered = hoeDirt.state == StardewValley.TerrainFeatures.HoeDirt.watered;
                         if (isWatered)
                         {
+                            watered.Add(true);
                             waterCount++;
                         }
                         else
                         {
+                            watered.Add(false);
                             unwateredCropLocations.Add(k);
                         }
 
@@ -79,15 +93,68 @@ namespace DynamicChecklist
                 }
 
             }
+            updateCropStruct();
         }
-        public void getCropTypes()
+        public void  getCropTypes()
         {
+            
             foreach (Crop c in crops)
             {
 
             }
 
         }
+
+        private void updateCropStruct()
+        {
+            cropStructs = new List<CropStruct>();
+            //cropsUnique = new List<Crop>();
+            foreach (Crop cropU in cropsUnique)
+            {
+                CropStruct cs = new CropStruct();
+                cs.crops = new List<Crop>();
+                cs.watered = new List<bool>();
+                cs.locations = new List<Vector2>();
+                cs.locationUnwatered = new List<Vector2>();
+
+                cs.uniqueCrop = cropU;
+                var i = 0;
+                foreach (Crop crop in crops)
+                {
+                    if (crop.rowInSpriteSheet == cropU.rowInSpriteSheet)
+                    {
+                        cs.crops.Add(crops[i]);
+                        cs.locations.Add(cropLocations[i]);
+                        cs.count++;
+                        if (watered[i])
+                        {
+                            cs.watered.Add(true);
+                        }
+                        else
+                        {
+                            cs.countUnwatered++;
+                            cs.watered.Add(false);
+                            cs.locationUnwatered.Add(cropLocations[i]);
+                        }
+                        i++;
+                    }
+                }
+                cropStructs.Add(cs);
+
+            }
+        }
+     
+    }
+    public struct CropStruct
+    {
+        public Crop uniqueCrop;
+        public List<Crop> crops;
+        public List<bool> watered;
+        public int count;
+        public int countUnwatered;
+        public List<Vector2> locations;
+        public List<Vector2> locationUnwatered;
+
     }
 
 }
