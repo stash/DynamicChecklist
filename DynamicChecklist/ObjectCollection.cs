@@ -28,43 +28,40 @@ namespace DynamicChecklist
     }
     public class CrabTrapList
     {
-        public List<CrabPot> crabTraps;
         public List<CrabTrapsLoc> crabTrapsLoc = new List<CrabTrapsLoc>();
+        public int nNeedAction;
+        public int nTotal;
         
         public CrabTrapList()
         {
             foreach(GameLocation loc in Game1.locations)
             {
                 crabTrapsLoc.Add(new CrabTrapsLoc(loc));
+
             }
         }
-        public void update(GameLocation l)
+        public void updateAll()
         {
-            int nCrabPots = 0;
-            int nCrabPotsReadyForHarvest = 0;
-            int nCrabPotsNotBaited = 0;
-            foreach(StardewValley.Object o in l.Objects.Values)
+            nTotal = 0;
+            nNeedAction = 0;
+            foreach (CrabTrapsLoc ctl in crabTrapsLoc)
             {
-                if (o is CrabPot)
-                {
-                    nCrabPots++;
-                    CrabPot currentCrabPot = (CrabPot)o;
-                    if (currentCrabPot.readyForHarvest)
-                    {
-                        nCrabPotsReadyForHarvest++;
-                    }
-                    if (currentCrabPot.bait==null){
-                        nCrabPotsNotBaited++;
-                    }
-                }
-            }
+                ctl.update();
+                nNeedAction += ctl.nNeedAction;
+                nTotal += ctl.nTotal;
 
+            }
         }
 
         public class CrabTrapsLoc
         {
             public List<CrabPot> crabTraps;
+            public List<CrabPot> crabTrapsReadyForHarvest;
+            public List<CrabPot> crabTrapsNotBaited;
             public GameLocation loc;
+
+            public int nNeedAction;
+            public int nTotal;
 
             public CrabTrapsLoc(GameLocation loc)
             {
@@ -72,7 +69,34 @@ namespace DynamicChecklist
             }
             public void update()
             {
+                nNeedAction = 0;
+                nTotal = 0;
+
+                crabTraps = new List<CrabPot>();
+                crabTrapsReadyForHarvest = new List<CrabPot>();
+                crabTrapsNotBaited = new List<CrabPot>();
+                
+
                 var locObjects = loc.Objects;
+                foreach (StardewValley.Object o in locObjects.Values)
+                {
+                    if (o is CrabPot)
+                    {
+                        CrabPot currentCrabPot = (CrabPot)o;
+                        crabTraps.Add(currentCrabPot);
+                        nTotal++;
+                        if (currentCrabPot.readyForHarvest)
+                        {                          
+                            crabTrapsReadyForHarvest.Add(currentCrabPot);
+                            nNeedAction++;
+                        }
+                        if (currentCrabPot.bait == null)
+                        {
+                            crabTrapsNotBaited.Add(currentCrabPot);
+                            nNeedAction++;
+                        }
+                    }
+                }
 
             }
         }

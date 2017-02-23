@@ -92,8 +92,8 @@ namespace DynamicChecklist
                 {
                     objectCollection.cropList.update((Farm)loc);
                 }
-                objectCollection.crabTrapList.update(loc);
             }
+            objectCollection.crabTrapList.updateAll();
         }
     }
 

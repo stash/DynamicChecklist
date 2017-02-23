@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework;
 using StardewModdingAPI;
 using StardewValley.Menus;
 using StardewValley;
+using System.Linq;
 
 
 namespace DynamicChecklist
@@ -18,7 +19,7 @@ namespace DynamicChecklist
         private static int iSelectedTab = 0;
 
         private List<ClickableComponent> tabs = new List<ClickableComponent>();
-        private List<string> tabNames = new List<string>{ "Crops", "Crabs" };
+        private List<string> tabNames = new List<string>{"Checklist", "Crops", "Crabs" };
 
         private ClickableComponent selectedTab;
 
@@ -67,11 +68,14 @@ namespace DynamicChecklist
 
             switch (selectedTab.name)
             {
+                case "Checklist":
+                    drawChecklist(b);
+                    break;
                 case "Crops":
                     drawCropMenu(b);
                     break;
                 case "Crabs":
-
+                    drawCrabMenu(b);
                     break; 
             }
             
@@ -79,7 +83,54 @@ namespace DynamicChecklist
             IClickableMenu.drawHoverText(b, $"{mouseX},{mouseY}", Game1.smallFont);
             drawMouse(b);
         }
-        public void drawCropMenu(SpriteBatch b)
+        private void drawChecklist(SpriteBatch b)
+        {
+            int lineHeight = 60;
+
+
+            if(objectCollection.crabTrapList.nTotal > 0)
+            {
+                var checkboxCrabs = new OptionsCheckbox("Baited Crab Pots", 1);
+                checkboxCrabs.bounds = new Rectangle(MenuRect.X + 50, MenuRect.Y + 50 + lineHeight * 1, 100, 100);
+                checkboxCrabs.isChecked = (objectCollection.crabTrapList.nNeedAction == 0);
+                checkboxCrabs.draw(b, 1, 1);
+            }
+
+            if (objectCollection.cropList.crops.Count > 0)
+            {
+                var checkboxCrops = new OptionsCheckbox("Watered Crops", 1);
+                checkboxCrops.bounds = new Rectangle(MenuRect.X + 50, MenuRect.Y + 50, 100, 100);
+                checkboxCrops.isChecked = objectCollection.cropList.watered.All(x => x==true);
+                checkboxCrops.draw(b, 1, 1);
+            }                     
+
+        }
+        private void drawCrabMenu(SpriteBatch b)
+        {
+            var crabTrapList = objectCollection.crabTrapList;            
+            drawCrabLine(b, "All", crabTrapList.nNeedAction, crabTrapList.nTotal, 1);
+            int i = 2;
+            foreach (CrabTrapList.CrabTrapsLoc ctl in crabTrapList.crabTrapsLoc)
+            {
+                if (ctl.nTotal > 0)
+                {
+                    drawCrabLine(b, ctl.loc.name, ctl.nNeedAction, ctl.nTotal, i);
+                    i++;
+                }
+
+            }
+
+        }
+        private void drawCrabLine(SpriteBatch b, string locName, int nNeedAction, int nTotal, int line)
+        {
+            var lineHeight = 80;
+
+            var a = Game1.cropSpriteSheet;
+            b.DrawString(Game1.smallFont, $"Location: {locName}, Total: {nTotal}, Baited: {nTotal - nNeedAction}", new Vector2(100 + MenuRect.X, MenuRect.Y + lineHeight * line - 30), Color.Black);
+
+            this.drawHorizontalPartition(b, this.MenuRect.Y + lineHeight * line, true);
+        }
+        private void drawCropMenu(SpriteBatch b)
         {
             objectCollection.cropList.crops[0].drawInMenu(b, new Vector2(1000, 500), Color.Black, 0, 1, -100);
 
@@ -90,7 +141,7 @@ namespace DynamicChecklist
                 i++;
             }
         }
-        public void drawCropLine(SpriteBatch b, CropStruct cropStruct,int line)
+        private void drawCropLine(SpriteBatch b, CropStruct cropStruct,int line)
         {
             var texRow = cropStruct.uniqueCrop.rowInSpriteSheet;
 
@@ -108,11 +159,11 @@ namespace DynamicChecklist
            // TODO use helper to get crop.getSourceRect(0) method or figure out drawInMenu method
            // Scaling or rotating changes the position a lot
             var a = Game1.cropSpriteSheet;
-            b.DrawString(Game1.smallFont, $"Total: {cropStruct.count}, Watered: {cropStruct.count}", new Vector2(100 + MenuRect.X, MenuRect.Y + lineHeight*line - 30), Color.Black );
+            b.DrawString(Game1.smallFont, $"Total: {cropStruct.count}, Watered: {cropStruct.count- cropStruct.countUnwatered}", new Vector2(100 + MenuRect.X, MenuRect.Y + lineHeight*line - 30), Color.Black );
             
             this.drawHorizontalPartition(b, this.MenuRect.Y + lineHeight * line, true);
         }
-        public static Rectangle createCenteredRectangle(xTile.Dimensions.Rectangle v, int width, int height)
+        private static Rectangle createCenteredRectangle(xTile.Dimensions.Rectangle v, int width, int height)
         {
             var x = v.Width / 2 - width/2;
             var y = v.Height / 2 - height/2;
