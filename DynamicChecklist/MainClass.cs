@@ -55,6 +55,7 @@ namespace DynamicChecklist
         }
         private void ReceiveKeyPress(object sender, EventArgsKeyPressed e)
         {
+            //TODO ignore close menu when entering checkbox name
             if (e.KeyPressed != OpenMenuKey) return;
             if (Game1.activeClickableMenu is ChecklistMenu)
             {

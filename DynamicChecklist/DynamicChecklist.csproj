@@ -40,6 +40,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AddToChecklistElement.cs" />
     <Compile Include="ChecklistMenu.cs" />
     <Compile Include="ObjectCollection.cs" />
     <Compile Include="MainClass.cs" />
