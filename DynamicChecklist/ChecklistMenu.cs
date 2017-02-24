@@ -6,7 +6,7 @@ using StardewModdingAPI;
 using StardewValley.Menus;
 using StardewValley;
 using System.Linq;
-
+using Microsoft.Xna.Framework.Input;
 
 namespace DynamicChecklist
 {    
@@ -14,7 +14,7 @@ namespace DynamicChecklist
     {
         public static ObjectCollection objectCollection;
         private Rectangle MenuRect;
-        public OptionsElement options;
+        public List<OptionsElement> options = new List<OptionsElement>();
 
         private static int iSelectedTab = 0;
 
@@ -46,10 +46,30 @@ namespace DynamicChecklist
 
             selectedTab = tabs[iSelectedTab];
 
-            
+            switch (selectedTab.name)
+            {
+                case "Checklist":
+                    options.Add(new AddToChecklistElement(300));
+                    break;
+                case "Crops":
+                    break;
+                case "Crabs":
+                    break;
+            }
+
+
         }
         public override void receiveRightClick(int x, int y, bool playSound = true)
         {
+        }
+        public override void receiveKeyPress(Keys key)
+        {
+            foreach(OptionsElement o in options)
+            {
+                // TODO Find out which option is selected
+                o.receiveKeyPress(key);
+            }
+            base.receiveKeyPress(key);
         }
         public override void draw(SpriteBatch b)
         {
@@ -70,6 +90,7 @@ namespace DynamicChecklist
             {
                 case "Checklist":
                     drawChecklist(b);
+                    //options.Add(new AddToChecklistElement(300));
                     break;
                 case "Crops":
                     drawCropMenu(b);
@@ -102,7 +123,15 @@ namespace DynamicChecklist
                 checkboxCrops.bounds = new Rectangle(MenuRect.X + 50, MenuRect.Y + 50, 100, 100);
                 checkboxCrops.isChecked = objectCollection.cropList.watered.All(x => x==true);
                 checkboxCrops.draw(b, 1, 1);
-            }                     
+            }
+
+            //var addNewItemToList = new AddToChecklistElement(300);
+            //addNewItemToList.draw(b, 1, 1);
+
+            foreach(OptionsElement o in options)
+            {
+                o.draw(b, 1, 1);
+            }
 
         }
         private void drawCrabMenu(SpriteBatch b)
