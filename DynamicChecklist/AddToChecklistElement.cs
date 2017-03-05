@@ -17,6 +17,8 @@ namespace DynamicChecklist
             : base("", x, y, slotWidth - x, 11)
         {
             currentString = "abc";
+            // TODO use StardewValley.Menus.TextBox
+            // To use it, just detect when the player clicks on it and then call textbox.SelectMe() to enable it
         }
 
         public override void draw(SpriteBatch b, int slotX, int slotY)
