@@ -27,8 +27,9 @@ namespace DynamicChecklist
         {
 
             MenuRect = createCenteredRectangle(Game1.viewport, 800, 600);
-
             initialize(MenuRect.X, MenuRect.Y, MenuRect.Width, MenuRect.Height, true);
+
+            var cl = Game1.currentLocation;
 
             int i = 0;
 
@@ -97,12 +98,19 @@ namespace DynamicChecklist
                     break;
                 case "Crabs":
                     drawCrabMenu(b);
-                    break; 
+                    break;
+                case "Coops":
+                    drawCoopMenu(b);
+                    break;
             }
             
             base.draw(b);
             IClickableMenu.drawHoverText(b, $"{mouseX},{mouseY}", Game1.smallFont);
             drawMouse(b);
+        }
+        private void drawCoopMenu(SpriteBatch b)
+        {
+
         }
         private void drawChecklist(SpriteBatch b)
         {
@@ -111,24 +119,40 @@ namespace DynamicChecklist
 
             if(objectCollection.crabTrapList.nTotal > 0)
             {
-                var checkboxCrabs = new OptionsCheckbox("Baited Crab Pots", 1);
-                checkboxCrabs.bounds = new Rectangle(MenuRect.X + 50, MenuRect.Y + 50 + lineHeight * 1, 100, 100);
-                checkboxCrabs.isChecked = (objectCollection.crabTrapList.nNeedAction == 0);
-                checkboxCrabs.draw(b, 1, 1);
+                var checkbox = new OptionsCheckbox("Baited Crab Pots", 1);
+                checkbox.bounds = new Rectangle(MenuRect.X + 50, MenuRect.Y + 50 + lineHeight * 1, 100, 100);
+                checkbox.isChecked = (objectCollection.crabTrapList.nNeedAction == 0);
+                checkbox.draw(b, 1, 1);
             }
 
             if (objectCollection.cropList.crops.Count > 0)
             {
-                var checkboxCrops = new OptionsCheckbox("Watered Crops", 1);
-                checkboxCrops.bounds = new Rectangle(MenuRect.X + 50, MenuRect.Y + 50, 100, 100);
-                checkboxCrops.isChecked = objectCollection.cropList.watered.All(x => x==true);
-                checkboxCrops.draw(b, 1, 1);
+                var checkbox = new OptionsCheckbox("Watered Crops", 1);
+                checkbox.bounds = new Rectangle(MenuRect.X + 50, MenuRect.Y + 50, 100, 100);
+                checkbox.isChecked = objectCollection.cropList.watered.All(x => x==true);
+                checkbox.draw(b, 1, 1);
             }
+            if (objectCollection.coopList.coops.Count > 0)
+            {
+                var checkbox = new OptionsCheckbox("Collected From Coops", 1);
+                checkbox.bounds = new Rectangle(MenuRect.X + 50, MenuRect.Y + 50 + lineHeight * 2, 100, 100);
+                checkbox.isChecked = (objectCollection.coopList.nUncollectedEggs == 0);
+                checkbox.draw(b, 1, 1);
 
+                checkbox = new OptionsCheckbox("Petted Coop Animals", 1);
+                checkbox.bounds = new Rectangle(MenuRect.X + 50, MenuRect.Y + 50 + lineHeight * 3, 100, 100);
+                checkbox.isChecked = (objectCollection.coopList.nNotPetted == 0);
+                checkbox.draw(b, 1, 1);
+
+                checkbox = new OptionsCheckbox("Provided Coop Animals Hay", 1);
+                checkbox.bounds = new Rectangle(MenuRect.X + 50, MenuRect.Y + 50 + lineHeight * 4, 100, 100);
+                checkbox.isChecked = (objectCollection.coopList.nNotFed == 0);
+                checkbox.draw(b, 1, 1);
+            }
             //var addNewItemToList = new AddToChecklistElement(300);
             //addNewItemToList.draw(b, 1, 1);
 
-            foreach(OptionsElement o in options)
+            foreach (OptionsElement o in options)
             {
                 o.draw(b, 1, 1);
             }

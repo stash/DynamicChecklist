@@ -25,7 +25,7 @@ namespace DynamicChecklist
             this.cropSpriteSheet = cropSpriteSheet;
             cropList = new CropList();
             crabTrapList = new CrabTrapList();
-            coopList = new CoopList();
+            coopList = new CoopList();           
         }
         public void update()
         {
@@ -36,50 +36,104 @@ namespace DynamicChecklist
                 if (loc is Farm)
                 {
                     this.cropList.update((Farm)loc);
+                    this.coopList.updateAll((Farm)loc);
                 }
             }
-            this.crabTrapList.updateAll();
-            this.coopList.updateAll();
+            this.crabTrapList.updateAll();            
         }
 
     }
     public class CoopList
     {
-        public List<CoopLoc> coop = new List<CoopLoc>();
-        public int nNeedAction;
+        public List<CoopLoc> coops = new List<CoopLoc>();
+        public int nUncollectedEggs;
+        public int nNotPetted;
+        public int nNotFed;
 
         public CoopList()
         {
 
         }
 
-        public void updateAll()
+        public void updateAll(Farm farm)
         {
-            coop = new List<CoopLoc>();
-            nNeedAction = 0;
+            coops = new List<CoopLoc>();
+            nUncollectedEggs = 0;
+            nNotPetted = 0;
+            nNotFed = 0;
 
-            foreach (GameLocation loc in Game1.locations)
+            
+            var allAnimals = farm.getAllFarmAnimals();
+            foreach (StardewValley.Buildings.Building building in farm.buildings)
             {
-                if (loc.Name.Contains("Coop"))
+                if(building is StardewValley.Buildings.Coop)
                 {
-                    var cl = new CoopLoc((AnimalHouse)loc);
+                    var cl = new CoopLoc((StardewValley.Buildings.Coop)building);
+                    coops.Add(cl);
+                    foreach (FarmAnimal currentAnimal in allAnimals)
+                    {
+                        if (currentAnimal.home == building)
+                        {
+                            cl.addAnimal(currentAnimal);
+                        }
+                    }
                     cl.update();
-                    coop.Add(cl);
+                    nUncollectedEggs += cl.nUncollectedEggs;
+                    nNotPetted += cl.nNotPetted;
+                    nNotFed += cl.nNotFed;
                 }
+
+
             }
         }
         
 
         public class CoopLoc
         {
-            AnimalHouse coop;
-            public CoopLoc(AnimalHouse coop)
+            StardewValley.Buildings.Coop coopBuilding;
+            public AnimalHouse coop;
+            List<FarmAnimal> inhabitants = new List<FarmAnimal>();
+            public int nUncollectedEggs = 0;
+            public int nNotPetted = 0;
+            public int nNotFed = 0;
+
+            public CoopLoc(StardewValley.Buildings.Coop coopBuilding)
             {
-                this.coop = coop;
+                this.coopBuilding = coopBuilding;
+                coop = (AnimalHouse)coopBuilding.indoors;
+                //var allAnimals = StardewValley.Farm.getA
+                
             }
             public void update()
             {
+                nUncollectedEggs = 0;              
+                nNotFed = 0;
+                nNotPetted = 0;
+
+                int nHey = 0;
+                for (int i=0; i<coop.Objects.Count; i++)
+                {
+                    var currentObject = coop.Objects.ElementAt(i).Value;
+                    if (currentObject.isSpawnedObject)
+                    {
+                        nUncollectedEggs++;
+                    }
+                    if (currentObject.Name.Equals("Hay"))
+                    {
+                        nHey++;
+                    }                                        
+                }
+                this.nNotFed = inhabitants.Count - nHey;
+
+                foreach(FarmAnimal fa in inhabitants)
+                {
+                    if (!fa.wasPet) nNotPetted++;
+                }
                 
+            }
+            public void addAnimal(FarmAnimal farmAnimal)
+            {
+                inhabitants.Add(farmAnimal);
             }
     }
     }
