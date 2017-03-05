@@ -80,7 +80,6 @@ namespace DynamicChecklist
         }
         public void GameLoadedEvent(object sender, EventArgs e)
         {
-            Game1.player.money += 10000;
             objectCollection = new ObjectCollection(cropsTexture);
             objectCollection.update();
         }
