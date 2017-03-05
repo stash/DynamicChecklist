@@ -63,7 +63,7 @@ namespace DynamicChecklist
             }
             else
             {
-                updateObjectCollection();
+                objectCollection.update();
                 ChecklistMenu.objectCollection = objectCollection;
                 ChecklistMenu.Open();
             }
@@ -80,21 +80,9 @@ namespace DynamicChecklist
         }
         public void GameLoadedEvent(object sender, EventArgs e)
         {
+            Game1.player.money += 10000;
             objectCollection = new ObjectCollection(cropsTexture);
-            updateObjectCollection();
-        }
-        public void updateObjectCollection()
-        {
-            var locs = Game1.locations;
-            foreach (GameLocation loc in locs)
-            {
-                var o = loc.Objects;
-                if (loc is Farm)
-                {
-                    objectCollection.cropList.update((Farm)loc);
-                }
-            }
-            objectCollection.crabTrapList.updateAll();
+            objectCollection.update();
         }
     }
 

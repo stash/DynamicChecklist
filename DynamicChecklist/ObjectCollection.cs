@@ -16,6 +16,8 @@ namespace DynamicChecklist
         public List<StardewValley.TerrainFeatures.HoeDirt> hoeDirts;
         public CropList cropList;
         public CrabTrapList crabTrapList;
+        public CoopList coopList;
+
         public Texture2D cropSpriteSheet;
         
         public ObjectCollection(Texture2D cropSpriteSheet)
@@ -23,9 +25,66 @@ namespace DynamicChecklist
             this.cropSpriteSheet = cropSpriteSheet;
             cropList = new CropList();
             crabTrapList = new CrabTrapList();
+            coopList = new CoopList();
+        }
+        public void update()
+        {
+            var locs = Game1.locations;
+            foreach (GameLocation loc in locs)
+            {
+                var o = loc.Objects;
+                if (loc is Farm)
+                {
+                    this.cropList.update((Farm)loc);
+                }
+            }
+            this.crabTrapList.updateAll();
+            this.coopList.updateAll();
         }
 
     }
+    public class CoopList
+    {
+        public List<CoopLoc> coop = new List<CoopLoc>();
+        public int nNeedAction;
+
+        public CoopList()
+        {
+
+        }
+
+        public void updateAll()
+        {
+            coop = new List<CoopLoc>();
+            nNeedAction = 0;
+
+            foreach (GameLocation loc in Game1.locations)
+            {
+                if (loc.Name.Contains("Coop"))
+                {
+                    var cl = new CoopLoc((AnimalHouse)loc);
+                    cl.update();
+                    coop.Add(cl);
+                }
+            }
+        }
+        
+
+        public class CoopLoc
+        {
+            AnimalHouse coop;
+            public CoopLoc(AnimalHouse coop)
+            {
+                this.coop = coop;
+            }
+            public void update()
+            {
+                
+            }
+    }
+    }
+
+
     public class CrabTrapList
     {
         public List<CrabTrapsLoc> crabTrapsLoc = new List<CrabTrapsLoc>();
