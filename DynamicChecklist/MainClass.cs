@@ -88,6 +88,7 @@ namespace DynamicChecklist
             {
                 objectCollection.update();
                 ChecklistMenu.objectCollection = objectCollection;
+                ChecklistMenu.objectLists = objectLists;
                 ChecklistMenu.Open();
             }
 

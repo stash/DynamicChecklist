@@ -7,12 +7,15 @@ using StardewValley.Menus;
 using StardewValley;
 using System.Linq;
 using Microsoft.Xna.Framework.Input;
+using DynamicChecklist.ObjectLists;
 
 namespace DynamicChecklist
 {    
     public class ChecklistMenu : IClickableMenu
     {
         public static ObjectCollection objectCollection;
+        public static List<ObjectList> objectLists = new List<ObjectList>();
+
         private Rectangle MenuRect;
         public List<OptionsElement> options = new List<OptionsElement>();
 
@@ -73,12 +76,18 @@ namespace DynamicChecklist
                         checkbox.bounds = new Rectangle(MenuRect.X + 50, MenuRect.Y + 50 + lineHeight * 3, 100, 50);
                         options.Add(checkbox);
 
-                        checkbox = new DynamicSelectableCheckbox("Petted Animals", 5, objectCollection);
-                        checkbox.bounds = new Rectangle(MenuRect.X + 50, MenuRect.Y + 50 + lineHeight * 4, 100, 50);
-                        options.Add(checkbox);
+                        //checkbox = new DynamicSelectableCheckbox("Petted Animals", 5, objectCollection);
+                        //checkbox.bounds = new Rectangle(MenuRect.X + 50, MenuRect.Y + 50 + lineHeight * 4, 100, 50);
+                        //options.Add(checkbox);
 
                         checkbox = new DynamicSelectableCheckbox("Provided Animals Hay", 6, objectCollection);
                         checkbox.bounds = new Rectangle(MenuRect.X + 50, MenuRect.Y + 50 + lineHeight * 5, 100, 50);
+                        options.Add(checkbox);
+                    }
+                    foreach(ObjectList ol in objectLists)
+                    {
+                        var checkbox = new DynamicSelectableCheckbox(ol);
+                        checkbox.bounds = new Rectangle(MenuRect.X + 50, MenuRect.Y + 50 + lineHeight * 4, 100, 50);
                         options.Add(checkbox);
                     }
 

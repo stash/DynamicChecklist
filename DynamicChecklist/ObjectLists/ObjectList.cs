@@ -10,12 +10,13 @@ using Microsoft.Xna.Framework.Input;
 
 namespace DynamicChecklist.ObjectLists
 {
-    abstract class ObjectList
+    public abstract class ObjectList
     {
         protected int Count { get; set; }
         protected int CountNeedAction { get; set; }
-        protected bool OverlayActive { get; set; }
-        protected static Texture2D ImageTexture { get; set; }
+        public bool OverlayActive { get; set; }
+        protected Texture2D ImageTexture { get; set; }
+        public abstract string OptionMenuLabel { get; }
         public List<StardewObjectInfo> ObjectInfoList { get ; set; }
         public bool TaskDone
         {
@@ -45,7 +46,7 @@ namespace DynamicChecklist.ObjectLists
                         if(objectInfo.Location == currentPlayerLocation)
                         {
                             var drawLoc = new Vector2(objectInfo.Coordinate.X - viewport.X, objectInfo.Coordinate.Y - viewport.Y);
-                            var spriteBox = new Rectangle((int)drawLoc.X - ImageTexture.Width/2, (int)drawLoc.Y - imageTexture.Height/2, imageTexture.Width, imageTexture.Height);
+                            var spriteBox = new Rectangle((int)drawLoc.X - ImageTexture.Width/2, (int)drawLoc.Y - ImageTexture.Height/2, ImageTexture.Width, ImageTexture.Height);
                             Game1.spriteBatch.Draw(ImageTexture, spriteBox, Color.White);
                         }
                         else

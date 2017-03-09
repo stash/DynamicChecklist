@@ -17,6 +17,7 @@ namespace DynamicChecklist
         private ObjectCollection objectCollection;
         private ObjectList objectList;
 
+        [Obsolete("Use other constructor")]
         public DynamicSelectableCheckbox(string label, int whichOption, ObjectCollection objectCollection,int x = -1, int y = -1)
             : base(label, whichOption, x, y)
         {
@@ -46,9 +47,17 @@ namespace DynamicChecklist
             }
 
         }
+        public DynamicSelectableCheckbox(ObjectList objectList, int x = -1, int y = -1)
+            : base(objectList.OptionMenuLabel, 1, x, y)
+        {
+            this.objectList = objectList;
+            this.isChecked = objectList.TaskDone;
+            this.isSelected = objectList.OverlayActive;
+        }
 
         public override void draw(SpriteBatch b, int slotX, int slotY)
         {            
+            // TODO: Strikethrough when option done, checkbox for overlay
             var whitePixel = new Texture2D(Game1.graphics.GraphicsDevice, 1, 1);
             whitePixel.SetData(new Color[] { Color.White });
             var destRect = new Rectangle((slotX + this.bounds.X+ this.bounds.Width), (slotY + this.bounds.Y-5), 500, this.bounds.Height);
@@ -68,6 +77,7 @@ namespace DynamicChecklist
         public override void receiveLeftClick(int x, int y)
         {
             isSelected = !isSelected;
+            if (objectList != null)this.objectList.OverlayActive = isSelected;
             Game1.playSound("drumkit6");
             //base.receiveLeftClick(x, y);
         }

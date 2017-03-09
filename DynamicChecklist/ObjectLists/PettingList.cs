@@ -13,7 +13,13 @@ namespace DynamicChecklist.ObjectLists
 {
     class PettingList : ObjectList
     {
-        private List<FarmAnimal> animals;       
+        private List<FarmAnimal> animals;
+        
+        public override string OptionMenuLabel {get
+            {
+                return "Petted Animals";
+            }
+        }
 
         public PettingList()
         {
