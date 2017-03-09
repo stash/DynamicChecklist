@@ -10,6 +10,7 @@ using StardewValley;
 using StardewValley.Menus;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
+using DynamicChecklist.ObjectLists;
 
 
 namespace DynamicChecklist
@@ -21,17 +22,19 @@ namespace DynamicChecklist
         public Keys OpenMenuKey = Keys.NumPad1;
         private ModConfig Config;
         private Texture2D cropsTexture;
+        private IModHelper helper;
+        private List<ObjectList> objectLists = new List<ObjectList>();
 
         public override void Entry(IModHelper helper)
         {
+            this.helper = helper;
             this.Config = helper.ReadConfig<ModConfig>();          
             // Menu Events
             MenuEvents.MenuChanged += MenuChangedEvent;
             ControlEvents.KeyPressed += this.ReceiveKeyPress;
             SaveEvents.AfterLoad += this.GameLoadedEvent;
-
-            var c = new Crop();
-            var b = helper.Reflection.GetPrivateMethod(c, "getSourceRect");
+            GameEvents.GameLoaded += this.onGameLoaded;
+            GraphicsEvents.OnPreRenderHudEvent += this.drawTick;
             try
             {
                 OpenMenuKey = (Keys)Enum.Parse(typeof(Keys), Config.OpenMenuKey);
@@ -40,12 +43,32 @@ namespace DynamicChecklist
             {
                 // use default value
             }
-            GameEvents.GameLoaded += this.loadTextures;
+
 
         }
-        private void loadTextures(object sender, EventArgs e)
+        private void drawTick(object sender, EventArgs e)
         {
+            if (Game1.currentLocation == null || Game1.gameMode == 11 || Game1.currentMinigame != null || Game1.showingEndOfNightStuff || Game1.gameMode == 6 || Game1.gameMode == 0 || Game1.menuUp || Game1.activeClickableMenu != null)
+            {
+                return;
+            }
+            foreach (ObjectList ol in objectLists)
+            {
+                ol.updateObjectInfo();
+                ol.draw(Game1.spriteBatch);
+            }
+        }
+
+        private void onGameLoaded(object sender, EventArgs e)
+        {
+            OverlayTextures.loadTextures(helper.DirectoryPath);
             cropsTexture = loadTexture("Crops.png");
+
+            initializeObjectLists();
+        }
+        private void initializeObjectLists()
+        {
+            objectLists.Add(new PettingList());
         }
         private Texture2D loadTexture(String texName)
         {

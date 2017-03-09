@@ -49,6 +49,7 @@ namespace DynamicChecklist
         public int nUncollectedEggs;
         public int nNotPetted;
         public int nNotFed;
+        public int nNotMilked;
 
         public CoopList()
         {
@@ -61,14 +62,15 @@ namespace DynamicChecklist
             nUncollectedEggs = 0;
             nNotPetted = 0;
             nNotFed = 0;
+            nNotMilked = 0;
 
             
             var allAnimals = farm.getAllFarmAnimals();
             foreach (StardewValley.Buildings.Building building in farm.buildings)
             {
-                if(building is StardewValley.Buildings.Coop)
+                if(building is StardewValley.Buildings.Coop || building is StardewValley.Buildings.Barn)
                 {
-                    var cl = new CoopLoc((StardewValley.Buildings.Coop)building);
+                    var cl = new CoopLoc(building);
                     coops.Add(cl);
                     foreach (FarmAnimal currentAnimal in allAnimals)
                     {
@@ -81,6 +83,7 @@ namespace DynamicChecklist
                     nUncollectedEggs += cl.nUncollectedEggs;
                     nNotPetted += cl.nNotPetted;
                     nNotFed += cl.nNotFed;
+                    nNotMilked += cl.nNotMilked;
                 }
 
 
@@ -90,14 +93,15 @@ namespace DynamicChecklist
 
         public class CoopLoc
         {
-            StardewValley.Buildings.Coop coopBuilding;
+            StardewValley.Buildings.Building coopBuilding;
             public AnimalHouse coop;
             List<FarmAnimal> inhabitants = new List<FarmAnimal>();
             public int nUncollectedEggs = 0;
             public int nNotPetted = 0;
             public int nNotFed = 0;
+            public int nNotMilked = 0;
 
-            public CoopLoc(StardewValley.Buildings.Coop coopBuilding)
+            public CoopLoc(StardewValley.Buildings.Building coopBuilding)
             {
                 this.coopBuilding = coopBuilding;
                 coop = (AnimalHouse)coopBuilding.indoors;
@@ -109,6 +113,7 @@ namespace DynamicChecklist
                 nUncollectedEggs = 0;              
                 nNotFed = 0;
                 nNotPetted = 0;
+                nNotMilked = 0;
 
                 int nHey = 0;
                 for (int i=0; i<coop.Objects.Count; i++)
@@ -128,6 +133,7 @@ namespace DynamicChecklist
                 foreach(FarmAnimal fa in inhabitants)
                 {
                     if (!fa.wasPet) nNotPetted++;
+                    if (fa.currentProduce > 0 && fa.toolUsedForHarvest.Equals("Milk Pail")) nNotMilked++;
                 }
                 
             }

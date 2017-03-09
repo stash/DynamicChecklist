@@ -42,8 +42,12 @@
   <ItemGroup>
     <Compile Include="AddToChecklistElement.cs" />
     <Compile Include="ChecklistMenu.cs" />
+    <Compile Include="ObjectLists\PettingList.cs" />
+    <Compile Include="ObjectLists\ObjectList.cs" />
+    <Compile Include="DynamicSelectableCheckbox.cs" />
     <Compile Include="ObjectCollection.cs" />
     <Compile Include="MainClass.cs" />
+    <Compile Include="ObjectLists\OverlayTextures.cs" />
     <Compile Include="OverviewDropdown.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
