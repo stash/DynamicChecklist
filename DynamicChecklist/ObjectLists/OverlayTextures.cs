@@ -14,13 +14,18 @@ namespace DynamicChecklist.ObjectLists
     public static class OverlayTextures
     {
         public static Texture2D ArrowRight { get; private set; }
-        public static Texture2D Droplet { get; private set; }        
+        public static Texture2D Heart { get; private set; }
+        public static Texture2D MilkPail { get; private set; }
+        public static Texture2D Shears { get; private set; }
+        public static Texture2D WateringCan { get; private set; }
 
         public static void loadTextures(string directory)
         {
-            ArrowRight = loadTexture("arrowRight.png", directory);
-            Droplet    = loadTexture("tint-drop.png", directory);
-             
+            ArrowRight  = loadTexture("arrowRight.png", directory);
+            Heart       = loadTexture("heart.png", directory);
+            MilkPail    = loadTexture("milkPail.png", directory);
+            Shears      = loadTexture("shears.png", directory);
+            WateringCan = loadTexture("wateringCan.png", directory);
         }
         private static Texture2D loadTexture(string texName, string directory)
         {
