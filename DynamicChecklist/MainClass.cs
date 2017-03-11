@@ -34,6 +34,7 @@ namespace DynamicChecklist
             ControlEvents.KeyPressed += this.ReceiveKeyPress;
             SaveEvents.AfterLoad += this.GameLoadedEvent;
             GameEvents.GameLoaded += this.onGameLoaded;
+            TimeEvents.DayOfMonthChanged += this.OnDayOfMonthChanged;
             GraphicsEvents.OnPreRenderHudEvent += this.drawTick;
             try
             {
@@ -54,21 +55,37 @@ namespace DynamicChecklist
             }
             foreach (ObjectList ol in objectLists)
             {
-                ol.updateObjectInfo();
-                ol.draw(Game1.spriteBatch);
+                ol.BeforeDraw();
+                ol.Draw(Game1.spriteBatch);
             }
         }
+        private void OnDayOfMonthChanged(object sender, EventArgs e)
+        {
+            foreach(ObjectList o in objectLists)
+            {
 
+            }
+        }
+        private void showTaskDoneMessage(object sender, EventArgs e)
+        {
+            var s = (ObjectList)sender;
+            Game1.showGlobalMessage(s.TaskDoneMessage);
+        }
         private void onGameLoaded(object sender, EventArgs e)
         {
             OverlayTextures.loadTextures(helper.DirectoryPath);
-            cropsTexture = loadTexture("Crops.png");
-
-            initializeObjectLists();
+            cropsTexture = loadTexture("Crops.png");          
         }
         private void initializeObjectLists()
         {
-            objectLists.Add(new PettingList());
+            objectLists.Add(new AnimalList(AnimalList.Action.Pet));
+            objectLists.Add(new AnimalList(AnimalList.Action.Milk));
+            objectLists.Add(new CrabPotList());
+
+            foreach (ObjectList o in objectLists)
+            {
+                o.TaskFinished += new EventHandler(showTaskDoneMessage);
+            }
         }
         private Texture2D loadTexture(String texName)
         {
@@ -102,10 +119,11 @@ namespace DynamicChecklist
             var gameMenu = e.NewMenu;
 
         }
-        public void GameLoadedEvent(object sender, EventArgs e)
+        private void GameLoadedEvent(object sender, EventArgs e)
         {
             objectCollection = new ObjectCollection(cropsTexture);
             objectCollection.update();
+            initializeObjectLists();
         }
     }
 

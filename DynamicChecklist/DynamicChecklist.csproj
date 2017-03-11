@@ -42,7 +42,10 @@
   <ItemGroup>
     <Compile Include="AddToChecklistElement.cs" />
     <Compile Include="ChecklistMenu.cs" />
-    <Compile Include="ObjectLists\PettingList.cs" />
+    <Compile Include="ObjectLists\AnimalList.cs" />
+    <Compile Include="ObjectLists\CrabPotList.cs" />
+    <Compile Include="ObjectLists\EggList.cs" />
+    <Compile Include="ObjectLists\HayList.cs" />
     <Compile Include="ObjectLists\ObjectList.cs" />
     <Compile Include="DynamicSelectableCheckbox.cs" />
     <Compile Include="ObjectCollection.cs" />
