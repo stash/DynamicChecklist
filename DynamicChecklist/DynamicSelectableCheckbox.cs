@@ -13,9 +13,11 @@ namespace DynamicChecklist
 {
     internal class DynamicSelectableCheckbox : OptionsCheckbox
     {
-        public bool isSelected = true;
+        private bool isDone = true;
         private ObjectCollection objectCollection;
         private ObjectList objectList;
+        private Vector2 labelSize;
+        private bool overlayActive = true;
 
         [Obsolete("Use other constructor")]
         public DynamicSelectableCheckbox(string label, int whichOption, ObjectCollection objectCollection,int x = -1, int y = -1)
@@ -27,59 +29,55 @@ namespace DynamicChecklist
             {
                 // TODO Handling cases seems unneccesery. Generalize?
                 case 1:
-                    this.isChecked = (objectCollection.crabTrapList.nNeedAction == 0);
+                    this.isDone = (objectCollection.crabTrapList.nNeedAction == 0);
                     break;
                 case 2:
-                    this.isChecked = objectCollection.cropList.watered.All(xx => xx == true);
+                    this.isDone = objectCollection.cropList.watered.All(xx => xx == true);
                     break;
                 case 3:
-                    this.isChecked = (objectCollection.coopList.nUncollectedEggs == 0);
+                    this.isDone = (objectCollection.coopList.nUncollectedEggs == 0);
                     break;
                 case 4:
-                    this.isChecked = (objectCollection.coopList.nNotMilked == 0);
+                    this.isDone = (objectCollection.coopList.nNotMilked == 0);
                     break;
                 case 5:
-                    this.isChecked = (objectCollection.coopList.nNotPetted == 0);
+                    this.isDone = (objectCollection.coopList.nNotPetted == 0);
                     break;
                 case 6:
-                    this.isChecked = (objectCollection.coopList.nNotFed == 0);
-                    break;
+                    this.isDone = (objectCollection.coopList.nNotFed == 0);
+                    break;                   
             }
-
+            this.isChecked = true;
+            labelSize = Game1.dialogueFont.MeasureString(label);
         }
         public DynamicSelectableCheckbox(ObjectList objectList, int x = -1, int y = -1)
             : base(objectList.OptionMenuLabel, 1, x, y)
         {
             this.objectList = objectList;
-            this.isChecked = objectList.TaskDone;
-            this.isSelected = objectList.OverlayActive;
+            this.isDone = objectList.TaskDone;
+            this.isChecked = objectList.OverlayActive;
+
+            labelSize = Game1.dialogueFont.MeasureString(label);
         }
 
         public override void draw(SpriteBatch b, int slotX, int slotY)
-        {            
-            // TODO: Strikethrough when option done, checkbox for overlay
+        {
+            base.draw(b, slotX, slotY);
             var whitePixel = new Texture2D(Game1.graphics.GraphicsDevice, 1, 1);
             whitePixel.SetData(new Color[] { Color.White });
-            var destRect = new Rectangle((slotX + this.bounds.X+ this.bounds.Width), (slotY + this.bounds.Y-5), 500, this.bounds.Height);
-            Color c = new Color();
-            if (this.isSelected)
+            var destRect = new Rectangle((slotX + this.bounds.X+ this.bounds.Width + Game1.pixelZoom * 2), (slotY + this.bounds.Y+(int)labelSize.Y/3), (int)labelSize.X, Game1.pixelZoom);
+            if (this.isDone)
             {
-                c =  new Color(0, 255, 0, 100);
-
-            }
-            else
-            {
-                c = new Color(255, 0, 0, 100);
-            }
-            b.Draw(whitePixel, destRect, c);
-            base.draw(b, slotX, slotY);
+                b.Draw(whitePixel, destRect, Color.Red);
+            }                                    
         }
         public override void receiveLeftClick(int x, int y)
         {
-            isSelected = !isSelected;
-            if (objectList != null)this.objectList.OverlayActive = isSelected;
-            Game1.playSound("drumkit6");
-            //base.receiveLeftClick(x, y);
+            base.receiveLeftClick(x, y);
+            //isSelected = !isSelected;
+            if (objectList != null) this.objectList.OverlayActive = this.isChecked;
+            //Game1.playSound("drumkit6");
+            
         }
     }
 }
