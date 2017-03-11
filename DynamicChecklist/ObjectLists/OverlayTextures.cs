@@ -13,16 +13,14 @@ namespace DynamicChecklist.ObjectLists
 {
     public static class OverlayTextures
     {
-        private static Texture2D[] textures;
+        public static Texture2D ArrowRight { get; private set; }
+        public static Texture2D Droplet { get; private set; }        
 
         public static void loadTextures(string directory)
         {
-            textures = new Texture2D[8];
-            textures[0] = loadTexture("tint-drop.png", directory);
-        }
-        public static Texture2D getTexture(int which)
-        {
-            return textures[which];
+            ArrowRight = loadTexture("arrowRight.png", directory);
+            Droplet    = loadTexture("tint-drop.png", directory);
+             
         }
         private static Texture2D loadTexture(string texName, string directory)
         {
@@ -30,5 +28,7 @@ namespace DynamicChecklist.ObjectLists
             var t = Texture2D.FromStream(Game1.graphics.GraphicsDevice, textureStream);
             return t;
         }
+
+
     }
 }
