@@ -18,14 +18,18 @@ namespace DynamicChecklist.ObjectLists
         public static Texture2D MilkPail { get; private set; }
         public static Texture2D Shears { get; private set; }
         public static Texture2D WateringCan { get; private set; }
+        public static Texture2D Crab { get; private set; }
+        public static Texture2D SpeechBubble { get; private set; }
 
         public static void loadTextures(string directory)
         {
-            ArrowRight  = loadTexture("arrowRight.png", directory);
-            Heart       = loadTexture("heart.png", directory);
-            MilkPail    = loadTexture("milkPail.png", directory);
-            Shears      = loadTexture("shears.png", directory);
-            WateringCan = loadTexture("wateringCan.png", directory);
+            ArrowRight   = loadTexture("arrowRight.png", directory);
+            Heart        = loadTexture("heart.png", directory);
+            MilkPail     = loadTexture("milkPail.png", directory);
+            Shears       = loadTexture("shears.png", directory);
+            WateringCan  = loadTexture("wateringCan.png", directory);
+            Crab         = loadTexture("crab.png", directory);
+            SpeechBubble = loadTexture("speechBubble.png", directory);
         }
         private static Texture2D loadTexture(string texName, string directory)
         {
