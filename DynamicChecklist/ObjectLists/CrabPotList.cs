@@ -14,51 +14,48 @@ namespace DynamicChecklist.ObjectLists
     {
         public override string OptionMenuLabel {get;protected set;}
 
-        public override bool TaskDone { get; protected set; }
-
         public override string TaskDoneMessage { get; protected set; }
 
         protected override Texture2D ImageTexture { get; set; }
 
         public CrabPotList()
         {
-            ImageTexture = OverlayTextures.Heart;
+            ImageTexture = OverlayTextures.Crab;
             OptionMenuLabel = "Collect From And Bait Crab Pots";
             TaskDoneMessage = "All crab pots have been collected from and baited";
+            ObjectInfoList = new List<StardewObjectInfo>();
         }
 
         public override void BeforeDraw()
         {
             UpdateObjectInfoList(Game1.currentLocation);
-            throw new NotImplementedException();
+            TaskDone = !(ObjectInfoList.Any(soi => soi.NeedAction));
         }
 
         public override void OnMenuOpen()
         {
-            throw new NotImplementedException();
         }
 
         protected override void UpdateObjectInfoList()
         {
             foreach(GameLocation loc in Game1.locations)
             {
-
+                UpdateObjectInfoList(loc);
             }
-            throw new NotImplementedException();
+            TaskDone = !(ObjectInfoList.Any(soi => soi.NeedAction));
         }
         private void UpdateObjectInfoList(GameLocation loc)
         {
-            var queryIsHere = from soi in ObjectInfoList
-                              select soi.Location == loc;
-            var queryIsNotHere = from soi in ObjectInfoList
-                                 select soi.Location != loc;
+
+            ObjectInfoList.RemoveAll(soi => soi.Location == loc);
+
             foreach (KeyValuePair<Vector2, StardewValley.Object> o in loc.Objects)
             {
                 if (o.Value is CrabPot)
                 {
                     CrabPot currentCrabPot = (CrabPot)o.Value;
                     var soi = new StardewObjectInfo();
-                    soi.Coordinate = o.Key;
+                    soi.Coordinate = o.Key*Game1.tileSize + new Vector2(Game1.tileSize/2, Game1.tileSize / 2);
                     soi.Location = loc;
                     if (currentCrabPot.readyForHarvest)
                     {
@@ -68,6 +65,7 @@ namespace DynamicChecklist.ObjectLists
                     {
                         soi.NeedAction = true;
                     }
+                    ObjectInfoList.Add(soi);
                 }
             }
         }

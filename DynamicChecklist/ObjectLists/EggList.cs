@@ -11,8 +11,6 @@ namespace DynamicChecklist.ObjectLists
     {
         public override string OptionMenuLabel { get; protected set; }
 
-        public override bool TaskDone { get; protected set; }
-
         public override string TaskDoneMessage { get; protected set; }
 
         protected override Texture2D ImageTexture { get; set; }

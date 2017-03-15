@@ -15,13 +15,31 @@ namespace DynamicChecklist.ObjectLists
     {
         protected int Count { get; set; }
         protected int CountNeedAction { get; set; }
-        public bool OverlayActive { get; set; }
+        public bool OverlayActive { get; set; } = false;
         protected abstract Texture2D ImageTexture { get; set; }
         public abstract string OptionMenuLabel { get; protected set; }
         public List<StardewObjectInfo> ObjectInfoList { get ; set; }
-        public abstract bool TaskDone { get; protected set; }
+        private bool taskDone;
+        public bool TaskDone
+        {
+            get
+            {
+                return taskDone;
+            }
+            protected set
+            {
+                var oldTaskDone = taskDone;
+                taskDone = value;
+                if (taskDone && !oldTaskDone && Game1.timeOfDay>600)
+                {
+                    OnTaskFinished(new EventArgs());
+                }
+            }
+        }
+
         public abstract string TaskDoneMessage { get; protected set; }
-        public bool TaskExistsToday { get; protected set; }
+        protected bool TaskExistedAtStartOfDay { get; private set; }
+        public bool TaskExistsNow { get; private set; }
 
         protected void OnTaskFinished(EventArgs e)
         {
@@ -40,11 +58,16 @@ namespace DynamicChecklist.ObjectLists
         public void OnNewDay()
         {
             UpdateObjectInfoList();
-            TaskExistsToday = ObjectInfoList.Count > 0;
+            TaskExistedAtStartOfDay = ObjectInfoList.Count > 0;
+            TaskExistsNow = TaskExistedAtStartOfDay;
         }
        
         public void Draw(SpriteBatch b)
         {
+            if(!TaskExistedAtStartOfDay && !TaskExistsNow && ObjectInfoList.Count>0)
+            {
+                TaskExistsNow = true;
+            }
             if (OverlayActive)
             {
                 var currentPlayerLocation = Game1.currentLocation;
@@ -64,8 +87,12 @@ namespace DynamicChecklist.ObjectLists
                         {
                             // TODO only draw if on screen
                             var drawLoc = new Vector2(objectInfo.Coordinate.X - viewport.X, objectInfo.Coordinate.Y - viewport.Y);
-                            var spriteBox = new Rectangle((int)drawLoc.X - ImageTexture.Width/2 * Game1.pixelZoom, (int)drawLoc.Y - ImageTexture.Height/2*Game1.pixelZoom, ImageTexture.Width * Game1.pixelZoom, ImageTexture.Height * Game1.pixelZoom);
+                            var spriteBox = new Rectangle((int)drawLoc.X - ImageTexture.Width/4 * Game1.pixelZoom, (int)drawLoc.Y - ImageTexture.Height/4*Game1.pixelZoom, ImageTexture.Width * Game1.pixelZoom/2, ImageTexture.Height * Game1.pixelZoom/2);
+                            var spriteBoxSpeechBubble = new Rectangle((int)drawLoc.X - OverlayTextures.SpeechBubble.Width / 4 * Game1.pixelZoom, (int)drawLoc.Y - OverlayTextures.SpeechBubble.Height / 4 * Game1.pixelZoom, OverlayTextures.SpeechBubble.Width * Game1.pixelZoom / 2, OverlayTextures.SpeechBubble.Height * Game1.pixelZoom / 2);
+                            spriteBoxSpeechBubble.Offset(0, Game1.pixelZoom / 2);
+                            Game1.spriteBatch.Draw(OverlayTextures.SpeechBubble, spriteBoxSpeechBubble, Color.White);
                             Game1.spriteBatch.Draw(ImageTexture, spriteBox, Color.White);
+                            
 
                             var distanceFromPlayer = objectInfo.GetDistance(Game1.player);
                             if(distanceFromPlayer < smallestDistanceFromPlayer)
@@ -117,7 +144,6 @@ namespace DynamicChecklist.ObjectLists
 
         private static void DrawArrow(float rotation, float distanceFromCenter)
         {
-            // TODO Implement distance frome center
             var tex = OverlayTextures.ArrowRight;
             Point center = new Point(Game1.viewport.Width / 2, Game1.viewport.Height / 2);
 

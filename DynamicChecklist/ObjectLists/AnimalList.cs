@@ -20,8 +20,6 @@ namespace DynamicChecklist.ObjectLists
         public override string OptionMenuLabel { get; protected set; }
         public override string TaskDoneMessage { get; protected set; }
 
-        public override bool TaskDone { get; protected set; }
-
         protected override Texture2D ImageTexture { get; set; }
 
         public AnimalList(Action action)
@@ -47,7 +45,6 @@ namespace DynamicChecklist.ObjectLists
                     throw (new NotImplementedException());
             }
             
-            OverlayActive = true;
             ObjectInfoList = new List<StardewObjectInfo>();
         }
         public override void OnMenuOpen()
@@ -83,10 +80,11 @@ namespace DynamicChecklist.ObjectLists
             if (!TaskDone && Game1.currentLocation.IsFarm)
             {
                 UpdateObjectInfoList();
-                if (TaskDone)
-                {
-                    OnTaskFinished(new EventArgs());
-                }
+                //if (TaskDone)
+                //{
+                //    OnTaskFinished(new EventArgs());
+                //}
+                
             }           
         }
         protected override void UpdateObjectInfoList()
