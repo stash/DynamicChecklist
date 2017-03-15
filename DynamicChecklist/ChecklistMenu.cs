@@ -56,30 +56,20 @@ namespace DynamicChecklist
                     if (objectCollection.cropList.crops.Count > 0)
                     {
                         var checkbox = new DynamicSelectableCheckbox("Watered Crops", 2, objectCollection);
-                        checkbox.bounds = new Rectangle(MenuRect.X + 50, MenuRect.Y + 50 + lineHeight * 2, 100, 50);
-                        options.Add(checkbox);
-                    }
-                    if (objectCollection.crabTrapList.nTotal > 0)
-                    {
-                        var checkbox = new DynamicSelectableCheckbox("Baited Crab Pots", 1, objectCollection);
-                        checkbox.bounds = new Rectangle(MenuRect.X + 50, MenuRect.Y + 50 + lineHeight * 3, 100, 50);
+                        checkbox.bounds = new Rectangle(MenuRect.X + 50, MenuRect.Y + 50 + lineHeight * 4, 100, 50);
                         options.Add(checkbox);
                     }
 
                     if (objectCollection.coopList.coops.Count > 0)
                     {
                         var checkbox = new DynamicSelectableCheckbox("Collected Eggs", 3, objectCollection);
-                        checkbox.bounds = new Rectangle(MenuRect.X + 50, MenuRect.Y + 50 + lineHeight * 4, 100, 50);
-                        options.Add(checkbox);
-
-                        checkbox = new DynamicSelectableCheckbox("Provided Animals Hay", 6, objectCollection);
                         checkbox.bounds = new Rectangle(MenuRect.X + 50, MenuRect.Y + 50 + lineHeight * 5, 100, 50);
                         options.Add(checkbox);
                     }
                     int j = 0;
                     foreach(ObjectList ol in objectLists)
                     {
-                        if (ol.TaskExistsToday)
+                        if (ol.TaskExistsNow)
                         {
                             var checkbox = new DynamicSelectableCheckbox(ol);
                             checkbox.bounds = new Rectangle(MenuRect.X + 50, MenuRect.Y + 50 + lineHeight * j, 100, 50);
