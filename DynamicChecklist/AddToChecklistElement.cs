@@ -10,6 +10,7 @@ using System.Linq;
 
 namespace DynamicChecklist
 {
+    [Obsolete]
     internal class AddToChecklistElement : OptionsElement
     {
         string currentString;
