@@ -58,10 +58,17 @@
   <ItemGroup>
     <Compile Include="AddToChecklistElement.cs" />
     <Compile Include="ChecklistMenu.cs" />
-    <Compile Include="Graph\MyGraph.cs" />
-    <Compile Include="Graph\PartialGraph.cs" />
+    <Compile Include="Graph\Edges\PlayerEdge.cs" />
+    <Compile Include="Graph\Edges\StardewEdge.cs" />
+    <Compile Include="Graph\Graphs\StardewGraph.cs" />
+    <Compile Include="Graph\Graphs\CompleteGraph.cs" />
+    <Compile Include="Graph\Vertices\StardewVertex.cs" />
+    <Compile Include="Graph\Vertices\MovableVertex.cs" />
+    <Compile Include="Graph\Vertices\WarpVertex.cs" />
+    <Compile Include="Graph\Graphs\PartialGraph.cs" />
     <Compile Include="ObjectLists\AnimalList.cs" />
     <Compile Include="ObjectLists\CrabPotList.cs" />
+    <Compile Include="ObjectLists\CropList.cs" />
     <Compile Include="ObjectLists\EggList.cs" />
     <Compile Include="ObjectLists\HayList.cs" />
     <Compile Include="ObjectLists\ObjectList.cs" />
