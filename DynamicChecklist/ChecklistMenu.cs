@@ -56,13 +56,6 @@ namespace DynamicChecklist
                     if (objectCollection.cropList.crops.Count > 0)
                     {
                         var checkbox = new DynamicSelectableCheckbox("Watered Crops", 2, objectCollection);
-                        checkbox.bounds = new Rectangle(MenuRect.X + 50, MenuRect.Y + 50 + lineHeight * 4, 100, 50);
-                        options.Add(checkbox);
-                    }
-
-                    if (objectCollection.coopList.coops.Count > 0)
-                    {
-                        var checkbox = new DynamicSelectableCheckbox("Collected Eggs", 3, objectCollection);
                         checkbox.bounds = new Rectangle(MenuRect.X + 50, MenuRect.Y + 50 + lineHeight * 5, 100, 50);
                         options.Add(checkbox);
                     }

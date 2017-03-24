@@ -90,6 +90,7 @@ namespace DynamicChecklist
             objectLists.Add(new AnimalList(AnimalList.Action.Milk));
             objectLists.Add(new CrabPotList());
             objectLists.Add(new HayList());
+            objectLists.Add(new EggList());
 
             foreach (ObjectList o in objectLists)
             {
@@ -122,9 +123,9 @@ namespace DynamicChecklist
 
             if(e.KeyPressed == Keys.NumPad9)
             {
-                var a = new MyGraph();
-                a.Create();
-                a.Calculate();
+                //var a = new MyGraph();
+                //a.Create();
+                //a.Calculate();
             }
 
         }
