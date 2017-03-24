@@ -12,7 +12,7 @@ using System.IO;
 using Microsoft.Xna.Framework;
 using QuickGraph.Algorithms.Observers;
 
-namespace DynamicChecklist.Graph
+namespace DynamicChecklist.Graph.Graphs
 {
     public class MyGraph : AdjacencyGraph<ExtendedWarp, LabelledEdge<ExtendedWarp>>, IEdgeListGraph<ExtendedWarp, LabelledEdge<ExtendedWarp>>
     {
@@ -58,7 +58,7 @@ namespace DynamicChecklist.Graph
                     // TODO Connect barns/coops
                 }
                 // TODO add player and target vertex and connect every node to it
-                var partialGraph = new PartialGraph();
+                var partialGraph = new PartialGraph(loc);
                 // Calculate which warps should correspond to a vertex. Dont add warps which are very close.
                 var extWarpsToInclude = new List<ExtendedWarp>();
                 for (int i = 0; i < loc.warps.Count; i++)
@@ -108,7 +108,6 @@ namespace DynamicChecklist.Graph
 
                         var edge = new LabelledEdge<ExtendedWarp>(extWarp1, extWarp2, edgeLabel, new GraphvizColor(255, 255, 255, 255), dist);
                         partialGraph.AddEdge(edge);
-                        //edgeCost.Add(edge, dist);
 
                     }
                     partialGraph.AddVertex(extWarp1);
