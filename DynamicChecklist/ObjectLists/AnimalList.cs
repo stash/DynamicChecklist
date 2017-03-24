@@ -56,7 +56,7 @@ namespace DynamicChecklist.ObjectLists
         {
             var soi = new StardewObjectInfo();
             soi.Coordinate = animal.getStandingPosition();
-            soi.Location = Game1.getFarm();
+            soi.Location = loc;
             switch (action)
             {
                 case Action.Pet:

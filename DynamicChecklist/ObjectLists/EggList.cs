@@ -1,4 +1,7 @@
-﻿using Microsoft.Xna.Framework.Graphics;
+﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using StardewValley;
+using StardewValley.Buildings;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,13 +21,18 @@ namespace DynamicChecklist.ObjectLists
         public EggList()
         {
             ImageTexture = OverlayTextures.Heart;
-            OptionMenuLabel = "Collect From And Bait Crab Pots";
-            TaskDoneMessage = "All crab pots have been collected from and baited";
+            OptionMenuLabel = "Collect Animal Products";
+            TaskDoneMessage = "All animal products have been collected";
+
+            ObjectInfoList = new List<StardewObjectInfo>();
         }
 
         public override void BeforeDraw()
         {
-            throw new NotImplementedException();
+            if (!TaskDone && Game1.currentLocation.IsFarm)
+            {
+                UpdateObjectInfoList();
+            }
         }
 
         public override void OnMenuOpen()
@@ -34,7 +42,42 @@ namespace DynamicChecklist.ObjectLists
 
         protected override void UpdateObjectInfoList()
         {
-            throw new NotImplementedException();
+            this.ObjectInfoList.Clear();
+            var farmBuildings = Game1.getFarm().buildings;
+            foreach (Building building in farmBuildings)
+            {
+                if (building.indoors != null && building.indoors.GetType() == typeof(AnimalHouse))
+                {
+                    var animalHouse = (AnimalHouse)building.indoors;
+                    foreach (KeyValuePair<Vector2, StardewValley.Object> obj in animalHouse.Objects)
+                    {
+                        if (obj.Value.IsSpawnedObject)
+                        {
+                            StardewObjectInfo soi = CreateSOI(obj, animalHouse);
+                            ObjectInfoList.Add(soi);
+                        }
+                    }
+
+                }
+            }
+            var taskDone = true;
+            foreach (StardewObjectInfo soi in ObjectInfoList)
+            {
+                if (soi.NeedAction)
+                {
+                    taskDone = false;
+                    break;
+                }
+            }
+            TaskDone = taskDone;
+        }
+        private StardewObjectInfo CreateSOI(KeyValuePair<Vector2, StardewValley.Object> obj, GameLocation loc)
+        {
+            var soi = new StardewObjectInfo();
+            soi.Coordinate = obj.Key*Game1.tileSize + new Vector2(Game1.tileSize/2, Game1.tileSize / 2);
+            soi.Location = loc;
+            soi.NeedAction = true;
+            return soi;
         }
     }
 }
