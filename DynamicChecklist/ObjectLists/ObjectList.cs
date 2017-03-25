@@ -14,12 +14,34 @@ namespace DynamicChecklist.ObjectLists
     public abstract class ObjectList
     {
         protected int Count { get; set; }
-        protected int CountNeedAction { get; set; }
-        public bool OverlayActive { get; set; } = false;
         protected abstract Texture2D ImageTexture { get; set; }
         public abstract string OptionMenuLabel { get; protected set; }
-        public List<StardewObjectInfo> ObjectInfoList { get ; set; }
+        public List<StardewObjectInfo> ObjectInfoList { get; set; }
+        public abstract string TaskDoneMessage { get; protected set; }
+        protected bool TaskExistedAtStartOfDay { get; private set; }
+        public bool TaskExistsNow { get; private set; }
         private bool taskDone;
+        private bool overlayActive;      
+        public bool OverlayActive
+        {
+            get
+            {
+                return overlayActive;
+            }
+            set
+            {
+                if(!overlayActive && value)
+                {
+                    OnOverlayActivated(new EventArgs());
+                }
+                if(overlayActive != value)
+                {
+                    OnOverlayActivateChanged(new EventArgs());
+                }
+                overlayActive = value;
+            }
+        }
+
         public bool TaskDone
         {
             get
@@ -37,16 +59,38 @@ namespace DynamicChecklist.ObjectLists
             }
         }
 
-        public abstract string TaskDoneMessage { get; protected set; }
-        protected bool TaskExistedAtStartOfDay { get; private set; }
-        public bool TaskExistsNow { get; private set; }
+        protected int CountNeedAction
+        {
+            get
+            {
+                var count = 0;
+                foreach (StardewObjectInfo soi in ObjectInfoList)
+                {
+                    if (soi.NeedAction)
+                    {
+                        count++;
+                    }
+                }
+                return count;
+            }
+        }
 
         protected void OnTaskFinished(EventArgs e)
         {
             TaskFinished?.Invoke(this, e);
         }
+        protected void OnOverlayActivated(EventArgs e)
+        {
+            OverlayActivated?.Invoke(this, e);
+        }
+        protected void OnOverlayActivateChanged(EventArgs e)
+        {
+            OverlayActiveChanged?.Invoke(this, e);
+        }
 
         public event EventHandler TaskFinished;
+        public event EventHandler OverlayActivated;
+        public event EventHandler OverlayActiveChanged;
 
         public abstract void OnMenuOpen();
         //public abstract void OnNewDay();
@@ -59,12 +103,13 @@ namespace DynamicChecklist.ObjectLists
         {
             UpdateObjectInfoList();
             TaskExistedAtStartOfDay = ObjectInfoList.Count > 0;
+            TaskExistedAtStartOfDay = CountNeedAction > 0;
             TaskExistsNow = TaskExistedAtStartOfDay;
         }
        
         public void Draw(SpriteBatch b)
         {
-            if(!TaskExistedAtStartOfDay && !TaskExistsNow && ObjectInfoList.Count>0)
+            if(!TaskExistedAtStartOfDay && !TaskExistsNow && CountNeedAction>0)
             {
                 TaskExistsNow = true;
             }
@@ -86,7 +131,7 @@ namespace DynamicChecklist.ObjectLists
                         if(objectInfo.Location == currentPlayerLocation)
                         {
                             // TODO only draw if on screen
-                            var drawLoc = new Vector2(objectInfo.Coordinate.X - viewport.X, objectInfo.Coordinate.Y - viewport.Y);
+                            var drawLoc = new Vector2(objectInfo.Coordinate.X - viewport.X, objectInfo.Coordinate.Y - viewport.Y - Game1.tileSize / 2);
                             var spriteBox = new Rectangle((int)drawLoc.X - ImageTexture.Width/4 * Game1.pixelZoom, (int)drawLoc.Y - ImageTexture.Height/4*Game1.pixelZoom, ImageTexture.Width * Game1.pixelZoom/2, ImageTexture.Height * Game1.pixelZoom/2);
                             var spriteBoxSpeechBubble = new Rectangle((int)drawLoc.X - OverlayTextures.SpeechBubble.Width / 4 * Game1.pixelZoom, (int)drawLoc.Y - OverlayTextures.SpeechBubble.Height / 4 * Game1.pixelZoom, OverlayTextures.SpeechBubble.Width * Game1.pixelZoom / 2, OverlayTextures.SpeechBubble.Height * Game1.pixelZoom / 2);
                             spriteBoxSpeechBubble.Offset(0, Game1.pixelZoom / 2);

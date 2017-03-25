@@ -22,7 +22,7 @@ namespace DynamicChecklist
         private static int iSelectedTab = 0;
 
         private List<ClickableComponent> tabs = new List<ClickableComponent>();
-        private List<string> tabNames = new List<string>{"Checklist", "Crops", "Crabs" };
+        private List<string> tabNames = new List<string>{"Checklist"};
 
         private ClickableComponent selectedTab;
 
@@ -41,11 +41,10 @@ namespace DynamicChecklist
             int lbly = (int)(this.yPositionOnScreen + Game1.tileSize * 2f);
             int lblSeperation = (int)(Game1.tileSize * 0.9F);
             int lblHeight = 40;
-
             
             foreach(string s in tabNames)
             {
-                this.tabs.Add(new ClickableComponent(new Rectangle(lblx, lbly + lblSeperation * i++, lblWidth, lblHeight), s));
+                tabs.Add(new ClickableComponent(new Rectangle(lblx, lbly + lblSeperation * i++, lblWidth, lblHeight), s));
             }
 
             selectedTab = tabs[iSelectedTab];
@@ -53,12 +52,6 @@ namespace DynamicChecklist
             switch (selectedTab.name)
             {
                 case "Checklist":
-                    if (objectCollection.cropList.crops.Count > 0)
-                    {
-                        var checkbox = new DynamicSelectableCheckbox("Watered Crops", 2, objectCollection);
-                        checkbox.bounds = new Rectangle(MenuRect.X + 50, MenuRect.Y + 50 + lineHeight * 5, 100, 50);
-                        options.Add(checkbox);
-                    }
                     int j = 0;
                     foreach(ObjectList ol in objectLists)
                     {
@@ -68,15 +61,11 @@ namespace DynamicChecklist
                             checkbox.bounds = new Rectangle(MenuRect.X + 50, MenuRect.Y + 50 + lineHeight * j, 100, 50);
                             options.Add(checkbox);
                             j++;
-                        }
-                                             
+                        }                                           
                     }
-
                     break;
-                case "Crops":
-                    break;
-                case "Crabs":
-                    break;
+                default:
+                    throw (new NotImplementedException());
             }
 
 
@@ -95,7 +84,7 @@ namespace DynamicChecklist
         }
         public override void draw(SpriteBatch b)
         {
-            IClickableMenu.drawTextureBox(Game1.spriteBatch, MenuRect.X, MenuRect.Y, MenuRect.Width, MenuRect.Height, Color.White);
+            drawTextureBox(Game1.spriteBatch, MenuRect.X, MenuRect.Y, MenuRect.Width, MenuRect.Height, Color.White);
             // Crop menu
             var mouseX = Game1.getMouseX();
             var mouseY = Game1.getMouseY();
@@ -103,7 +92,7 @@ namespace DynamicChecklist
             int j = 0;
             foreach(ClickableComponent t in tabs)
             {                
-                IClickableMenu.drawTextureBox(Game1.spriteBatch, t.bounds.X, t.bounds.Y, t.bounds.Width, t.bounds.Height, Color.White* (iSelectedTab == j ? 1F : 0.7F));
+                drawTextureBox(Game1.spriteBatch, t.bounds.X, t.bounds.Y, t.bounds.Width, t.bounds.Height, Color.White* (iSelectedTab == j ? 1F : 0.7F));
                 b.DrawString(Game1.smallFont, t.name, new Vector2(t.bounds.X+5, t.bounds.Y+5), Color.Black);
                 j++;
             }
@@ -113,22 +102,15 @@ namespace DynamicChecklist
                     //drawChecklist(b);
                     //options.Add(new AddToChecklistElement(300));
                     break;
-                case "Crops":
-                    drawCropMenu(b);
-                    break;
-                case "Crabs":
-                    drawCrabMenu(b);
-                    break;
-                case "Coops":
-                    drawCoopMenu(b);
-                    break;
+                default:
+                    throw (new NotImplementedException());
             }
             foreach(OptionsElement o in options)
             {
                 o.draw(b, -1, -1);
             }
             base.draw(b);
-            IClickableMenu.drawHoverText(b, $"{mouseX},{mouseY}", Game1.smallFont);
+            drawHoverText(b, $"{mouseX},{mouseY}", Game1.smallFont);
             drawMouse(b);
         }
         private void drawCoopMenu(SpriteBatch b)

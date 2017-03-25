@@ -27,7 +27,7 @@ namespace DynamicChecklist
         // TODO Idea: Mod which notifies the player when they pick up an item which is in a collection
         public ObjectCollection objectCollection;
         public Keys OpenMenuKey = Keys.NumPad1;
-        private ModConfig Config;
+        private ModConfig config;
         private Texture2D cropsTexture;
         private IModHelper helper;
         private List<ObjectList> objectLists = new List<ObjectList>();
@@ -35,7 +35,7 @@ namespace DynamicChecklist
         public override void Entry(IModHelper helper)
         {           
             this.helper = helper;
-            this.Config = helper.ReadConfig<ModConfig>();          
+            config = helper.ReadConfig<ModConfig>();          
             // Menu Events
             MenuEvents.MenuChanged += MenuChangedEvent;
             ControlEvents.KeyPressed += this.ReceiveKeyPress;
@@ -45,7 +45,7 @@ namespace DynamicChecklist
             GraphicsEvents.OnPreRenderHudEvent += this.drawTick;
             try
             {
-                OpenMenuKey = (Keys)Enum.Parse(typeof(Keys), Config.OpenMenuKey);
+                OpenMenuKey = (Keys)Enum.Parse(typeof(Keys), config.OpenMenuKey);
             }
             catch
             {
@@ -79,6 +79,16 @@ namespace DynamicChecklist
             var s = (ObjectList)sender;
             Game1.showGlobalMessage(s.TaskDoneMessage);
         }
+        private void disableAllButOneOverlays(object sender, EventArgs e)
+        {
+            foreach(ObjectList ol in objectLists)
+            {
+                if(ol != sender)
+                {
+                    ol.OverlayActive = false;
+                }
+            }
+        }
         private void onGameLoaded(object sender, EventArgs e)
         {
             OverlayTextures.loadTextures(helper.DirectoryPath);
@@ -91,10 +101,16 @@ namespace DynamicChecklist
             objectLists.Add(new CrabPotList());
             objectLists.Add(new HayList());
             objectLists.Add(new EggList());
+            objectLists.Add(new ObjectLists.CropList(ObjectLists.CropList.Action.Water));
+            objectLists.Add(new ObjectLists.CropList(ObjectLists.CropList.Action.Harvest));
 
             foreach (ObjectList o in objectLists)
             {
                 o.TaskFinished += new EventHandler(showTaskDoneMessage);
+                if (!config.ShowAllTasks)
+                {
+                    o.OverlayActivated += new EventHandler(disableAllButOneOverlays);
+                }
             }
         }
         private Texture2D loadTexture(String texName)
@@ -153,8 +169,8 @@ namespace DynamicChecklist
 
     internal class ModConfig
     {
-        public bool val { get; set; } = false;
-        public String OpenMenuKey = "NumPad1";
+        public string OpenMenuKey = "NumPad1";
+        public bool ShowAllTasks = false;
     }
 
 }
