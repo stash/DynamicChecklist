@@ -18,6 +18,7 @@ using Microsoft.Xna.Framework;
 using QuickGraph.Graphviz;
 using QuickGraph.Graphviz.Dot;
 using DynamicChecklist.Graph;
+using DynamicChecklist.Graph.Graphs;
 
 namespace DynamicChecklist
 {
@@ -31,6 +32,8 @@ namespace DynamicChecklist
         private Texture2D cropsTexture;
         private IModHelper helper;
         private List<ObjectList> objectLists = new List<ObjectList>();
+        private CompleteGraph graph;
+        private List<Step> steps;
 
         public override void Entry(IModHelper helper)
         {           
@@ -43,6 +46,7 @@ namespace DynamicChecklist
             GameEvents.GameLoaded += this.onGameLoaded;
             TimeEvents.DayOfMonthChanged += this.OnDayOfMonthChanged;
             GraphicsEvents.OnPreRenderHudEvent += this.drawTick;
+            GameEvents.OneSecondTick += this.OnNewSecond;
             try
             {
                 OpenMenuKey = (Keys)Enum.Parse(typeof(Keys), config.OpenMenuKey);
@@ -51,8 +55,6 @@ namespace DynamicChecklist
             {
                 // use default value
             }
-
-            var edge = new Edge<string>("a", "a");
         }
         private void drawTick(object sender, EventArgs e)
         {
@@ -66,6 +68,10 @@ namespace DynamicChecklist
                 ol.BeforeDraw();
                 ol.Draw(Game1.spriteBatch);
             }
+        }
+        private void OnNewSecond(object sender, EventArgs e)
+        {
+
         }
         private void OnDayOfMonthChanged(object sender, EventArgs e)
         {
@@ -139,9 +145,8 @@ namespace DynamicChecklist
 
             if(e.KeyPressed == Keys.NumPad9)
             {
-                //var a = new MyGraph();
-                //a.Create();
-                //a.Calculate();
+                graph = new CompleteGraph(Game1.locations);
+                graph.Populate();
             }
 
         }
