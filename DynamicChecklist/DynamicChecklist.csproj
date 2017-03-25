@@ -62,6 +62,7 @@
     <Compile Include="Graph\Edges\StardewEdge.cs" />
     <Compile Include="Graph\Graphs\StardewGraph.cs" />
     <Compile Include="Graph\Graphs\CompleteGraph.cs" />
+    <Compile Include="Graph\Path.cs" />
     <Compile Include="Graph\Vertices\StardewVertex.cs" />
     <Compile Include="Graph\Vertices\MovableVertex.cs" />
     <Compile Include="Graph\Vertices\WarpVertex.cs" />
