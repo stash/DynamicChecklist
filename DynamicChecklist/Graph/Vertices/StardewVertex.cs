@@ -17,6 +17,10 @@ namespace DynamicChecklist.Graph
             this.Location = location;
             this.Position = position;
         }
+        public static float Distance(StardewVertex vertex1, StardewVertex vertex2)
+        {
+            return Math.Abs(vertex1.Position.X - vertex2.Position.X) + Math.Abs(vertex1.Position.Y - vertex2.Position.Y);
+        }
 
     }
 }
