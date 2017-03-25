@@ -10,14 +10,9 @@ namespace DynamicChecklist.Graph.Edges
 {
     public class PlayerEdge : StardewEdge
     {
-        public PlayerEdge(MovableVertex source, StardewVertex target) : base(source, target, "Player", 0)
+        public PlayerEdge(MovableVertex source, StardewVertex target) : base(source, target, "Player")
         {
 
-        }
-
-        public void UpdateCost()
-        {
-            this.Cost = Vector2.Distance(this.Source.Position, this.Target.Position);
         }
     }
 }
