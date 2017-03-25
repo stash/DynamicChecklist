@@ -13,7 +13,6 @@ namespace DynamicChecklist.ObjectLists
 {
     class AnimalList : ObjectList
     {
-        private List<FarmAnimal> animals;
         public enum Action { Pet, Milk, Shear };
         private Action action;
 
@@ -28,17 +27,17 @@ namespace DynamicChecklist.ObjectLists
             switch (action){
                 case Action.Pet:
                     ImageTexture = OverlayTextures.Heart;
-                    OptionMenuLabel = "Petted Animals";
+                    OptionMenuLabel = "Pet Animals";
                     TaskDoneMessage = "All animals have been petted";
                     break;
                 case Action.Milk:
                     ImageTexture = OverlayTextures.MilkPail;
-                    OptionMenuLabel = "Milked Cows/Goats";
+                    OptionMenuLabel = "Milke Cows/Goats";
                     TaskDoneMessage = "All Cows and Goats have been milked";
                     break;
                 case Action.Shear:
                     ImageTexture = OverlayTextures.Shears;
-                    OptionMenuLabel = "Sheared Sheep";
+                    OptionMenuLabel = "Shear Sheep";
                     TaskDoneMessage = "All sheep have been sheared";
                     break;
                 default:
@@ -79,12 +78,7 @@ namespace DynamicChecklist.ObjectLists
         {           
             if (!TaskDone && Game1.currentLocation.IsFarm)
             {
-                UpdateObjectInfoList();
-                //if (TaskDone)
-                //{
-                //    OnTaskFinished(new EventArgs());
-                //}
-                
+                UpdateObjectInfoList();             
             }           
         }
         protected override void UpdateObjectInfoList()
@@ -105,7 +99,7 @@ namespace DynamicChecklist.ObjectLists
                 if (building.indoors != null && building.indoors.GetType() == typeof(AnimalHouse))
                 {
                     var animalHouse = (AnimalHouse)building.indoors;
-                    foreach (FarmAnimal animal in animalHouse.animals.Values.ToList<FarmAnimal>())
+                    foreach (FarmAnimal animal in animalHouse.animals.Values.ToList())
                     {
                         StardewObjectInfo soi = CreateSOI(animal, animalHouse, action);
                         ObjectInfoList.Add(soi);
@@ -113,16 +107,7 @@ namespace DynamicChecklist.ObjectLists
 
                 }
             }
-            var taskDone = true;
-            foreach (StardewObjectInfo soi in ObjectInfoList)
-            {
-                if (soi.NeedAction)
-                {
-                    taskDone = false;
-                    break;
-                }
-            }
-            TaskDone = taskDone;
+            TaskDone = CountNeedAction==0;
         }
     }
 }
