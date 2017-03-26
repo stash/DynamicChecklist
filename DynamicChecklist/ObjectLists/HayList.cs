@@ -19,7 +19,7 @@ namespace DynamicChecklist.ObjectLists
 
         protected override Texture2D ImageTexture { get; set; }
 
-        public HayList()
+        public HayList(ModConfig config) : base(config)
         {
             ImageTexture = OverlayTextures.Crab;
             OptionMenuLabel = "Filled Troughs";

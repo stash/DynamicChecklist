@@ -18,7 +18,7 @@ namespace DynamicChecklist.ObjectLists
 
         protected override Texture2D ImageTexture { get; set; }
 
-        public CrabPotList()
+        public CrabPotList(ModConfig config) : base(config)
         {
             ImageTexture = OverlayTextures.Crab;
             OptionMenuLabel = "Collect From And Bait Crab Pots";

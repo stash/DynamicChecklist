@@ -20,7 +20,7 @@ namespace DynamicChecklist.ObjectLists
 
         protected override Texture2D ImageTexture { get; set; }
 
-        public CropList(Action action)
+        public CropList(ModConfig config, Action action) : base(config)
         {
             this.action = action;
             switch (action)

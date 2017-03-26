@@ -18,6 +18,8 @@ namespace DynamicChecklist.ObjectLists
         public static CompleteGraph Graph;
         private ShortestPath path;
 
+        private ModConfig config;
+
         protected int Count { get; set; }
         protected abstract Texture2D ImageTexture { get; set; }
         public abstract string OptionMenuLabel { get; protected set; }
@@ -25,6 +27,12 @@ namespace DynamicChecklist.ObjectLists
         public abstract string TaskDoneMessage { get; protected set; }
         protected bool TaskExistedAtStartOfDay { get; private set; }
         public bool TaskExistsNow { get; private set; }
+        public bool ShowInMenu {
+            get
+            {
+                return TaskExistsNow || config.ShowAllTasks;
+            }
+        }
         private bool taskDone;
         private bool overlayActive;      
         public bool OverlayActive
@@ -80,9 +88,9 @@ namespace DynamicChecklist.ObjectLists
             }
         }
 
-        public ObjectList()
+        public ObjectList(ModConfig config)
         {
-
+            this.config = config;
         }
 
         protected void OnTaskFinished(EventArgs e)
@@ -99,9 +107,9 @@ namespace DynamicChecklist.ObjectLists
         }
         public void UpdatePath()
         {
-            if (ObjectInfoList.Count > 0)
+            var targetLocation = ObjectInfoList.FirstOrDefault(x => x.NeedAction)?.Location;
+            if (targetLocation != null)
             {
-                var targetLocation = ObjectInfoList.First().Location;
                 path = Graph.GetPathToTarget(Game1.currentLocation, targetLocation);
             }
             else
@@ -171,10 +179,14 @@ namespace DynamicChecklist.ObjectLists
                 }
                 if (smallestDistanceFromPlayer == float.PositiveInfinity)
                 {
-                    Step nextStep = path.GetNextStep(Game1.currentLocation);
-                    var warpSOI = new StardewObjectInfo();
-                    warpSOI.Coordinate = nextStep.Position * Game1.tileSize;
-                    DrawArrow(warpSOI.GetDirection(Game1.player), 3 * Game1.tileSize);
+                    if(path != null)
+                    {
+                        Step nextStep = path.GetNextStep(Game1.currentLocation);
+                        var warpSOI = new StardewObjectInfo();
+                        warpSOI.Coordinate = nextStep.Position * Game1.tileSize;
+                        DrawArrow(warpSOI.GetDirection(Game1.player), 3 * Game1.tileSize);
+                    }
+
                 }
                 if (!(closestSOI == null) && !anyOnScreen)
                 {

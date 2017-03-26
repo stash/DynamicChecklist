@@ -21,7 +21,7 @@ namespace DynamicChecklist.ObjectLists
 
         protected override Texture2D ImageTexture { get; set; }
 
-        public AnimalList(Action action)
+        public AnimalList(ModConfig config, Action action): base(config)
         {
             this.action = action;
             switch (action){
@@ -32,7 +32,7 @@ namespace DynamicChecklist.ObjectLists
                     break;
                 case Action.Milk:
                     ImageTexture = OverlayTextures.MilkPail;
-                    OptionMenuLabel = "Milke Cows/Goats";
+                    OptionMenuLabel = "Milk Cows/Goats";
                     TaskDoneMessage = "All Cows and Goats have been milked";
                     break;
                 case Action.Shear:

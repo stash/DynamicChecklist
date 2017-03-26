@@ -18,7 +18,7 @@ namespace DynamicChecklist.ObjectLists
 
         protected override Texture2D ImageTexture { get; set; }
 
-        public EggList()
+        public EggList(ModConfig config) : base(config)
         {
             ImageTexture = OverlayTextures.Heart;
             OptionMenuLabel = "Collect Animal Products";
