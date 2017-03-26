@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework;
 using QuickGraph.Algorithms.Observers;
 using QuickGraph.Algorithms.ShortestPath;
 using StardewValley;
+using StardewValley.Buildings;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,6 +32,19 @@ namespace DynamicChecklist.Graph.Graphs
                 partialGraph.Populate();
                 PartialGraphs.Add(partialGraph);
             }
+
+            var farmBuildings = Game1.getFarm().buildings;
+            foreach (Building building in farmBuildings)
+            {
+                if (building.indoors != null && building.indoors.GetType() == typeof(AnimalHouse))
+                {
+                    var animalHouse = (AnimalHouse)building.indoors;
+                    var partialGraph = new PartialGraph(animalHouse);
+                    partialGraph.Populate();
+                    PartialGraphs.Add(partialGraph);
+                }
+            }
+
             foreach (PartialGraph pgSource in PartialGraphs)
             {
                 foreach (PartialGraph pgTarget in PartialGraphs)
