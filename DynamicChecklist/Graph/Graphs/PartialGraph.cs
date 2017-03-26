@@ -1,15 +1,11 @@
 ﻿using DynamicChecklist.Graph.Edges;
 using DynamicChecklist.Graph.Vertices;
 using Microsoft.Xna.Framework;
-using QuickGraph;
-using QuickGraph.Graphviz.Dot;
 using StardewValley;
 using StardewValley.Buildings;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DynamicChecklist.Graph
 {

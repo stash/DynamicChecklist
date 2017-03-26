@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.IO;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Graphics;
@@ -11,13 +8,6 @@ using StardewValley.Menus;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using DynamicChecklist.ObjectLists;
-using StardewValley.Locations;
-using QuickGraph;
-using QuickGraph.Algorithms;
-using Microsoft.Xna.Framework;
-using QuickGraph.Graphviz;
-using QuickGraph.Graphviz.Dot;
-using DynamicChecklist.Graph;
 using DynamicChecklist.Graph.Graphs;
 
 namespace DynamicChecklist
