@@ -13,7 +13,6 @@ namespace DynamicChecklist
 {    
     public class ChecklistMenu : IClickableMenu
     {
-        public static ObjectCollection objectCollection;
         public static List<ObjectList> objectLists = new List<ObjectList>();
 
         private Rectangle MenuRect;
@@ -129,22 +128,7 @@ namespace DynamicChecklist
             }
 
         }
-        private void drawCrabMenu(SpriteBatch b)
-        {
-            var crabTrapList = objectCollection.crabTrapList;            
-            drawCrabLine(b, "All", crabTrapList.nNeedAction, crabTrapList.nTotal, 1);
-            int i = 2;
-            foreach (CrabTrapList.CrabTrapsLoc ctl in crabTrapList.crabTrapsLoc)
-            {
-                if (ctl.nTotal > 0)
-                {
-                    drawCrabLine(b, ctl.loc.name, ctl.nNeedAction, ctl.nTotal, i);
-                    i++;
-                }
 
-            }
-
-        }
         private void drawCrabLine(SpriteBatch b, string locName, int nNeedAction, int nTotal, int line)
         {
             var lineHeight = 80;
@@ -154,39 +138,7 @@ namespace DynamicChecklist
 
             this.drawHorizontalPartition(b, this.MenuRect.Y + lineHeight * line, true);
         }
-        private void drawCropMenu(SpriteBatch b)
-        {
-            objectCollection.cropList.crops[0].drawInMenu(b, new Vector2(1000, 500), Color.Black, 0, 1, -100);
 
-            int i = 1;
-            foreach (CropStruct cropStruct in objectCollection.cropList.cropStructs)
-            {
-                drawCropLine(b, cropStruct, i);
-                i++;
-            }
-        }
-        private void drawCropLine(SpriteBatch b, CropStruct cropStruct,int line)
-        {
-            var texRow = cropStruct.uniqueCrop.rowInSpriteSheet;
-
-            var lineHeight = 130;
-
-            var destRect = new Rectangle(30 + MenuRect.X, lineHeight*line-32*3 + MenuRect.Y, 16*4, 32*4);
-            var sourceRect = new Rectangle(16 * 4, 32 * (texRow-1), 16, 32);
-
-            var posVect = new Vector2(destRect.X, destRect.Y);
-
-            var oldPhaseToShow = cropStruct.uniqueCrop.phaseToShow;
-            cropStruct.uniqueCrop.phaseToShow = 100;
-            b.Draw(Game1.cropSpriteSheet, posVect, new Rectangle?(getSourceRect(cropStruct.uniqueCrop)), Color.White, 0, Vector2.Zero,4, SpriteEffects.None, 0);
-            cropStruct.uniqueCrop.phaseToShow = oldPhaseToShow;
-           // TODO use helper to get crop.getSourceRect(0) method or figure out drawInMenu method
-           // Scaling or rotating changes the position a lot
-            var a = Game1.cropSpriteSheet;
-            b.DrawString(Game1.smallFont, $"Total: {cropStruct.count}, Watered: {cropStruct.count- cropStruct.countUnwatered}", new Vector2(100 + MenuRect.X, MenuRect.Y + lineHeight*line - 30), Color.Black );
-            
-            this.drawHorizontalPartition(b, this.MenuRect.Y + lineHeight * line, true);
-        }
         private static Rectangle createCenteredRectangle(xTile.Dimensions.Rectangle v, int width, int height)
         {
             var x = v.Width / 2 - width/2;

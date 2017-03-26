@@ -16,10 +16,8 @@ namespace DynamicChecklist
     public class MainClass : Mod
     {
         // TODO Idea: Mod which notifies the player when they pick up an item which is in a collection
-        public ObjectCollection objectCollection;
         public Keys OpenMenuKey = Keys.NumPad1;
         private ModConfig config;
-        private Texture2D cropsTexture;
         private IModHelper helper;
         private List<ObjectList> objectLists = new List<ObjectList>();
         private CompleteGraph graph;
@@ -106,8 +104,7 @@ namespace DynamicChecklist
         }
         private void onGameLoaded(object sender, EventArgs e)
         {
-            OverlayTextures.loadTextures(helper.DirectoryPath);
-            cropsTexture = loadTexture("Crops.png");          
+            OverlayTextures.loadTextures(helper.DirectoryPath);       
         }
         private void initializeObjectLists()
         {
@@ -145,8 +142,6 @@ namespace DynamicChecklist
                 }
                 else
                 {
-                    objectCollection.update();
-                    ChecklistMenu.objectCollection = objectCollection;
                     ChecklistMenu.objectLists = objectLists;
                     ChecklistMenu.Open();
                 }
@@ -171,8 +166,6 @@ namespace DynamicChecklist
         {
             graph = new CompleteGraph(Game1.locations);
             graph.Populate();
-            objectCollection = new ObjectCollection(cropsTexture);
-            objectCollection.update();
             initializeObjectLists();
             foreach(ObjectList ol in objectLists)
             {
@@ -185,7 +178,7 @@ namespace DynamicChecklist
     public class ModConfig
     {
         public string OpenMenuKey = "NumPad1";
-        public bool ShowAllTasks = true;
+        public bool ShowAllTasks = false;
         public bool AllowMultipleOverlays = true;
     }
 

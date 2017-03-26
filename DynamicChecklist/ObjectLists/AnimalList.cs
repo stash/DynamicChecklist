@@ -62,10 +62,10 @@ namespace DynamicChecklist.ObjectLists
                     soi.NeedAction = !animal.wasPet;
                     break;
                 case Action.Milk:
-                    soi.NeedAction = animal.currentProduce>0;
+                    soi.NeedAction = animal.currentProduce>0 && animal.toolUsedForHarvest == "Milk Pail";
                     break;
                 case Action.Shear:
-                    soi.NeedAction = animal.currentProduce > 0;
+                    soi.NeedAction = animal.currentProduce > 0 && animal.toolUsedForHarvest == "Shears";
                     break;
                 default:
                     throw (new NotImplementedException());
