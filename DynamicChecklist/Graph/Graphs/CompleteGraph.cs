@@ -142,6 +142,11 @@ namespace DynamicChecklist.Graph.Graphs
             var tilePosition = new Vector2(position.X/Game1.tileSize, position.Y/Game1.tileSize);
             partialGraph.PlayerVertex.SetPosition(tilePosition);
         }
+        public bool LocationInGraph(GameLocation loc)
+        {
+            var correspondingGraph = PartialGraphs.FirstOrDefault(x => x.Location == loc);
+            return correspondingGraph != null;
+        }
         private PartialGraph FindPartialGraph(GameLocation loc)
         {
             foreach (PartialGraph p in PartialGraphs)
@@ -151,7 +156,11 @@ namespace DynamicChecklist.Graph.Graphs
                     return p;
                 }
             }
-            throw new Exception();
+            throw new LocationNotInGraphException();
         }
+    }
+    public class LocationNotInGraphException : Exception
+    {
+
     }
 }

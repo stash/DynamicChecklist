@@ -33,7 +33,8 @@ namespace DynamicChecklist
             GameEvents.GameLoaded += this.onGameLoaded;
             TimeEvents.DayOfMonthChanged += this.OnDayOfMonthChanged;
             GraphicsEvents.OnPreRenderHudEvent += this.drawTick;
-            GameEvents.OneSecondTick += this.OnNewSecond;
+            GameEvents.OneSecondTick += this.UpdatePaths;
+            LocationEvents.CurrentLocationChanged += this.UpdatePaths;
             try
             {
                 OpenMenuKey = (Keys)Enum.Parse(typeof(Keys), config.OpenMenuKey);
@@ -56,19 +57,29 @@ namespace DynamicChecklist
                 ol.Draw(Game1.spriteBatch);
             }
         }
-        private void OnNewSecond(object sender, EventArgs e)
+        private void UpdatePaths(object sender, EventArgs e)
         {
             if (Game1.currentLocation == null || Game1.gameMode == 11 || Game1.currentMinigame != null || Game1.showingEndOfNightStuff || Game1.gameMode == 6 || Game1.gameMode == 0 || Game1.menuUp || Game1.activeClickableMenu != null)
             {
                 return;
             }
-            graph.SetPlayerPosition(Game1.currentLocation, Game1.player.Position);
-            graph.Calculate(Game1.currentLocation);
-            foreach (ObjectList ol in objectLists)
+            if (graph.LocationInGraph(Game1.currentLocation))
             {
-                if (ol.OverlayActive)
+                graph.SetPlayerPosition(Game1.currentLocation, Game1.player.Position);
+                graph.Calculate(Game1.currentLocation);
+                foreach (ObjectList ol in objectLists)
                 {
-                    ol.UpdatePath();
+                    if (ol.OverlayActive)
+                    {
+                        ol.UpdatePath();
+                    }
+                }
+            }
+            else
+            {
+                foreach (ObjectList ol in objectLists)
+                {
+                    ol.ClearPath();
                 }
             }
         }

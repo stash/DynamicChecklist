@@ -117,6 +117,10 @@ namespace DynamicChecklist.ObjectLists
                 path = null;
             }
         }
+        public void ClearPath()
+        {
+            path = null;
+        }
 
         public event EventHandler TaskFinished;
         public event EventHandler OverlayActivated;
