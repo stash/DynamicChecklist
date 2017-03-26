@@ -153,8 +153,11 @@ namespace DynamicChecklist
                 }
                 else
                 {
-                    ChecklistMenu.objectLists = objectLists;
-                    ChecklistMenu.Open();
+                    if (MenuAllowed())
+                    {
+                        ChecklistMenu.objectLists = objectLists;
+                        ChecklistMenu.Open();
+                    }
                 }
             }
 
@@ -182,7 +185,17 @@ namespace DynamicChecklist
             {
                 ol.OnNewDay();
             }
-
+        }
+        public bool MenuAllowed()
+        {
+            if (((Game1.dayOfMonth <= 0 ? 0 : (Game1.player.CanMove ? 1 : 0))) != 0 && !Game1.dialogueUp && (!Game1.eventUp || Game1.isFestival() && Game1.CurrentEvent.festivalTimer <= 0) && Game1.currentMinigame == null && Game1.activeClickableMenu == null)
+            {
+                return true;              
+            }
+            else
+            {
+                return false;
+            }
         }
     }
 
