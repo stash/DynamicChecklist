@@ -89,7 +89,7 @@ namespace DynamicChecklist.ObjectLists
             {
                 case Action.Water:
                     var isWatered = hoeDirt.state == StardewValley.TerrainFeatures.HoeDirt.watered;
-                    soi.NeedAction = hoeDirt.needsWatering() && !isWatered;
+                    soi.NeedAction = hoeDirt.needsWatering() && !isWatered && !hoeDirt.crop.dead;
                     break;
                 case Action.Harvest:
                     soi.NeedAction = hoeDirt.readyForHarvest();
