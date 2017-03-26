@@ -71,7 +71,19 @@ namespace DynamicChecklist
         }
         private void OnNewSecond(object sender, EventArgs e)
         {
-
+            if (Game1.currentLocation == null || Game1.gameMode == 11 || Game1.currentMinigame != null || Game1.showingEndOfNightStuff || Game1.gameMode == 6 || Game1.gameMode == 0 || Game1.menuUp || Game1.activeClickableMenu != null)
+            {
+                return;
+            }
+            graph.SetPlayerPosition(Game1.currentLocation, Game1.player.Position);
+            graph.Calculate(Game1.currentLocation);
+            foreach (ObjectList ol in objectLists)
+            {
+                if (ol.OverlayActive)
+                {
+                    ol.UpdatePath();
+                }
+            }
         }
         private void OnDayOfMonthChanged(object sender, EventArgs e)
         {
@@ -85,14 +97,18 @@ namespace DynamicChecklist
             var s = (ObjectList)sender;
             Game1.showGlobalMessage(s.TaskDoneMessage);
         }
-        private void disableAllButOneOverlays(object sender, EventArgs e)
+        private void OnOverlayActivated(object sender, EventArgs e)
         {
-            foreach(ObjectList ol in objectLists)
+            graph.Calculate(Game1.currentLocation);
+            var activatedObjectList = (ObjectList)sender;
+            activatedObjectList.UpdatePath();
+            foreach (ObjectList ol in objectLists)
             {
                 if(ol != sender)
                 {
                     ol.OverlayActive = false;
                 }
+
             }
         }
         private void onGameLoaded(object sender, EventArgs e)
@@ -110,12 +126,14 @@ namespace DynamicChecklist
             objectLists.Add(new ObjectLists.CropList(ObjectLists.CropList.Action.Water));
             objectLists.Add(new ObjectLists.CropList(ObjectLists.CropList.Action.Harvest));
 
+            ObjectList.Graph = graph;
+
             foreach (ObjectList o in objectLists)
             {
                 o.TaskFinished += new EventHandler(showTaskDoneMessage);
                 if (!config.ShowAllTasks)
                 {
-                    o.OverlayActivated += new EventHandler(disableAllButOneOverlays);
+                    o.OverlayActivated += new EventHandler(OnOverlayActivated);
                 }
             }
         }
@@ -145,8 +163,7 @@ namespace DynamicChecklist
 
             if(e.KeyPressed == Keys.NumPad9)
             {
-                graph = new CompleteGraph(Game1.locations);
-                graph.Populate();
+
             }
 
         }
@@ -161,6 +178,8 @@ namespace DynamicChecklist
         }
         private void GameLoadedEvent(object sender, EventArgs e)
         {
+            graph = new CompleteGraph(Game1.locations);
+            graph.Populate();
             objectCollection = new ObjectCollection(cropsTexture);
             objectCollection.update();
             initializeObjectLists();
