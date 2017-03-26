@@ -33,7 +33,6 @@ namespace DynamicChecklist
         private IModHelper helper;
         private List<ObjectList> objectLists = new List<ObjectList>();
         private CompleteGraph graph;
-        private List<Step> steps;
 
         public override void Entry(IModHelper helper)
         {           
@@ -102,14 +101,18 @@ namespace DynamicChecklist
             graph.Calculate(Game1.currentLocation);
             var activatedObjectList = (ObjectList)sender;
             activatedObjectList.UpdatePath();
-            foreach (ObjectList ol in objectLists)
+            if (!config.AllowMultipleOverlays)
             {
-                if(ol != sender)
+                foreach (ObjectList ol in objectLists)
                 {
-                    ol.OverlayActive = false;
-                }
+                    if (ol != sender)
+                    {
+                        ol.OverlayActive = false;
+                    }
 
+                }
             }
+
         }
         private void onGameLoaded(object sender, EventArgs e)
         {
@@ -118,23 +121,21 @@ namespace DynamicChecklist
         }
         private void initializeObjectLists()
         {
-            objectLists.Add(new AnimalList(AnimalList.Action.Pet));
-            objectLists.Add(new AnimalList(AnimalList.Action.Milk));
-            objectLists.Add(new CrabPotList());
-            objectLists.Add(new HayList());
-            objectLists.Add(new EggList());
-            objectLists.Add(new ObjectLists.CropList(ObjectLists.CropList.Action.Water));
-            objectLists.Add(new ObjectLists.CropList(ObjectLists.CropList.Action.Harvest));
+            objectLists.Add(new AnimalList(config, AnimalList.Action.Pet));
+            objectLists.Add(new AnimalList(config, AnimalList.Action.Milk));
+            objectLists.Add(new AnimalList(config, AnimalList.Action.Shear));
+            objectLists.Add(new CrabPotList(config));
+            objectLists.Add(new HayList(config));
+            objectLists.Add(new EggList(config));
+            objectLists.Add(new ObjectLists.CropList(config, ObjectLists.CropList.Action.Water));
+            objectLists.Add(new ObjectLists.CropList(config, ObjectLists.CropList.Action.Harvest));
 
             ObjectList.Graph = graph;
 
             foreach (ObjectList o in objectLists)
             {
                 o.TaskFinished += new EventHandler(showTaskDoneMessage);
-                if (!config.ShowAllTasks)
-                {
-                    o.OverlayActivated += new EventHandler(OnOverlayActivated);
-                }
+                o.OverlayActivated += new EventHandler(OnOverlayActivated);
             }
         }
         private Texture2D loadTexture(String texName)
@@ -191,10 +192,11 @@ namespace DynamicChecklist
         }
     }
 
-    internal class ModConfig
+    public class ModConfig
     {
         public string OpenMenuKey = "NumPad1";
-        public bool ShowAllTasks = false;
+        public bool ShowAllTasks = true;
+        public bool AllowMultipleOverlays = true;
     }
 
 }
