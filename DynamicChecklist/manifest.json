@@ -2,8 +2,8 @@
    "Name": "DynamicChecklist",
    "Author": "gunnargolf",
    "Version": {
-      "MajorVersion": 1,
-      "MinorVersion": 0,
+      "MajorVersion": 0,
+      "MinorVersion": 1,
       "PatchVersion": 0,
       "Build": ""
    },
