@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework;
 using QuickGraph;
 using QuickGraph.Graphviz.Dot;
 using StardewValley;
+using StardewValley.Buildings;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,6 +31,22 @@ namespace DynamicChecklist.Graph
         {
             var vertexToInclude = new List<WarpVertex>();
             var warps = Location.warps;
+
+            if(Location is Farm)
+            {
+                var farmBuildings = ((Farm)Location).buildings;
+                foreach (Building building in farmBuildings)
+                {
+                    if (building.indoors != null && building.indoors.GetType() == typeof(AnimalHouse))
+                    {
+                        var doorLoc = new Vector2(building.tileX + building.humanDoor.X, building.tileY + building.humanDoor.Y);
+                        // Target location does not matter since an animal house is always at the end of the path
+                        var vertexNew = new WarpVertex(Location, doorLoc, building.indoors, new Vector2(0,0));
+                        AddVertex(vertexNew);
+                    }
+                }
+            }
+
             for (int i = 0; i < warps.Count; i++)
             {
                 var warp = warps.ElementAt(i);
