@@ -55,7 +55,7 @@ namespace DynamicChecklist
                     int j = 0;
                     foreach(ObjectList ol in objectLists)
                     {
-                        if (ol.TaskExistsNow)
+                        if (ol.ShowInMenu )
                         {
                             var checkbox = new DynamicSelectableCheckbox(ol);
                             checkbox.bounds = new Rectangle(MenuRect.X + 50, MenuRect.Y + 50 + lineHeight * j, 100, 50);
