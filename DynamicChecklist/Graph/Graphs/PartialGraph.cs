@@ -45,8 +45,7 @@ namespace DynamicChecklist.Graph
                 }
                 if (shouldAdd)
                 {
-                    vertexToInclude.Add(vertexNew);
-                    
+                    vertexToInclude.Add(vertexNew);                    
                     AddVertex(vertexToInclude.Last());
                 }
 
@@ -131,35 +130,6 @@ namespace DynamicChecklist.Graph
             else
             {
                 throw new InvalidOperationException("Target vertex already added");
-            }
-        }
-        public class ExtendedWarp : Warp
-        {
-            public GameLocation OriginLocation;
-            public GameLocation TargetLocation;
-            public string Label;
-
-            public ExtendedWarp(Warp w, GameLocation originLocation) : base(w.X, w.Y, w.TargetName, w.TargetX, w.TargetY, false)
-            {
-                this.OriginLocation = originLocation;
-                TargetLocation = Game1.getLocationFromName(w.TargetName);
-                this.Label = originLocation.name + " to " + w.TargetName;
-            }
-
-            public static bool AreCorresponding(ExtendedWarp warp1, ExtendedWarp warp2)
-            {
-                if (warp1.OriginLocation == warp2.TargetLocation && warp1.TargetLocation == warp2.OriginLocation)
-                {
-                    if (Math.Abs(warp1.X - warp2.TargetX) + Math.Abs(warp1.Y - warp2.TargetY) < 5)
-                    {
-                        return true;
-                    }
-                }
-                return false;
-            }
-            public static int Distance(ExtendedWarp warp1, ExtendedWarp warp2)
-            {
-                return Math.Abs(warp1.X - warp2.X) + Math.Abs(warp1.Y - warp2.Y);
             }
         }
     }

@@ -82,26 +82,34 @@ namespace DynamicChecklist.Graph.Graphs
                 }
             }
         }
-        public List<Step> CalculatePathToTarget(GameLocation sourceLocation, GameLocation targetLocation)
+        public void Calculate(GameLocation sourceLocation)
+        {
+            var partialGraphs = FindPartialGraph(sourceLocation);
+            var playerVertex = partialGraphs.PlayerVertex;
+            dijkstra.ClearRootVertex();
+            dijkstra.Compute(playerVertex);               
+        }
+        public ShortestPath GetPathToTarget(GameLocation sourceLocation, GameLocation targetLocation)
         {
             var partialGraphs = FindPartialGraph(sourceLocation);
             var playerVertex = partialGraphs.PlayerVertex;
 
             dijkstra.Compute(playerVertex);
-            // TODO Figure out return type
-            // TODO Fix bug in graph creation
             var b = distObserver;
             var c = predecessorObserver;
 
             var targetVertex = FindPartialGraph(targetLocation).TargetVertex;
-            var path = (IEnumerable<StardewEdge>)(new List<StardewEdge>());
+            var path = (IEnumerable<StardewEdge>)(new List<StardewEdge>());           
             var success = predecessorObserver.TryGetPath(targetVertex, out path);
-            var pathSimple = new List<Step>();
+            var pathSimple = new ShortestPath();
             if (success)
             {
                 foreach(var pathPart in path)
                 {
-                    pathSimple.Add(new Step(pathPart.Source.Location, pathPart.Source.Position));
+                    if (pathPart.Source != playerVertex)
+                    {
+                        pathSimple.AddStep(pathPart.Source.Location, pathPart.Source.Position);
+                    }                   
                 }
                 return pathSimple;
             }
@@ -114,9 +122,11 @@ namespace DynamicChecklist.Graph.Graphs
         {
             FindPartialGraph(location).TargetVertex.SetPosition(position);
         }
-        public void SetPlayerLocation(GameLocation location, Vector2 position)
+        public void SetPlayerPosition(GameLocation location, Vector2 position)
         {
-            FindPartialGraph(location).PlayerVertex.SetPosition(position);
+            var partialGraph = FindPartialGraph(location);
+            var tilePosition = new Vector2(position.X/Game1.tileSize, position.Y/Game1.tileSize);
+            partialGraph.PlayerVertex.SetPosition(tilePosition);
         }
         private PartialGraph FindPartialGraph(GameLocation loc)
         {
@@ -129,15 +139,5 @@ namespace DynamicChecklist.Graph.Graphs
             }
             throw new Exception();
         }
-    }
-}
-public struct Step
-{
-    public GameLocation Location { get; }
-    public Vector2 Position { get; }
-    public Step(GameLocation location, Vector2 position)
-    {
-        Location = location;
-        Position = position;
     }
 }
