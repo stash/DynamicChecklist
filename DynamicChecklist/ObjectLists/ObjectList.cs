@@ -8,11 +8,16 @@ using StardewValley;
 using System.Linq;
 using Microsoft.Xna.Framework.Input;
 using System.ComponentModel;
+using DynamicChecklist.Graph;
+using DynamicChecklist.Graph.Graphs;
 
 namespace DynamicChecklist.ObjectLists
 {
     public abstract class ObjectList
     {
+        public static CompleteGraph Graph;
+        private ShortestPath path;
+
         protected int Count { get; set; }
         protected abstract Texture2D ImageTexture { get; set; }
         public abstract string OptionMenuLabel { get; protected set; }
@@ -75,6 +80,11 @@ namespace DynamicChecklist.ObjectLists
             }
         }
 
+        public ObjectList()
+        {
+
+        }
+
         protected void OnTaskFinished(EventArgs e)
         {
             TaskFinished?.Invoke(this, e);
@@ -86,6 +96,18 @@ namespace DynamicChecklist.ObjectLists
         protected void OnOverlayActivateChanged(EventArgs e)
         {
             OverlayActiveChanged?.Invoke(this, e);
+        }
+        public void UpdatePath()
+        {
+            if (ObjectInfoList.Count > 0)
+            {
+                var targetLocation = ObjectInfoList.First().Location;
+                path = Graph.GetPathToTarget(Game1.currentLocation, targetLocation);
+            }
+            else
+            {
+                path = null;
+            }
         }
 
         public event EventHandler TaskFinished;
@@ -138,19 +160,21 @@ namespace DynamicChecklist.ObjectLists
                             Game1.spriteBatch.Draw(OverlayTextures.SpeechBubble, spriteBoxSpeechBubble, Color.White);
                             Game1.spriteBatch.Draw(ImageTexture, spriteBox, Color.White);
                             
-
                             var distanceFromPlayer = objectInfo.GetDistance(Game1.player);
                             if(distanceFromPlayer < smallestDistanceFromPlayer)
                             {
+                                smallestDistanceFromPlayer = distanceFromPlayer;
                                 closestSOI = objectInfo;
                             }
                         }
-                        else
-                        {
-                            // TODO implement drawing arrows to different location
-                        }
-                    }
-                     
+                    }                
+                }
+                if (smallestDistanceFromPlayer == float.PositiveInfinity)
+                {
+                    Step nextStep = path.GetNextStep(Game1.currentLocation);
+                    var warpSOI = new StardewObjectInfo();
+                    warpSOI.Coordinate = nextStep.Position * Game1.tileSize;
+                    DrawArrow(warpSOI.GetDirection(Game1.player), 3 * Game1.tileSize);
                 }
                 if (!(closestSOI == null) && !anyOnScreen)
                 {
