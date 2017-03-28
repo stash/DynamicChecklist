@@ -8,12 +8,13 @@ using StardewValley;
 using System.Linq;
 using Microsoft.Xna.Framework.Input;
 using DynamicChecklist.ObjectLists;
+using StardewValley.BellsAndWhistles;
 
 namespace DynamicChecklist
 {    
     public class ChecklistMenu : IClickableMenu
     {
-        public static List<ObjectList> objectLists = new List<ObjectList>();
+        public static List<ObjectList> objectLists;
 
         private Rectangle MenuRect;
         public List<OptionsElement> options = new List<OptionsElement>();
@@ -27,7 +28,7 @@ namespace DynamicChecklist
 
         public ChecklistMenu()
         {
-
+            Game1.playSound("bigSelect");
             MenuRect = createCenteredRectangle(Game1.viewport, 800, 600);
             initialize(MenuRect.X, MenuRect.Y, MenuRect.Width, MenuRect.Height, true);
 
@@ -80,6 +81,8 @@ namespace DynamicChecklist
         }
         public override void draw(SpriteBatch b)
         {
+            b.Draw(Game1.fadeToBlackRect, Game1.graphics.GraphicsDevice.Viewport.Bounds, Color.Black * 0.75f);
+            SpriteText.drawStringWithScrollCenteredAt(b, "Checklist", this.xPositionOnScreen + this.width / 2, this.yPositionOnScreen - Game1.tileSize, "", 1f, -1, 0, 0.88f, false);
             drawTextureBox(Game1.spriteBatch, MenuRect.X, MenuRect.Y, MenuRect.Width, MenuRect.Height, Color.White);
             var mouseX = Game1.getMouseX();
             var mouseY = Game1.getMouseY();
