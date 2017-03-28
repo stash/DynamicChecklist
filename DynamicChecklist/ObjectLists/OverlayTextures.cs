@@ -20,6 +20,7 @@ namespace DynamicChecklist.ObjectLists
         public static Texture2D WateringCan { get; private set; }
         public static Texture2D Crab { get; private set; }
         public static Texture2D SpeechBubble { get; private set; }
+        public static Texture2D Sign { get; private set; }
 
         public static void loadTextures(string directory)
         {
@@ -30,6 +31,7 @@ namespace DynamicChecklist.ObjectLists
             WateringCan  = loadTexture("wateringCan.png", directory);
             Crab         = loadTexture("crab.png", directory);
             SpeechBubble = loadTexture("speechBubble.png", directory);
+            Sign         = loadTexture("Sign.png", directory);
         }
         private static Texture2D loadTexture(string texName, string directory)
         {
