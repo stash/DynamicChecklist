@@ -33,7 +33,7 @@ namespace DynamicChecklist
             hoverText = "Checklist";
         }
         public OpenChecklistButton(Action OpenChecklist, Func<int> CountRemainingTasks) 
-            : base(Game1.viewport.Width - 300 + 80 + Game1.tileSize / 2, Game1.tileSize / 8 + 240, OverlayTextures.Sign.Width*Game1.pixelZoom, OverlayTextures.Sign.Height*Game1.pixelZoom, false)
+            : base(Game1.viewport.Width - 300 + 120 + Game1.tileSize / 2, Game1.tileSize / 8 + 240, OverlayTextures.Sign.Width*Game1.pixelZoom, OverlayTextures.Sign.Height*Game1.pixelZoom, false)
         {
             countRemainingTasks = CountRemainingTasks;
             texture = OverlayTextures.Sign;
