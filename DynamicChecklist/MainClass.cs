@@ -21,7 +21,8 @@ namespace DynamicChecklist
         private IModHelper helper;
         private List<ObjectList> objectLists = new List<ObjectList>();
         private CompleteGraph graph;
-
+        private OpenChecklistButton checklistButton;
+        
         public override void Entry(IModHelper helper)
         {           
             this.helper = helper;
@@ -42,7 +43,7 @@ namespace DynamicChecklist
             catch
             {
                 // use default value
-            }
+            }           
         }
         private void drawTick(object sender, EventArgs e)
         {
@@ -56,6 +57,7 @@ namespace DynamicChecklist
                 ol.BeforeDraw();
                 ol.Draw(Game1.spriteBatch);
             }
+            checklistButton.draw(Game1.spriteBatch);
         }
         private void UpdatePaths(object sender, EventArgs e)
         {
@@ -115,7 +117,7 @@ namespace DynamicChecklist
         }
         private void onGameLoaded(object sender, EventArgs e)
         {
-            OverlayTextures.loadTextures(helper.DirectoryPath);       
+            OverlayTextures.loadTextures(helper.DirectoryPath);
         }
         private void initializeObjectLists()
         {
@@ -144,28 +146,21 @@ namespace DynamicChecklist
         }
         private void ReceiveKeyPress(object sender, EventArgsKeyPressed e)
         {
-            //TODO ignore close menu when entering checkbox name
             if (e.KeyPressed == OpenMenuKey)
             {
                 if (Game1.activeClickableMenu is ChecklistMenu)
                 {
                     Game1.activeClickableMenu = null;
+                    Game1.playSound("bigDeSelect");
                 }
                 else
                 {
                     if (MenuAllowed())
-                    {
-                        ChecklistMenu.objectLists = objectLists;
+                    {                        
                         ChecklistMenu.Open();
                     }
                 }
             }
-
-            if(e.KeyPressed == Keys.NumPad9)
-            {
-
-            }
-
         }
         public void MenuChangedEvent(object sender, EventArgsClickableMenuChanged e)
         {
@@ -185,6 +180,14 @@ namespace DynamicChecklist
             {
                 ol.OnNewDay();
             }
+            ChecklistMenu.objectLists = objectLists;
+            Func<int> crt = CountRemainingTasks;
+            checklistButton = new OpenChecklistButton(ChecklistMenu.Open, crt);
+            Game1.onScreenMenus.Insert(0, checklistButton); // So that click are registered with priority
+        }
+        private int CountRemainingTasks()
+        {
+            return objectLists.FindAll(x => !x.TaskDone).Count;
         }
         public bool MenuAllowed()
         {
