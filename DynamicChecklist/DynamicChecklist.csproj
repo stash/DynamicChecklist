@@ -72,6 +72,7 @@
     <Compile Include="DynamicSelectableCheckbox.cs" />
     <Compile Include="ObjectCollection.cs" />
     <Compile Include="MainClass.cs" />
+    <Compile Include="ObjectLists\TaskName.cs" />
     <Compile Include="ObjectLists\OverlayTextures.cs" />
     <Compile Include="OpenChecklistButton.cs" />
     <Compile Include="OverviewDropdown.cs" />
