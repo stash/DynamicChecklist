@@ -8,6 +8,7 @@ using Microsoft.Xna.Framework.Graphics;
 using DynamicChecklist.ObjectLists;
 using Microsoft.Xna.Framework;
 using StardewValley;
+using StardewModdingAPI.Events;
 
 namespace DynamicChecklist
 {
@@ -18,6 +19,7 @@ namespace DynamicChecklist
         private Action openChecklist;
         private string hoverText = "";
         private Func<int> countRemainingTasks;
+        private ModConfig config;
 
         public override void receiveRightClick(int x, int y, bool playSound = true)
         {
@@ -32,13 +34,43 @@ namespace DynamicChecklist
         {
             hoverText = "Checklist";
         }
-        public OpenChecklistButton(Action OpenChecklist, Func<int> CountRemainingTasks) 
-            : base(Game1.viewport.Width - 300 + 120 + Game1.tileSize / 2, Game1.tileSize / 8 + 240, OverlayTextures.Sign.Width*Game1.pixelZoom, OverlayTextures.Sign.Height*Game1.pixelZoom, false)
+        public OpenChecklistButton(Action OpenChecklist, Func<int> CountRemainingTasks, ModConfig config) 
+            : base(0, 0, OverlayTextures.Sign.Width*Game1.pixelZoom, OverlayTextures.Sign.Height*Game1.pixelZoom, false)
         {
+            this.config = config;
             countRemainingTasks = CountRemainingTasks;
             texture = OverlayTextures.Sign;
             openChecklist = OpenChecklist;
+
+            MenuEvents.MenuClosed += this.OnMenuClosed;
+            UpdateButtonPosition(config.OpenChecklistButtonLocation);
         }
+
+        private void OnMenuClosed(object sender, EventArgsClickableMenuClosed e)
+        {
+            if (e.PriorMenu is ChecklistMenu)
+            {
+                UpdateButtonPosition(config.OpenChecklistButtonLocation);
+            }
+        }
+
+        private void UpdateButtonPosition(ModConfig.ButtonLocation buttonLocation)
+        {
+            switch (buttonLocation)
+            {
+                case ModConfig.ButtonLocation.BelowJournal:
+                    xPositionOnScreen = Game1.viewport.Width - 300 + 180 + Game1.tileSize / 2;
+                    yPositionOnScreen = Game1.tileSize / 8 + 296;
+                    break;
+                case ModConfig.ButtonLocation.LeftOfJournal:
+                    xPositionOnScreen = Game1.viewport.Width - 300 + 125 + Game1.tileSize / 2;
+                    yPositionOnScreen = Game1.tileSize / 8 + 240;
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
+        }
+
         public override void draw(SpriteBatch b)
         {
             int tasks = countRemainingTasks();
