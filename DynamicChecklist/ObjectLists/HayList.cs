@@ -24,6 +24,7 @@ namespace DynamicChecklist.ObjectLists
             ImageTexture = OverlayTextures.Crab;
             OptionMenuLabel = "Filled Troughs";
             TaskDoneMessage = "All troughs have been filled";
+            Name = TaskName.Hay;
             ObjectInfoList = new List<StardewObjectInfo>();
         }
 

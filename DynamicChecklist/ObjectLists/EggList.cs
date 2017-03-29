@@ -23,7 +23,7 @@ namespace DynamicChecklist.ObjectLists
             ImageTexture = OverlayTextures.Heart;
             OptionMenuLabel = "Collect Animal Products";
             TaskDoneMessage = "All animal products have been collected";
-
+            Name = TaskName.Egg;
             ObjectInfoList = new List<StardewObjectInfo>();
         }
 

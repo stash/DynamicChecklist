@@ -27,13 +27,22 @@ namespace DynamicChecklist.ObjectLists
         public abstract string TaskDoneMessage { get; protected set; }
         protected bool TaskExistedAtStartOfDay { get; private set; }
         public bool TaskExistsNow { get; private set; }
+        public bool IgnoreTask { get; private set; }
+        protected TaskName Name { get; set; }
         public bool ShowInMenu {
             get
             {
-                return TaskExistsNow || config.ShowAllTasks;
+                return (TaskExistsNow || config.ShowAllTasks) && config.IncludeTask[Name];
             }
         }
-        private bool taskDone;
+        public bool TaskLeft
+        {
+            get
+            {
+                return !taskDone && config.IncludeTask[Name];
+            }
+        }
+
         private bool overlayActive;      
         public bool OverlayActive
         {
@@ -54,7 +63,7 @@ namespace DynamicChecklist.ObjectLists
                 overlayActive = value;
             }
         }
-
+        private bool taskDone;
         public bool TaskDone
         {
             get
@@ -164,7 +173,6 @@ namespace DynamicChecklist.ObjectLists
                         }
                         if(objectInfo.Location == currentPlayerLocation)
                         {
-                            // TODO only draw if on screen
                             var drawLoc = new Vector2(objectInfo.Coordinate.X - viewport.X, objectInfo.Coordinate.Y - viewport.Y - Game1.tileSize / 2);
                             var spriteBox = new Rectangle((int)drawLoc.X - ImageTexture.Width/4 * Game1.pixelZoom, (int)drawLoc.Y - ImageTexture.Height/4*Game1.pixelZoom, ImageTexture.Width * Game1.pixelZoom/2, ImageTexture.Height * Game1.pixelZoom/2);
                             var spriteBoxSpeechBubble = new Rectangle((int)drawLoc.X - OverlayTextures.SpeechBubble.Width / 4 * Game1.pixelZoom, (int)drawLoc.Y - OverlayTextures.SpeechBubble.Height / 4 * Game1.pixelZoom, OverlayTextures.SpeechBubble.Width * Game1.pixelZoom / 2, OverlayTextures.SpeechBubble.Height * Game1.pixelZoom / 2);

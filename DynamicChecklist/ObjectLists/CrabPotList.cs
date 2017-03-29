@@ -23,6 +23,7 @@ namespace DynamicChecklist.ObjectLists
             ImageTexture = OverlayTextures.Crab;
             OptionMenuLabel = "Collect From And Bait Crab Pots";
             TaskDoneMessage = "All crab pots have been collected from and baited";
+            Name = TaskName.CrabPot;
             ObjectInfoList = new List<StardewObjectInfo>();
         }
 

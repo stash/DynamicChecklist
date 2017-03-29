@@ -29,21 +29,23 @@ namespace DynamicChecklist.ObjectLists
                     ImageTexture = OverlayTextures.Heart;
                     OptionMenuLabel = "Pet Animals";
                     TaskDoneMessage = "All animals have been petted";
+                    Name = TaskName.Pet;
                     break;
                 case Action.Milk:
                     ImageTexture = OverlayTextures.MilkPail;
                     OptionMenuLabel = "Milk Cows/Goats";
                     TaskDoneMessage = "All Cows and Goats have been milked";
+                    Name = TaskName.Milk;
                     break;
                 case Action.Shear:
                     ImageTexture = OverlayTextures.Shears;
                     OptionMenuLabel = "Shear Sheep";
                     TaskDoneMessage = "All sheep have been sheared";
+                    Name = TaskName.Shear;
                     break;
                 default:
                     throw (new NotImplementedException());
-            }
-            
+            }          
             ObjectInfoList = new List<StardewObjectInfo>();
         }
         public override void OnMenuOpen()

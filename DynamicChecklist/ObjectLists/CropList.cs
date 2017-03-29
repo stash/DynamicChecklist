@@ -29,16 +29,18 @@ namespace DynamicChecklist.ObjectLists
                     ImageTexture = OverlayTextures.WateringCan;
                     OptionMenuLabel = "Water Crops";
                     TaskDoneMessage = "All crops have been watered";
+                    Name = TaskName.Water;
                     break;
                 case Action.Harvest:
                     ImageTexture = OverlayTextures.Heart;
                     OptionMenuLabel = "Harvest Crops";
                     TaskDoneMessage = "All crops have been harvested";
+                    Name = TaskName.Harvest;
                     break;
                 default:
                     throw (new NotImplementedException());
             }
-
+            
             ObjectInfoList = new List<StardewObjectInfo>();
 
         }
