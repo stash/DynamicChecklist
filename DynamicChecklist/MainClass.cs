@@ -12,21 +12,21 @@ using DynamicChecklist.Graph.Graphs;
 
 namespace DynamicChecklist
 {
-
     public class MainClass : Mod
     {
-        // TODO Idea: Mod which notifies the player when they pick up an item which is in a collection
         public Keys OpenMenuKey = Keys.NumPad1;
         private ModConfig config;
         private IModHelper helper;
         private List<ObjectList> objectLists = new List<ObjectList>();
         private CompleteGraph graph;
-        private OpenChecklistButton checklistButton;
+        private OpenChecklistButton checklistButton;        
         
         public override void Entry(IModHelper helper)
-        {           
+        {    
+            // TODO: Controller support       
             this.helper = helper;
-            config = helper.ReadConfig<ModConfig>();          
+            config = helper.ReadConfig<ModConfig>();
+            helper.WriteConfig(config);
             // Menu Events
             MenuEvents.MenuChanged += MenuChangedEvent;
             ControlEvents.KeyPressed += this.ReceiveKeyPress;
@@ -121,15 +121,43 @@ namespace DynamicChecklist
         }
         private void initializeObjectLists()
         {
-            objectLists.Add(new AnimalList(config, AnimalList.Action.Pet));
-            objectLists.Add(new AnimalList(config, AnimalList.Action.Milk));
-            objectLists.Add(new AnimalList(config, AnimalList.Action.Shear));
-            objectLists.Add(new CrabPotList(config));
-            objectLists.Add(new HayList(config));
-            objectLists.Add(new EggList(config));
-            objectLists.Add(new ObjectLists.CropList(config, ObjectLists.CropList.Action.Water));
-            objectLists.Add(new ObjectLists.CropList(config, ObjectLists.CropList.Action.Harvest));
-
+            var ListNames = (TaskName[])Enum.GetValues(typeof(TaskName));
+            foreach (var ListName in ListNames)
+            {
+                switch (ListName)
+                {
+                    case TaskName.Milk:
+                        objectLists.Add(new AnimalList(config, AnimalList.Action.Milk));
+                        break;
+                    case TaskName.Pet:
+                        objectLists.Add(new AnimalList(config, AnimalList.Action.Pet));
+                        break;
+                    case TaskName.Shear:
+                        objectLists.Add(new AnimalList(config, AnimalList.Action.Shear));
+                        break;
+                    case TaskName.CrabPot:
+                        objectLists.Add(new CrabPotList(config));
+                        break;
+                    case TaskName.Hay:
+                        objectLists.Add(new HayList(config));
+                        break;
+                    case TaskName.Egg:
+                        objectLists.Add(new EggList(config));
+                        break;
+                    case TaskName.Water:
+                        objectLists.Add(new ObjectLists.CropList(config, ObjectLists.CropList.Action.Water));
+                        break;
+                    case TaskName.Harvest:
+                        objectLists.Add(new ObjectLists.CropList(config, ObjectLists.CropList.Action.Harvest));
+                        break;
+                    default:
+                        throw new NotImplementedException();
+                }
+            }
+            foreach (ObjectList ol in objectLists)
+            {
+                ol.OnNewDay();
+            }
             ObjectList.Graph = graph;
 
             foreach (ObjectList o in objectLists)
@@ -157,7 +185,7 @@ namespace DynamicChecklist
                 {
                     if (MenuAllowed())
                     {                        
-                        ChecklistMenu.Open();
+                        ChecklistMenu.Open(config);
                     }
                 }
             }
@@ -176,18 +204,15 @@ namespace DynamicChecklist
             graph = new CompleteGraph(Game1.locations);
             graph.Populate();
             initializeObjectLists();
-            foreach(ObjectList ol in objectLists)
-            {
-                ol.OnNewDay();
-            }
             ChecklistMenu.objectLists = objectLists;
             Func<int> crt = CountRemainingTasks;
-            checklistButton = new OpenChecklistButton(ChecklistMenu.Open, crt);
+            checklistButton = new OpenChecklistButton(()=>ChecklistMenu.Open(config), crt, config);
             Game1.onScreenMenus.Insert(0, checklistButton); // So that click are registered with priority
         }
         private int CountRemainingTasks()
         {
-            return objectLists.FindAll(x => !x.TaskDone).Count;
+
+            return objectLists.FindAll(x => x.TaskLeft).Count;
         }
         public bool MenuAllowed()
         {
@@ -207,6 +232,20 @@ namespace DynamicChecklist
         public string OpenMenuKey = "NumPad1";
         public bool ShowAllTasks = false;
         public bool AllowMultipleOverlays = true;
-    }
+        public Dictionary<TaskName, bool> IncludeTask;
+        public enum ButtonLocation {BelowJournal, LeftOfJournal}
+        public ButtonLocation OpenChecklistButtonLocation = ButtonLocation.BelowJournal;
+
+        public ModConfig()
+        {
+            IncludeTask = new Dictionary<TaskName, bool>();
+            var ListNames = (TaskName[])Enum.GetValues(typeof(TaskName));
+            foreach (var ListName in ListNames)
+            {
+                IncludeTask.Add(ListName, true);
+            }
+        }
+
+    }    
 
 }
