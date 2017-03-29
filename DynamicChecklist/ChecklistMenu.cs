@@ -22,33 +22,36 @@ namespace DynamicChecklist
         private static int iSelectedTab = 0;
 
         private List<ClickableComponent> tabs = new List<ClickableComponent>();
-        private List<string> tabNames = new List<string>{"Checklist"};
+        private enum TabName { Checklist, Settings}
+        private List<string> tabNames = new List<string>{"Checklist", "Settings"};
 
         private ClickableComponent selectedTab;
 
-        public ChecklistMenu()
+        private ModConfig config;
+
+        public ChecklistMenu(ModConfig config)
         {
+            this.config = config;
+
             Game1.playSound("bigSelect");
             MenuRect = createCenteredRectangle(Game1.viewport, 800, 600);
             initialize(MenuRect.X, MenuRect.Y, MenuRect.Width, MenuRect.Height, true);
 
-            var cl = Game1.currentLocation;
 
-            int i = 0;
 
-            int lblWidth = Game1.tileSize * 3;
+            int lblWidth = 150;
             int lblx = (int)(this.xPositionOnScreen - lblWidth);
-            int lbly = (int)(this.yPositionOnScreen + Game1.tileSize * 2f);
-            int lblSeperation = (int)(Game1.tileSize * 0.9F);
-            int lblHeight = 40;
-            
-            foreach(string s in tabNames)
+            int lbly = (int)(this.yPositionOnScreen + 20);
+            int lblSeperation = 80;
+            int lblHeight = 60;
+            int i = 0;
+            foreach (string s in Enum.GetNames(typeof(TabName)))
             {
                 tabs.Add(new ClickableComponent(new Rectangle(lblx, lbly + lblSeperation * i++, lblWidth, lblHeight), s));
             }
 
             selectedTab = tabs[iSelectedTab];
-            int lineHeight = 60;
+            int lineHeight = 50;
             switch (selectedTab.name)
             {
                 case "Checklist":
@@ -63,6 +66,9 @@ namespace DynamicChecklist
                             j++;
                         }                                           
                     }
+                    break;
+                case "Settings":
+                    // TODO: Implement
                     break;
                 default:
                     throw (new NotImplementedException());
@@ -90,8 +96,8 @@ namespace DynamicChecklist
             int j = 0;
             foreach(ClickableComponent t in tabs)
             {                
-                //drawTextureBox(Game1.spriteBatch, t.bounds.X, t.bounds.Y, t.bounds.Width, t.bounds.Height, Color.White* (iSelectedTab == j ? 1F : 0.7F));
-                //b.DrawString(Game1.smallFont, t.name, new Vector2(t.bounds.X+5, t.bounds.Y+5), Color.Black);
+                drawTextureBox(Game1.spriteBatch, t.bounds.X, t.bounds.Y, t.bounds.Width, t.bounds.Height, Color.White* (iSelectedTab == j ? 1F : 0.7F));
+                b.DrawString(Game1.smallFont, t.name, new Vector2(t.bounds.X+15, t.bounds.Y+15), Color.Black);
                 j++;
             }
             foreach(OptionsElement o in options)
@@ -118,7 +124,7 @@ namespace DynamicChecklist
                 if (tabs[i].bounds.Contains(x, y))
                 {
                     iSelectedTab = i;
-                    Game1.activeClickableMenu = new ChecklistMenu();
+                    Game1.activeClickableMenu = new ChecklistMenu(config);
                 }
 
             }
@@ -131,9 +137,9 @@ namespace DynamicChecklist
 
             }
         }
-        public static void Open()
+        public static void Open(ModConfig config)
         {
-            Game1.activeClickableMenu = new ChecklistMenu();
+            Game1.activeClickableMenu = new ChecklistMenu(config);
         }
 
         public override void receiveRightClick(int x, int y, bool playSound = false)
