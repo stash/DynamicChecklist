@@ -21,6 +21,7 @@ namespace DynamicChecklist.ObjectLists
         public static Texture2D Crab { get; private set; }
         public static Texture2D SpeechBubble { get; private set; }
         public static Texture2D Sign { get; private set; }
+        // TODO Add new textures
 
         public static void loadTextures(string directory)
         {

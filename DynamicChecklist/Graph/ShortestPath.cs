@@ -17,7 +17,6 @@ namespace DynamicChecklist.Graph
         }
         public Step GetNextStep(GameLocation playerLocation)
         {
-            // TODO Implement
             return Steps.FirstOrDefault();
         }
     }
