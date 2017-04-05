@@ -63,14 +63,12 @@
                     break;
                 case "Settings":
                     lineHeight = 65;
-                    var buttonPosDropdown = new DCOptionsDropDown("Button Position", 1, config, this.menuRect.X + 50, this.menuRect.Y + 50 + lineHeight * 0);
-                    var openMenuKeyListener = new DCOptionsInputListener("Open Menu Key", 2, this.menuRect.Width - 50, config, this.menuRect.X + 50, this.menuRect.Y + 50 + lineHeight * 1);
-                    this.options.Add(buttonPosDropdown);
-                    this.options.Add(openMenuKeyListener);
-                    this.options.Add(new DCOptionsCheckbox("Show All Tasks", 3, config));
-                    this.options.Add(new DCOptionsCheckbox("Allow Multiple Overlays", 4, config));
-                    this.options.Add(new DCOptionsCheckbox("Show arrow to nearest task", 5, config));
-                    this.options.Add(new DCOptionsCheckbox("Show task overlay", 6, config));
+                    this.options.Add(new DCOptionsCheckbox("Show All Tasks", 3, config, this.menuRect.X + 50, this.menuRect.Y + 50 + lineHeight * 0));
+                    this.options.Add(new DCOptionsCheckbox("Allow Multiple Overlays", 4, config, this.menuRect.X + 50, this.menuRect.Y + 50 + lineHeight * 1));
+                    this.options.Add(new DCOptionsCheckbox("Show arrow to nearest task", 5, config, this.menuRect.X + 50, this.menuRect.Y + 50 + lineHeight * 2));
+                    this.options.Add(new DCOptionsCheckbox("Show task overlay", 6, config, this.menuRect.X + 50, this.menuRect.Y + 50 + lineHeight * 3));
+                    this.options.Add(new DCOptionsDropDown("Button Position", 1, config, this.menuRect.X + 50, this.menuRect.Y + 50 + lineHeight * 4));
+                    this.options.Add(new DCOptionsInputListener("Open Menu Key", 2, this.menuRect.Width - 50, config, this.menuRect.X + 50, this.menuRect.Y + 50 + lineHeight * 5));
 
                     // TODO: Implement
                     break;
