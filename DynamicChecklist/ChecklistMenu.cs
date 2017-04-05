@@ -1,32 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework;
-using StardewModdingAPI;
-using StardewValley.Menus;
-using StardewValley;
-using System.Linq;
-using Microsoft.Xna.Framework.Input;
-using DynamicChecklist.ObjectLists;
-using StardewValley.BellsAndWhistles;
+﻿namespace DynamicChecklist
+{
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using DynamicChecklist.ObjectLists;
+    using DynamicChecklist.Options;
+    using Microsoft.Xna.Framework;
+    using Microsoft.Xna.Framework.Graphics;
+    using Microsoft.Xna.Framework.Input;
+    using StardewModdingAPI;
+    using StardewValley;
+    using StardewValley.BellsAndWhistles;
+    using StardewValley.Menus;
 
-namespace DynamicChecklist
-{    
     public class ChecklistMenu : IClickableMenu
     {
-        public static List<ObjectList> objectLists;
-
-        private Rectangle MenuRect;
-        public List<OptionsElement> options = new List<OptionsElement>();
-
         private static int iSelectedTab = 0;
-
+        private Rectangle menuRect;
+        private List<OptionsElement> options = new List<OptionsElement>();
         private List<ClickableComponent> tabs = new List<ClickableComponent>();
-        private enum TabName { Checklist, Settings}
-        private List<string> tabNames = new List<string>{"Checklist", "Settings"};
-
+        private List<string> tabNames = new List<string> { "Checklist", "Settings" };
         private ClickableComponent selectedTab;
-
         private ModConfig config;
 
         public ChecklistMenu(ModConfig config)
@@ -34,120 +28,152 @@ namespace DynamicChecklist
             this.config = config;
 
             Game1.playSound("bigSelect");
-            MenuRect = createCenteredRectangle(Game1.viewport, 800, 600);
-            initialize(MenuRect.X, MenuRect.Y, MenuRect.Width, MenuRect.Height, true);
-
-
+            this.menuRect = CreateCenteredRectangle(Game1.viewport, 800, 600);
+            this.initialize(this.menuRect.X, this.menuRect.Y, this.menuRect.Width, this.menuRect.Height, true);
 
             int lblWidth = 150;
-            int lblx = (int)(this.xPositionOnScreen - lblWidth);
-            int lbly = (int)(this.yPositionOnScreen + 20);
+            int lblx = this.xPositionOnScreen - lblWidth;
+            int lbly = this.yPositionOnScreen + 20;
             int lblSeperation = 80;
             int lblHeight = 60;
             int i = 0;
             foreach (string s in Enum.GetNames(typeof(TabName)))
             {
-                tabs.Add(new ClickableComponent(new Rectangle(lblx, lbly + lblSeperation * i++, lblWidth, lblHeight), s));
+                this.tabs.Add(new ClickableComponent(new Rectangle(lblx, lbly + lblSeperation * i++, lblWidth, lblHeight), s));
             }
 
-            selectedTab = tabs[iSelectedTab];
-            int lineHeight = 50;
-            switch (selectedTab.name)
+            this.selectedTab = this.tabs[iSelectedTab];
+            int lineHeight;
+            switch (this.selectedTab.name)
             {
                 case "Checklist":
+                    lineHeight = 50;
                     int j = 0;
-                    foreach(ObjectList ol in objectLists)
+                    foreach (ObjectList ol in ObjectLists)
                     {
-                        if (ol.ShowInMenu )
+                        if (ol.ShowInMenu)
                         {
                             var checkbox = new DynamicSelectableCheckbox(ol);
-                            checkbox.bounds = new Rectangle(MenuRect.X + 50, MenuRect.Y + 50 + lineHeight * j, 100, 50);
-                            options.Add(checkbox);
+                            checkbox.bounds = new Rectangle(this.menuRect.X + 50, this.menuRect.Y + 50 + lineHeight * j, 100, 50);
+                            this.options.Add(checkbox);
                             j++;
-                        }                                           
+                        }
                     }
+
                     break;
                 case "Settings":
+                    lineHeight = 65;
+                    var buttonPosDropdown = new DCOptionsDropDown("Button Position", 1, config, this.menuRect.X + 50, this.menuRect.Y + 50 + lineHeight * 0);
+                    var openMenuKeyListener = new DCOptionsInputListener("Open Menu Key", 2, this.menuRect.Width - 50, config, this.menuRect.X + 50, this.menuRect.Y + 50 + lineHeight * 1);
+                    this.options.Add(buttonPosDropdown);
+                    this.options.Add(openMenuKeyListener);
+                    this.options.Add(new DCOptionsCheckbox("Show All Tasks", 3, config));
+                    this.options.Add(new DCOptionsCheckbox("Allow Multiple Overlays", 4, config));
+                    this.options.Add(new DCOptionsCheckbox("Show arrow to nearest task", 5, config));
+                    this.options.Add(new DCOptionsCheckbox("Show task overlay", 6, config));
+
                     // TODO: Implement
                     break;
                 default:
-                    throw (new NotImplementedException());
+                    throw new NotImplementedException();
             }
-
-
         }
 
-        public override void receiveKeyPress(Keys key)
+        private enum TabName
         {
-            foreach(OptionsElement o in options)
-            {
-                o.receiveKeyPress(key);
-            }
-            base.receiveKeyPress(key);
-        }
-        public override void draw(SpriteBatch b)
-        {
-            b.Draw(Game1.fadeToBlackRect, Game1.graphics.GraphicsDevice.Viewport.Bounds, Color.Black * 0.75f);
-            SpriteText.drawStringWithScrollCenteredAt(b, "Checklist", this.xPositionOnScreen + this.width / 2, this.yPositionOnScreen - Game1.tileSize, "", 1f, -1, 0, 0.88f, false);
-            drawTextureBox(Game1.spriteBatch, MenuRect.X, MenuRect.Y, MenuRect.Width, MenuRect.Height, Color.White);
-            var mouseX = Game1.getMouseX();
-            var mouseY = Game1.getMouseY();
-
-            int j = 0;
-            foreach(ClickableComponent t in tabs)
-            {                
-                drawTextureBox(Game1.spriteBatch, t.bounds.X, t.bounds.Y, t.bounds.Width, t.bounds.Height, Color.White* (iSelectedTab == j ? 1F : 0.7F));
-                b.DrawString(Game1.smallFont, t.name, new Vector2(t.bounds.X+15, t.bounds.Y+15), Color.Black);
-                j++;
-            }
-            foreach(OptionsElement o in options)
-            {
-                o.draw(b, -1, -1);
-            }
-            base.draw(b);
-            drawMouse(b);
+            Checklist, Settings
         }
 
-        private static Rectangle createCenteredRectangle(xTile.Dimensions.Rectangle v, int width, int height)
-        {
-            var x = v.Width / 2 - width/2;
-            var y = v.Height / 2 - height/2;
-            return new Rectangle(x, y, width, height);
+        public static List<ObjectList> ObjectLists { get; set; }
 
-        }
-
-        public override void receiveLeftClick(int x, int y, bool playSound = true)
-        {
-            base.receiveLeftClick(x, y, playSound);
-            for(int i=0; i<tabs.Count; i++ )
-            {
-                if (tabs[i].bounds.Contains(x, y))
-                {
-                    iSelectedTab = i;
-                    Game1.activeClickableMenu = new ChecklistMenu(config);
-                }
-
-            }
-            foreach(OptionsElement o in options)
-            {
-                if (o.bounds.Contains(x, y))
-                {
-                    o.receiveLeftClick(x, y);
-                }
-
-            }
-        }
         public static void Open(ModConfig config)
         {
             Game1.activeClickableMenu = new ChecklistMenu(config);
         }
 
+        public override void receiveKeyPress(Keys key)
+        {
+            foreach (OptionsElement o in this.options)
+            {
+                o.receiveKeyPress(key);
+            }
+
+            base.receiveKeyPress(key);
+        }
+
+        public override void draw(SpriteBatch b)
+        {
+            b.Draw(Game1.fadeToBlackRect, Game1.graphics.GraphicsDevice.Viewport.Bounds, Color.Black * 0.75f);
+            SpriteText.drawStringWithScrollCenteredAt(b, "Checklist", this.xPositionOnScreen + this.width / 2, this.yPositionOnScreen - Game1.tileSize, string.Empty, 1f, -1, 0, 0.88f, false);
+            drawTextureBox(Game1.spriteBatch, this.menuRect.X, this.menuRect.Y, this.menuRect.Width, this.menuRect.Height, Color.White);
+            var mouseX = Game1.getMouseX();
+            var mouseY = Game1.getMouseY();
+
+            int j = 0;
+            foreach (ClickableComponent t in this.tabs)
+            {
+                drawTextureBox(Game1.spriteBatch, t.bounds.X, t.bounds.Y, t.bounds.Width, t.bounds.Height, Color.White * (iSelectedTab == j ? 1F : 0.7F));
+                b.DrawString(Game1.smallFont, t.name, new Vector2(t.bounds.X + 15, t.bounds.Y + 15), Color.Black);
+                j++;
+            }
+
+            foreach (OptionsElement o in this.options)
+            {
+                o.draw(b, -1, -1);
+            }
+
+            base.draw(b);
+            this.drawMouse(b);
+        }
+
+        public override void receiveLeftClick(int x, int y, bool playSound = true)
+        {
+            base.receiveLeftClick(x, y, playSound);
+            for (int i = 0; i < this.tabs.Count; i++)
+            {
+                if (this.tabs[i].bounds.Contains(x, y))
+                {
+                    iSelectedTab = i;
+                    Game1.activeClickableMenu = new ChecklistMenu(this.config);
+                }
+            }
+
+            foreach (OptionsElement o in this.options)
+            {
+                if (o.bounds.Contains(x, y))
+                {
+                    o.receiveLeftClick(x, y);
+                }
+            }
+        }
+
+        public override void leftClickHeld(int x, int y)
+        {
+            base.leftClickHeld(x, y);
+            foreach (OptionsElement o in this.options)
+            {
+                o.leftClickHeld(x, y);
+            }
+        }
+
+        public override void releaseLeftClick(int x, int y)
+        {
+            base.releaseLeftClick(x, y);
+            foreach (OptionsElement o in this.options)
+            {
+                o.leftClickReleased(x, y);
+            }
+        }
+
         public override void receiveRightClick(int x, int y, bool playSound = false)
         {
+        }
 
+        private static Rectangle CreateCenteredRectangle(xTile.Dimensions.Rectangle v, int width, int height)
+        {
+            var x = v.Width / 2 - width / 2;
+            var y = v.Height / 2 - height / 2;
+            return new Rectangle(x, y, width, height);
         }
     }
-
 }
-
-
