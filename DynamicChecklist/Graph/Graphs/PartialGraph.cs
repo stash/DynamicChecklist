@@ -1,44 +1,47 @@
-﻿using DynamicChecklist.Graph.Edges;
-using DynamicChecklist.Graph.Vertices;
-using Microsoft.Xna.Framework;
-using StardewValley;
-using StardewValley.Buildings;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
-namespace DynamicChecklist.Graph
+﻿namespace DynamicChecklist.Graph
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using DynamicChecklist.Graph.Edges;
+    using DynamicChecklist.Graph.Vertices;
+    using Microsoft.Xna.Framework;
+    using StardewValley;
+    using StardewValley.Buildings;
+
     public class PartialGraph : StardewGraph
     {
+        public PartialGraph(GameLocation location)
+            : base()
+        {
+            this.Location = location;
+        }
+
         public MovableVertex PlayerVertex { get; private set; }
+
         public MovableVertex TargetVertex { get; private set; }
 
         public List<PlayerEdge> PlayerEdges { get; private set; }
-        //public List<StardewEdge> TargetEdges { get; private set; } // only connected from outside the partial graph
 
         public GameLocation Location { get; private set; }
 
-        public PartialGraph(GameLocation location) : base()
-        {
-            Location = location;
-        }
         public void Populate()
         {
             var vertexToInclude = new List<WarpVertex>();
-            var warps = Location.warps;
+            var warps = this.Location.warps;
 
-            if(Location is Farm)
+            if (this.Location is Farm)
             {
-                var farmBuildings = ((Farm)Location).buildings;
+                var farmBuildings = ((Farm)this.Location).buildings;
                 foreach (Building building in farmBuildings)
                 {
                     if (building.indoors != null && building.indoors.GetType() == typeof(AnimalHouse))
                     {
                         var doorLoc = new Vector2(building.tileX + building.humanDoor.X, building.tileY + building.humanDoor.Y);
+
                         // Target location does not matter since an animal house is always at the end of the path
-                        var vertexNew = new WarpVertex(Location, doorLoc, building.indoors, new Vector2(0,0));
-                        AddVertex(vertexNew);
+                        var vertexNew = new WarpVertex(this.Location, doorLoc, building.indoors, new Vector2(0, 0));
+                        this.AddVertex(vertexNew);
                     }
                 }
             }
@@ -46,7 +49,7 @@ namespace DynamicChecklist.Graph
             for (int i = 0; i < warps.Count; i++)
             {
                 var warp = warps.ElementAt(i);
-                var vertexNew = new WarpVertex(Location, new Vector2(warp.X, warp.Y), Game1.getLocationFromName(warp.TargetName), new Vector2(warp.TargetX, warp.TargetY));
+                var vertexNew = new WarpVertex(this.Location, new Vector2(warp.X, warp.Y), Game1.getLocationFromName(warp.TargetName), new Vector2(warp.TargetX, warp.TargetY));
                 bool shouldAdd = true;
                 foreach (WarpVertex extWarpIncluded in vertexToInclude)
                 {
@@ -56,89 +59,94 @@ namespace DynamicChecklist.Graph
                         break;
                     }
                 }
+
                 if (shouldAdd)
                 {
-                    vertexToInclude.Add(vertexNew);                    
-                    AddVertex(vertexToInclude.Last());
+                    vertexToInclude.Add(vertexNew);
+                    this.AddVertex(vertexToInclude.Last());
                 }
-
             }
+
             for (int i = 0; i < vertexToInclude.Count; i++)
             {
                 var vertex1 = vertexToInclude.ElementAt(i);
 
-
                 for (int j = 0; j < vertexToInclude.Count; j++)
                 {
-                    var LocTo = Game1.getLocationFromName(Location.warps.ElementAt(j).TargetName);
+                    var locTo = Game1.getLocationFromName(this.Location.warps.ElementAt(j).TargetName);
                     var vertex2 = vertexToInclude.ElementAt(j);
-                    var path = PathFindController.findPath(new Point((int)vertex1.Position.X, (int)vertex1.Position.Y), new Point((int)vertex2.Position.X, (int)vertex2.Position.Y), new PathFindController.isAtEnd(PathFindController.isAtEndPoint), Location, Game1.player, 9999);
+                    var path = PathFindController.findPath(new Point((int)vertex1.Position.X, (int)vertex1.Position.Y), new Point((int)vertex2.Position.X, (int)vertex2.Position.Y), new PathFindController.isAtEnd(PathFindController.isAtEndPoint), this.Location, Game1.player, 9999);
+
                     // TODO Use Pathfinder distance
                     double dist;
                     string edgeLabel;
                     if (path != null)
                     {
                         dist = (float)path.Count;
-                        // TODO Player can run diagonally. Account for that.
-                        edgeLabel = Location.Name + " - " + dist + "c";
 
+                        // TODO Player can run diagonally. Account for that.
+                        edgeLabel = this.Location.Name + " - " + dist + "c";
                     }
                     else
                     {
                         dist = (int)StardewVertex.Distance(vertex1, vertex2);
-                        edgeLabel = Location.Name + " - " + dist + "d";
+                        edgeLabel = this.Location.Name + " - " + dist + "d";
                     }
-                    var edge = new StardewEdge(vertex1, vertex2, edgeLabel);
-                    AddEdge(edge);
 
+                    var edge = new StardewEdge(vertex1, vertex2, edgeLabel);
+                    this.AddEdge(edge);
                 }
-                AddVertex(vertex1);
+
+                this.AddVertex(vertex1);
             }
-            AddPlayerVertex(new MovableVertex(Location, new Vector2(0,0)));
-            AddTargetVertex(new MovableVertex(Location, new Vector2(0, 0)));
-            ConnectPlayerVertex();
+
+            this.AddPlayerVertex(new MovableVertex(this.Location, new Vector2(0, 0)));
+            this.AddTargetVertex(new MovableVertex(this.Location, new Vector2(0, 0)));
+            this.ConnectPlayerVertex();
         }
+
+        [Obsolete] // Maybe needed later for pathfinder calculation
+        public void UpdatePlayerEdgeCosts(Vector2 position)
+        {
+            this.PlayerVertex.SetPosition(position);
+            foreach (PlayerEdge edge in this.PlayerEdges)
+            {
+            }
+        }
+
         private void AddPlayerVertex(MovableVertex vertex)
         {
-            if (PlayerVertex == null)
+            if (this.PlayerVertex == null)
             {
-                AddVertex(vertex);
-                PlayerVertex = vertex;
+                this.AddVertex(vertex);
+                this.PlayerVertex = vertex;
             }
             else
             {
                 throw new InvalidOperationException("Player vertex already added");
             }
         }
+
         private void ConnectPlayerVertex()
         {
-            PlayerEdges = new List<PlayerEdge>();
+            this.PlayerEdges = new List<PlayerEdge>();
             foreach (StardewVertex vertex in this.Vertices)
             {
-                if(vertex != PlayerVertex)
+                if (vertex != this.PlayerVertex)
                 {
-                    var newEdge = new PlayerEdge(PlayerVertex, vertex);
-                    AddEdge(newEdge);
-                    PlayerEdges.Add(newEdge);
+                    var newEdge = new PlayerEdge(this.PlayerVertex, vertex);
+                    this.AddEdge(newEdge);
+                    this.PlayerEdges.Add(newEdge);
                 }
-            }
-        }
-        [Obsolete] // Maybe needed later for pathfinder calculation
-        public void UpdatePlayerEdgeCosts(Vector2 position)
-        {
-            PlayerVertex.SetPosition(position);
-            foreach(PlayerEdge edge in PlayerEdges)
-            {
-                
             }
         }
 
         private void AddTargetVertex(MovableVertex w)
         {
-            if (TargetVertex == null)
+            if (this.TargetVertex == null)
             {
-                AddVertex(w);
-                TargetVertex = w;
+                this.AddVertex(w);
+                this.TargetVertex = w;
             }
             else
             {

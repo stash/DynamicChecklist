@@ -1,20 +1,19 @@
-﻿using DynamicChecklist.Graph.Vertices;
-using Microsoft.Xna.Framework;
-using QuickGraph.Algorithms.Observers;
-using QuickGraph.Algorithms.ShortestPath;
-using StardewValley;
-using StardewValley.Buildings;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DynamicChecklist.Graph.Graphs
+﻿namespace DynamicChecklist.Graph.Graphs
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using System.Threading.Tasks;
+    using DynamicChecklist.Graph.Vertices;
+    using Microsoft.Xna.Framework;
+    using QuickGraph.Algorithms.Observers;
+    using QuickGraph.Algorithms.ShortestPath;
+    using StardewValley;
+    using StardewValley.Buildings;
+
     public class CompleteGraph : StardewGraph
     {
-        public List<PartialGraph> PartialGraphs { get; private set; } = new List<PartialGraph>();
         private List<GameLocation> gameLocations;
         private DijkstraShortestPathAlgorithm<StardewVertex, StardewEdge> dijkstra;
         private VertexDistanceRecorderObserver<StardewVertex, StardewEdge> distObserver;
@@ -24,13 +23,16 @@ namespace DynamicChecklist.Graph.Graphs
         {
             this.gameLocations = gameLocations;
         }
+
+        public List<PartialGraph> PartialGraphs { get; private set; } = new List<PartialGraph>();
+
         public void Populate()
         {
-            foreach(GameLocation location in gameLocations)
+            foreach (GameLocation location in this.gameLocations)
             {
                 var partialGraph = new PartialGraph(location);
                 partialGraph.Populate();
-                PartialGraphs.Add(partialGraph);
+                this.PartialGraphs.Add(partialGraph);
             }
 
             var farmBuildings = Game1.getFarm().buildings;
@@ -41,34 +43,92 @@ namespace DynamicChecklist.Graph.Graphs
                     var animalHouse = (AnimalHouse)building.indoors;
                     var partialGraph = new PartialGraph(animalHouse);
                     partialGraph.Populate();
-                    PartialGraphs.Add(partialGraph);
+                    this.PartialGraphs.Add(partialGraph);
                 }
             }
 
-            foreach (PartialGraph pgSource in PartialGraphs)
+            foreach (PartialGraph pgSource in this.PartialGraphs)
             {
-                foreach (PartialGraph pgTarget in PartialGraphs)
+                foreach (PartialGraph pgTarget in this.PartialGraphs)
                 {
                     if (pgSource != pgTarget)
                     {
-                        ConnectPartialGraph(pgSource, pgTarget);
-                    }                   
+                        this.ConnectPartialGraph(pgSource, pgTarget);
+                    }
                 }
             }
-            foreach(PartialGraph partialGraph in PartialGraphs)
+
+            foreach (PartialGraph partialGraph in this.PartialGraphs)
             {
-                AddVertexRange(partialGraph.Vertices);
-                AddEdgeRange(partialGraph.Edges);
+                this.AddVertexRange(partialGraph.Vertices);
+                this.AddEdgeRange(partialGraph.Edges);
             }
 
-            Func<StardewEdge, double> edgeCost = (x) => x.Cost;          
-            dijkstra = new DijkstraShortestPathAlgorithm<StardewVertex, StardewEdge>(this, edgeCost);
-            distObserver = new VertexDistanceRecorderObserver<StardewVertex, StardewEdge>(edgeCost);
-            distObserver.Attach(dijkstra);
-            predecessorObserver = new VertexPredecessorRecorderObserver<StardewVertex, StardewEdge>();
-            predecessorObserver.Attach(dijkstra);
-
+            Func<StardewEdge, double> edgeCost = (x) => x.Cost;
+            this.dijkstra = new DijkstraShortestPathAlgorithm<StardewVertex, StardewEdge>(this, edgeCost);
+            this.distObserver = new VertexDistanceRecorderObserver<StardewVertex, StardewEdge>(edgeCost);
+            this.distObserver.Attach(this.dijkstra);
+            this.predecessorObserver = new VertexPredecessorRecorderObserver<StardewVertex, StardewEdge>();
+            this.predecessorObserver.Attach(this.dijkstra);
         }
+
+        public void Calculate(GameLocation sourceLocation)
+        {
+            var partialGraphs = this.FindPartialGraph(sourceLocation);
+            var playerVertex = partialGraphs.PlayerVertex;
+            this.dijkstra.ClearRootVertex();
+            this.dijkstra.Compute(playerVertex);
+        }
+
+        public ShortestPath GetPathToTarget(GameLocation sourceLocation, GameLocation targetLocation)
+        {
+            var partialGraphs = this.FindPartialGraph(sourceLocation);
+            var playerVertex = partialGraphs.PlayerVertex;
+
+            this.dijkstra.Compute(playerVertex);
+            var b = this.distObserver;
+            var c = this.predecessorObserver;
+
+            var targetVertex = this.FindPartialGraph(targetLocation).TargetVertex;
+            var path = (IEnumerable<StardewEdge>)new List<StardewEdge>();
+            var success = this.predecessorObserver.TryGetPath(targetVertex, out path);
+            var pathSimple = new ShortestPath();
+            if (success)
+            {
+                foreach (var pathPart in path)
+                {
+                    if (pathPart.Source != playerVertex)
+                    {
+                        pathSimple.AddStep(pathPart.Source.Location, pathPart.Source.Position);
+                    }
+                }
+
+                return pathSimple;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        public void SetTargetLocation(GameLocation location, Vector2 position)
+        {
+            this.FindPartialGraph(location).TargetVertex.SetPosition(position);
+        }
+
+        public void SetPlayerPosition(GameLocation location, Vector2 position)
+        {
+            var partialGraph = this.FindPartialGraph(location);
+            var tilePosition = new Vector2(position.X / Game1.tileSize, position.Y / Game1.tileSize);
+            partialGraph.PlayerVertex.SetPosition(tilePosition);
+        }
+
+        public bool LocationInGraph(GameLocation loc)
+        {
+            var correspondingGraph = this.PartialGraphs.FirstOrDefault(x => x.Location == loc);
+            return correspondingGraph != null;
+        }
+
         private void ConnectPartialGraph(PartialGraph pgSource, PartialGraph pgTarget)
         {
             foreach (StardewVertex vertex in pgSource.Vertices)
@@ -85,82 +145,28 @@ namespace DynamicChecklist.Graph.Graphs
                         foreach (StardewVertex targetVertex in pgTarget.Vertices)
                         {
                             // Player vertex only needs to connect away from itself, all warp vertices and the target vertex must have an edge going to them
-                            if(targetVertex != pgTarget.PlayerVertex) 
+                            if (targetVertex != pgTarget.PlayerVertex)
                             {
                                 var e = new StardewEdge(newVertex, targetVertex, $"From {newVertex.Location} to {targetVertex.Location}");
                                 pgTarget.AddEdge(e);
                             }
                         }
                     }
-
                 }
             }
         }
-        public void Calculate(GameLocation sourceLocation)
-        {
-            var partialGraphs = FindPartialGraph(sourceLocation);
-            var playerVertex = partialGraphs.PlayerVertex;
-            dijkstra.ClearRootVertex();
-            dijkstra.Compute(playerVertex);               
-        }
-        public ShortestPath GetPathToTarget(GameLocation sourceLocation, GameLocation targetLocation)
-        {
-            var partialGraphs = FindPartialGraph(sourceLocation);
-            var playerVertex = partialGraphs.PlayerVertex;
 
-            dijkstra.Compute(playerVertex);
-            var b = distObserver;
-            var c = predecessorObserver;
-
-            var targetVertex = FindPartialGraph(targetLocation).TargetVertex;
-            var path = (IEnumerable<StardewEdge>)(new List<StardewEdge>());           
-            var success = predecessorObserver.TryGetPath(targetVertex, out path);
-            var pathSimple = new ShortestPath();
-            if (success)
-            {
-                foreach(var pathPart in path)
-                {
-                    if (pathPart.Source != playerVertex)
-                    {
-                        pathSimple.AddStep(pathPart.Source.Location, pathPart.Source.Position);
-                    }                   
-                }
-                return pathSimple;
-            }
-            else
-            {
-                return null;
-            }
-        }
-        public void SetTargetLocation(GameLocation location, Vector2 position)
-        {
-            FindPartialGraph(location).TargetVertex.SetPosition(position);
-        }
-        public void SetPlayerPosition(GameLocation location, Vector2 position)
-        {
-            var partialGraph = FindPartialGraph(location);
-            var tilePosition = new Vector2(position.X/Game1.tileSize, position.Y/Game1.tileSize);
-            partialGraph.PlayerVertex.SetPosition(tilePosition);
-        }
-        public bool LocationInGraph(GameLocation loc)
-        {
-            var correspondingGraph = PartialGraphs.FirstOrDefault(x => x.Location == loc);
-            return correspondingGraph != null;
-        }
         private PartialGraph FindPartialGraph(GameLocation loc)
         {
-            foreach (PartialGraph p in PartialGraphs)
+            foreach (PartialGraph p in this.PartialGraphs)
             {
-                if(p.Location == loc)
+                if (p.Location == loc)
                 {
                     return p;
                 }
             }
-            throw new LocationNotInGraphException();
-        }
-    }
-    public class LocationNotInGraphException : Exception
-    {
 
+            throw new KeyNotFoundException("Location not found in graph");
+        }
     }
 }
