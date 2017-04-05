@@ -1,75 +1,96 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework.Graphics;
-using StardewValley;
-using StardewValley.Menus;
-using StardewModdingAPI;
-using StardewModdingAPI.Events;
-using DynamicChecklist.ObjectLists;
-using DynamicChecklist.Graph.Graphs;
-
-namespace DynamicChecklist
+﻿namespace DynamicChecklist
 {
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using DynamicChecklist.Graph.Graphs;
+    using DynamicChecklist.ObjectLists;
+    using Microsoft.Xna.Framework.Graphics;
+    using Microsoft.Xna.Framework.Input;
+    using StardewModdingAPI;
+    using StardewModdingAPI.Events;
+    using StardewValley;
+    using StardewValley.Menus;
+
     public class MainClass : Mod
     {
-        public Keys OpenMenuKey = Keys.NumPad1;
+        private Keys openMenuKey = Keys.NumPad1;
         private ModConfig config;
         private IModHelper helper;
         private List<ObjectList> objectLists = new List<ObjectList>();
         private CompleteGraph graph;
-        private OpenChecklistButton checklistButton;        
-        
+        private OpenChecklistButton checklistButton;
+
         public override void Entry(IModHelper helper)
-        {    
-            // TODO: Controller support       
+        {
+            // TODO: Controller support
             this.helper = helper;
-            config = helper.ReadConfig<ModConfig>();
-            helper.WriteConfig(config);
-            // Menu Events
-            MenuEvents.MenuChanged += MenuChangedEvent;
+            this.config = helper.ReadConfig<ModConfig>();
+            helper.WriteConfig(this.config);
+            MenuEvents.MenuChanged += this.MenuChangedEvent;
             ControlEvents.KeyPressed += this.ReceiveKeyPress;
             SaveEvents.AfterLoad += this.GameLoadedEvent;
-            GameEvents.GameLoaded += this.onGameLoaded;
+            SaveEvents.AfterSave += this.OnAfterSave;
+            GameEvents.GameLoaded += this.OnGameLoaded;
             TimeEvents.DayOfMonthChanged += this.OnDayOfMonthChanged;
-            GraphicsEvents.OnPreRenderHudEvent += this.drawTick;
+            GraphicsEvents.OnPreRenderHudEvent += this.DrawTick;
             GameEvents.OneSecondTick += this.UpdatePaths;
             LocationEvents.CurrentLocationChanged += this.UpdatePaths;
             try
             {
-                OpenMenuKey = (Keys)Enum.Parse(typeof(Keys), config.OpenMenuKey);
+                this.openMenuKey = (Keys)Enum.Parse(typeof(Keys), this.config.OpenMenuKey);
             }
             catch
             {
                 // use default value
-            }           
+            }
         }
-        private void drawTick(object sender, EventArgs e)
+
+        private bool MenuAllowed()
+        {
+            if ((Game1.dayOfMonth <= 0 ? 0 : (Game1.player.CanMove ? 1 : 0)) != 0 && !Game1.dialogueUp && (!Game1.eventUp || (Game1.isFestival() && Game1.CurrentEvent.festivalTimer <= 0)) && Game1.currentMinigame == null && Game1.activeClickableMenu == null)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        private void OnAfterSave(object sender, EventArgs e)
+        {
+            this.helper.WriteConfig(this.config);
+        }
+
+        private void DrawTick(object sender, EventArgs e)
         {
             if (Game1.currentLocation == null || Game1.gameMode == 11 || Game1.currentMinigame != null || Game1.showingEndOfNightStuff || Game1.gameMode == 6 || Game1.gameMode == 0 || Game1.menuUp || Game1.activeClickableMenu != null)
             {
                 return;
             }
 
-            foreach (ObjectList ol in objectLists)
+            foreach (ObjectList ol in this.objectLists)
             {
                 ol.BeforeDraw();
                 ol.Draw(Game1.spriteBatch);
             }
-            checklistButton.draw(Game1.spriteBatch);
+
+            this.checklistButton.draw(Game1.spriteBatch);
         }
+
         private void UpdatePaths(object sender, EventArgs e)
         {
             if (Game1.currentLocation == null || Game1.gameMode == 11 || Game1.currentMinigame != null || Game1.showingEndOfNightStuff || Game1.gameMode == 6 || Game1.gameMode == 0 || Game1.menuUp || Game1.activeClickableMenu != null)
             {
                 return;
             }
-            if (graph.LocationInGraph(Game1.currentLocation))
+
+            if (this.graph.LocationInGraph(Game1.currentLocation))
             {
-                graph.SetPlayerPosition(Game1.currentLocation, Game1.player.Position);
-                graph.Calculate(Game1.currentLocation);
-                foreach (ObjectList ol in objectLists)
+                this.graph.SetPlayerPosition(Game1.currentLocation, Game1.player.Position);
+                this.graph.Calculate(Game1.currentLocation);
+                foreach (ObjectList ol in this.objectLists)
                 {
                     if (ol.OverlayActive)
                     {
@@ -79,102 +100,109 @@ namespace DynamicChecklist
             }
             else
             {
-                foreach (ObjectList ol in objectLists)
+                foreach (ObjectList ol in this.objectLists)
                 {
                     ol.ClearPath();
                 }
             }
         }
+
         private void OnDayOfMonthChanged(object sender, EventArgs e)
         {
-            foreach (ObjectList ol in objectLists)
+            foreach (ObjectList ol in this.objectLists)
             {
                 ol.OnNewDay();
             }
         }
-        private void showTaskDoneMessage(object sender, EventArgs e)
+
+        private void ShowTaskDoneMessage(object sender, EventArgs e)
         {
             var s = (ObjectList)sender;
             Game1.showGlobalMessage(s.TaskDoneMessage);
         }
+
         private void OnOverlayActivated(object sender, EventArgs e)
         {
-            graph.Calculate(Game1.currentLocation);
+            this.graph.Calculate(Game1.currentLocation);
             var activatedObjectList = (ObjectList)sender;
             activatedObjectList.UpdatePath();
-            if (!config.AllowMultipleOverlays)
+            if (!this.config.AllowMultipleOverlays)
             {
-                foreach (ObjectList ol in objectLists)
+                foreach (ObjectList ol in this.objectLists)
                 {
                     if (ol != sender)
                     {
                         ol.OverlayActive = false;
                     }
-
                 }
             }
+        }
 
-        }
-        private void onGameLoaded(object sender, EventArgs e)
+        private void OnGameLoaded(object sender, EventArgs e)
         {
-            OverlayTextures.loadTextures(helper.DirectoryPath);
+            OverlayTextures.LoadTextures(this.helper.DirectoryPath);
         }
-        private void initializeObjectLists()
+
+        private void InitializeObjectLists()
         {
-            var ListNames = (TaskName[])Enum.GetValues(typeof(TaskName));
-            foreach (var ListName in ListNames)
+            var listNames = (TaskName[])Enum.GetValues(typeof(TaskName));
+            foreach (var listName in listNames)
             {
-                switch (ListName)
+                switch (listName)
                 {
                     case TaskName.Milk:
-                        objectLists.Add(new AnimalList(config, AnimalList.Action.Milk));
+                        this.objectLists.Add(new AnimalList(this.config, AnimalList.Action.Milk));
                         break;
                     case TaskName.Pet:
-                        objectLists.Add(new AnimalList(config, AnimalList.Action.Pet));
+                        this.objectLists.Add(new AnimalList(this.config, AnimalList.Action.Pet));
                         break;
                     case TaskName.Shear:
-                        objectLists.Add(new AnimalList(config, AnimalList.Action.Shear));
+                        this.objectLists.Add(new AnimalList(this.config, AnimalList.Action.Shear));
                         break;
                     case TaskName.CrabPot:
-                        objectLists.Add(new CrabPotList(config));
+                        this.objectLists.Add(new CrabPotList(this.config));
                         break;
                     case TaskName.Hay:
-                        objectLists.Add(new HayList(config));
+                        this.objectLists.Add(new HayList(this.config));
                         break;
                     case TaskName.Egg:
-                        objectLists.Add(new EggList(config));
+                        this.objectLists.Add(new EggList(this.config));
                         break;
                     case TaskName.Water:
-                        objectLists.Add(new ObjectLists.CropList(config, ObjectLists.CropList.Action.Water));
+                        this.objectLists.Add(new ObjectLists.CropList(this.config, ObjectLists.CropList.Action.Water));
                         break;
                     case TaskName.Harvest:
-                        objectLists.Add(new ObjectLists.CropList(config, ObjectLists.CropList.Action.Harvest));
+                        this.objectLists.Add(new ObjectLists.CropList(this.config, ObjectLists.CropList.Action.Harvest));
                         break;
                     default:
                         throw new NotImplementedException();
                 }
             }
-            foreach (ObjectList ol in objectLists)
+
+            foreach (ObjectList ol in this.objectLists)
             {
                 ol.OnNewDay();
             }
-            ObjectList.Graph = graph;
 
-            foreach (ObjectList o in objectLists)
+            ObjectList.Graph = this.graph;
+
+            foreach (ObjectList o in this.objectLists)
             {
-                o.TaskFinished += new EventHandler(showTaskDoneMessage);
-                o.OverlayActivated += new EventHandler(OnOverlayActivated);
+                o.TaskFinished += new EventHandler(this.ShowTaskDoneMessage);
+                o.OverlayActivated += new EventHandler(this.OnOverlayActivated);
             }
         }
-        private Texture2D loadTexture(String texName)
+
+        private Texture2D LoadTexture(string texName)
         {
-            var textureStream = new FileStream(Path.Combine(Helper.DirectoryPath, "Resources", texName), FileMode.Open);
+            var textureStream = new FileStream(Path.Combine(this.Helper.DirectoryPath, "Resources", texName), FileMode.Open);
             var t = Texture2D.FromStream(Game1.graphics.GraphicsDevice, textureStream);
             return t;
         }
+
         private void ReceiveKeyPress(object sender, EventArgsKeyPressed e)
         {
-            if (e.KeyPressed == OpenMenuKey)
+            if (e.KeyPressed.ToString() == this.config.OpenMenuKey)
             {
                 if (Game1.activeClickableMenu is ChecklistMenu)
                 {
@@ -183,69 +211,38 @@ namespace DynamicChecklist
                 }
                 else
                 {
-                    if (MenuAllowed())
-                    {                        
-                        ChecklistMenu.Open(config);
+                    if (this.MenuAllowed())
+                    {
+                        ChecklistMenu.Open(this.config);
                     }
                 }
             }
         }
-        public void MenuChangedEvent(object sender, EventArgsClickableMenuChanged e)
+
+        private void MenuChangedEvent(object sender, EventArgsClickableMenuChanged e)
         {
             if (!(e.NewMenu is GameMenu))
             {
                 return;
             }
-            var gameMenu = e.NewMenu;
 
+            var gameMenu = e.NewMenu;
         }
+
         private void GameLoadedEvent(object sender, EventArgs e)
         {
-            graph = new CompleteGraph(Game1.locations);
-            graph.Populate();
-            initializeObjectLists();
-            ChecklistMenu.objectLists = objectLists;
-            Func<int> crt = CountRemainingTasks;
-            checklistButton = new OpenChecklistButton(()=>ChecklistMenu.Open(config), crt, config);
-            Game1.onScreenMenus.Insert(0, checklistButton); // So that click are registered with priority
+            this.graph = new CompleteGraph(Game1.locations);
+            this.graph.Populate();
+            this.InitializeObjectLists();
+            ChecklistMenu.ObjectLists = this.objectLists;
+            Func<int> crt = this.CountRemainingTasks;
+            this.checklistButton = new OpenChecklistButton(() => ChecklistMenu.Open(this.config), crt, this.config);
+            Game1.onScreenMenus.Insert(0, this.checklistButton); // So that click is registered with priority
         }
+
         private int CountRemainingTasks()
         {
-
-            return objectLists.FindAll(x => x.TaskLeft).Count;
-        }
-        public bool MenuAllowed()
-        {
-            if (((Game1.dayOfMonth <= 0 ? 0 : (Game1.player.CanMove ? 1 : 0))) != 0 && !Game1.dialogueUp && (!Game1.eventUp || Game1.isFestival() && Game1.CurrentEvent.festivalTimer <= 0) && Game1.currentMinigame == null && Game1.activeClickableMenu == null)
-            {
-                return true;              
-            }
-            else
-            {
-                return false;
-            }
+            return this.objectLists.FindAll(x => x.TaskLeft).Count;
         }
     }
-
-    public class ModConfig
-    {
-        public string OpenMenuKey = "NumPad1";
-        public bool ShowAllTasks = false;
-        public bool AllowMultipleOverlays = true;
-        public Dictionary<TaskName, bool> IncludeTask;
-        public enum ButtonLocation {BelowJournal, LeftOfJournal}
-        public ButtonLocation OpenChecklistButtonLocation = ButtonLocation.BelowJournal;
-
-        public ModConfig()
-        {
-            IncludeTask = new Dictionary<TaskName, bool>();
-            var ListNames = (TaskName[])Enum.GetValues(typeof(TaskName));
-            foreach (var ListName in ListNames)
-            {
-                IncludeTask.Add(ListName, true);
-            }
-        }
-
-    }    
-
 }
