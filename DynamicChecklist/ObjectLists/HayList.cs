@@ -1,17 +1,26 @@
-﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using StardewValley;
-using StardewValley.Buildings;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DynamicChecklist.ObjectLists
+﻿namespace DynamicChecklist.ObjectLists
 {
-    class HayList : ObjectList
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using System.Threading.Tasks;
+    using Microsoft.Xna.Framework;
+    using Microsoft.Xna.Framework.Graphics;
+    using StardewValley;
+    using StardewValley.Buildings;
+
+    public class HayList : ObjectList
     {
+        public HayList(ModConfig config)
+            : base(config)
+        {
+            this.ImageTexture = OverlayTextures.Crab;
+            this.OptionMenuLabel = "Filled Troughs";
+            this.TaskDoneMessage = "All troughs have been filled";
+            this.Name = TaskName.Hay;
+            this.ObjectInfoList = new List<StardewObjectInfo>();
+        }
 
         public override string OptionMenuLabel { get; protected set; }
 
@@ -19,23 +28,13 @@ namespace DynamicChecklist.ObjectLists
 
         protected override Texture2D ImageTexture { get; set; }
 
-        public HayList(ModConfig config) : base(config)
-        {
-            ImageTexture = OverlayTextures.Crab;
-            OptionMenuLabel = "Filled Troughs";
-            TaskDoneMessage = "All troughs have been filled";
-            Name = TaskName.Hay;
-            ObjectInfoList = new List<StardewObjectInfo>();
-        }
-
         public override void BeforeDraw()
         {
             if (Game1.currentLocation.IsFarm && Game1.currentLocation is AnimalHouse)
-            {               
-                UpdateObjectInfoList((AnimalHouse)Game1.currentLocation);
-                TaskDone = !(ObjectInfoList.Any(soi => soi.NeedAction));
+            {
+                this.UpdateObjectInfoList((AnimalHouse)Game1.currentLocation);
+                this.TaskDone = !this.ObjectInfoList.Any(soi => soi.NeedAction);
             }
-
         }
 
         public override void OnMenuOpen()
@@ -46,16 +45,18 @@ namespace DynamicChecklist.ObjectLists
         {
             foreach (Building b in Game1.getFarm().buildings)
             {
-                if(b.indoors is AnimalHouse)
+                if (b.indoors is AnimalHouse)
                 {
-                    UpdateObjectInfoList((AnimalHouse)b.indoors);
+                    this.UpdateObjectInfoList((AnimalHouse)b.indoors);
                 }
             }
-            TaskDone = !(ObjectInfoList.Any(soi => soi.NeedAction));
+
+            this.TaskDone = !this.ObjectInfoList.Any(soi => soi.NeedAction);
         }
+
         private void UpdateObjectInfoList(AnimalHouse animalHouse)
         {
-            ObjectInfoList.RemoveAll(soi => soi.Location == animalHouse);
+            this.ObjectInfoList.RemoveAll(soi => soi.Location == animalHouse);
             foreach (KeyValuePair<Vector2, StardewValley.Object> o in animalHouse.Objects)
             {
                 if (o.Value.Name.Equals("Hay"))
@@ -65,26 +66,25 @@ namespace DynamicChecklist.ObjectLists
                     soi.Location = animalHouse;
                 }
             }
-            //var tile = animalHouse.map.GetLayer("Back").
+
             var houseWidth = animalHouse.map.Layers[0].LayerWidth;
             var houseHeight = animalHouse.map.Layers[0].LayerHeight;
-            for(int tileX=0; tileX < houseWidth; tileX++)
+            for (int tileX = 0; tileX < houseWidth; tileX++)
             {
                 for (int tileY = 0; tileY < houseWidth; tileY++)
                 {
-                    bool tileIsTrough = animalHouse.doesTileHaveProperty(tileX, tileY, "Trough", "Back") != null;                    
+                    bool tileIsTrough = animalHouse.doesTileHaveProperty(tileX, tileY, "Trough", "Back") != null;
                     if (tileIsTrough)
                     {
                         bool tileHasHay = animalHouse.Objects.ContainsKey(new Vector2(tileX, tileY));
                         var soi = new StardewObjectInfo();
-                        soi.Coordinate = new Vector2((tileX+0.5f) * Game1.tileSize, (tileY + 0.5f) * Game1.tileSize);
+                        soi.Coordinate = new Vector2((tileX + 0.5f) * Game1.tileSize, (tileY + 0.5f) * Game1.tileSize);
                         soi.Location = animalHouse;
                         soi.NeedAction = !tileHasHay;
-                        ObjectInfoList.Add(soi);
+                        this.ObjectInfoList.Add(soi);
                     }
                 }
             }
-            //if (who.ActiveObject != null && who.ActiveObject.Name.Equals("Hay") && (this.doesTileHaveProperty(tileLocation.X, tileLocation.Y, "Trough", "Back") != null && !this.objects.ContainsKey(new Vector2((float) tileLocation.X, (float) tileLocation.Y))))
         }
     }
 }

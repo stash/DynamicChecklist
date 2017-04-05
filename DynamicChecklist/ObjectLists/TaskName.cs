@@ -1,10 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DynamicChecklist.ObjectLists
+﻿namespace DynamicChecklist.ObjectLists
 {
-    public enum TaskName { Pet, Milk, Shear, CrabPot, Hay, Egg, Water, Harvest }
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using System.Threading.Tasks;
+
+    public enum TaskName
+    {
+        Pet, Milk, Shear, CrabPot, Hay, Egg, Water, Harvest
+    }
 }

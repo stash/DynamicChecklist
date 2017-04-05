@@ -1,37 +1,38 @@
-﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using StardewValley;
-using StardewValley.Buildings;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DynamicChecklist.ObjectLists
+﻿namespace DynamicChecklist.ObjectLists
 {
-    class EggList : ObjectList
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using System.Threading.Tasks;
+    using Microsoft.Xna.Framework;
+    using Microsoft.Xna.Framework.Graphics;
+    using StardewValley;
+    using StardewValley.Buildings;
+
+    public class EggList : ObjectList
     {
+        public EggList(ModConfig config)
+            : base(config)
+        {
+            this.ImageTexture = OverlayTextures.Heart;
+            this.OptionMenuLabel = "Collect Animal Products";
+            this.TaskDoneMessage = "All animal products have been collected";
+            this.Name = TaskName.Egg;
+            this.ObjectInfoList = new List<StardewObjectInfo>();
+        }
+
         public override string OptionMenuLabel { get; protected set; }
 
         public override string TaskDoneMessage { get; protected set; }
 
         protected override Texture2D ImageTexture { get; set; }
 
-        public EggList(ModConfig config) : base(config)
-        {
-            ImageTexture = OverlayTextures.Heart;
-            OptionMenuLabel = "Collect Animal Products";
-            TaskDoneMessage = "All animal products have been collected";
-            Name = TaskName.Egg;
-            ObjectInfoList = new List<StardewObjectInfo>();
-        }
-
         public override void BeforeDraw()
         {
-            if (!TaskDone && Game1.currentLocation.IsFarm)
+            if (!this.TaskDone && Game1.currentLocation.IsFarm)
             {
-                UpdateObjectInfoList();
+                this.UpdateObjectInfoList();
             }
         }
 
@@ -53,15 +54,15 @@ namespace DynamicChecklist.ObjectLists
                     {
                         if (obj.Value.IsSpawnedObject)
                         {
-                            StardewObjectInfo soi = CreateSOI(obj, animalHouse);
-                            ObjectInfoList.Add(soi);
+                            StardewObjectInfo soi = this.CreateSOI(obj, animalHouse);
+                            this.ObjectInfoList.Add(soi);
                         }
                     }
-
                 }
             }
+
             var taskDone = true;
-            foreach (StardewObjectInfo soi in ObjectInfoList)
+            foreach (StardewObjectInfo soi in this.ObjectInfoList)
             {
                 if (soi.NeedAction)
                 {
@@ -69,12 +70,14 @@ namespace DynamicChecklist.ObjectLists
                     break;
                 }
             }
-            TaskDone = taskDone;
+
+            this.TaskDone = taskDone;
         }
+
         private StardewObjectInfo CreateSOI(KeyValuePair<Vector2, StardewValley.Object> obj, GameLocation loc)
         {
             var soi = new StardewObjectInfo();
-            soi.Coordinate = obj.Key*Game1.tileSize + new Vector2(Game1.tileSize/2, Game1.tileSize / 2);
+            soi.Coordinate = obj.Key * Game1.tileSize + new Vector2(Game1.tileSize / 2, Game1.tileSize / 2);
             soi.Location = loc;
             soi.NeedAction = true;
             return soi;
