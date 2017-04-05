@@ -20,6 +20,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet>DynamicChecklist.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -28,6 +29,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet>DynamicChecklist.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="QuickGraph, Version=3.6.61114.0, Culture=neutral, PublicKeyToken=f3fb40175eec2af3, processorArchitecture=MSIL">
@@ -52,7 +54,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AddToChecklistElement.cs" />
     <Compile Include="ChecklistMenu.cs" />
     <Compile Include="Graph\Edges\PlayerEdge.cs" />
     <Compile Include="Graph\Edges\StardewEdge.cs" />
@@ -63,6 +64,7 @@
     <Compile Include="Graph\Vertices\MovableVertex.cs" />
     <Compile Include="Graph\Vertices\WarpVertex.cs" />
     <Compile Include="Graph\Graphs\PartialGraph.cs" />
+    <Compile Include="ModConfig.cs" />
     <Compile Include="ObjectLists\AnimalList.cs" />
     <Compile Include="ObjectLists\CrabPotList.cs" />
     <Compile Include="ObjectLists\CropList.cs" />
@@ -70,17 +72,24 @@
     <Compile Include="ObjectLists\HayList.cs" />
     <Compile Include="ObjectLists\ObjectList.cs" />
     <Compile Include="DynamicSelectableCheckbox.cs" />
-    <Compile Include="ObjectCollection.cs" />
     <Compile Include="MainClass.cs" />
     <Compile Include="ObjectLists\TaskName.cs" />
     <Compile Include="ObjectLists\OverlayTextures.cs" />
     <Compile Include="OpenChecklistButton.cs" />
-    <Compile Include="OverviewDropdown.cs" />
+    <Compile Include="Options\DCOptionsDropdown.cs" />
+    <Compile Include="Options\DCOptionsInputListener.cs" />
+    <Compile Include="Options\DCOptionsCheckbox.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="DynamicChecklist.ruleset" />
     <None Include="manifest.json" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Analyzer Include="..\packages\StyleCop.Analyzers.1.0.0\analyzers\dotnet\cs\Newtonsoft.Json.dll" />
+    <Analyzer Include="..\packages\StyleCop.Analyzers.1.0.0\analyzers\dotnet\cs\StyleCop.Analyzers.CodeFixes.dll" />
+    <Analyzer Include="..\packages\StyleCop.Analyzers.1.0.0\analyzers\dotnet\cs\StyleCop.Analyzers.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\Pathoschild.Stardew.ModBuildConfig.1.5.0\build\Pathoschild.Stardew.ModBuildConfig.targets" Condition="Exists('..\packages\Pathoschild.Stardew.ModBuildConfig.1.5.0\build\Pathoschild.Stardew.ModBuildConfig.targets')" />
