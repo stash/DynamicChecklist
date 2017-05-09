@@ -15,7 +15,7 @@
         public EggList(ModConfig config)
             : base(config)
         {
-            this.ImageTexture = OverlayTextures.Heart;
+            this.ImageTexture = OverlayTextures.Hand;
             this.OptionMenuLabel = "Collect Animal Products";
             this.TaskDoneMessage = "All animal products have been collected";
             this.Name = TaskName.Egg;

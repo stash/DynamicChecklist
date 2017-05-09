@@ -27,7 +27,7 @@
                     this.Name = TaskName.Water;
                     break;
                 case Action.Harvest:
-                    this.ImageTexture = OverlayTextures.Heart;
+                    this.ImageTexture = OverlayTextures.Plus;
                     this.OptionMenuLabel = "Harvest Crops";
                     this.TaskDoneMessage = "All crops have been harvested";
                     this.Name = TaskName.Harvest;

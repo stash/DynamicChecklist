@@ -22,9 +22,14 @@
 
         public static Texture2D Sign { get; private set; }
 
+        public static Texture2D Empty { get; private set; }
+
+        public static Texture2D Plus { get; private set; }
+
+        public static Texture2D Hand { get; private set; }
+
         public static void LoadTextures(string directory)
         {
-            // TODO Add new textures
             ArrowRight = LoadTexture("arrowRight.png", directory);
             Heart = LoadTexture("heart.png", directory);
             MilkPail = LoadTexture("milkPail.png", directory);
@@ -33,6 +38,9 @@
             Crab = LoadTexture("crab.png", directory);
             SpeechBubble = LoadTexture("speechBubble.png", directory);
             Sign = LoadTexture("Sign.png", directory);
+            Empty = LoadTexture("empty.png", directory);
+            Plus = LoadTexture("plus.png", directory);
+            Hand = LoadTexture("hand.png", directory);
         }
 
         private static Texture2D LoadTexture(string texName, string directory)
