@@ -28,7 +28,7 @@
             this.config = config;
 
             Game1.playSound("bigSelect");
-            this.menuRect = CreateCenteredRectangle(Game1.viewport, 800, 600);
+            this.menuRect = CreateCenteredRectangle(Game1.viewport, Game1.tileSize * 13, Game1.tileSize * 9);
             this.initialize(this.menuRect.X, this.menuRect.Y, this.menuRect.Width, this.menuRect.Height, true);
 
             int lblWidth = 150;
@@ -53,8 +53,7 @@
                     {
                         if (ol.ShowInMenu)
                         {
-                            var checkbox = new DynamicSelectableCheckbox(ol);
-                            checkbox.bounds = new Rectangle(this.menuRect.X + 50, this.menuRect.Y + 50 + lineHeight * j, 100, 50);
+                            var checkbox = new DynamicSelectableCheckbox(ol, this.menuRect.X + 50, this.menuRect.Y + 50 + lineHeight * j);
                             this.options.Add(checkbox);
                             j++;
                         }
@@ -65,12 +64,10 @@
                     lineHeight = 65;
                     this.options.Add(new DCOptionsCheckbox("Show All Tasks", 3, config, this.menuRect.X + 50, this.menuRect.Y + 50 + lineHeight * 0));
                     this.options.Add(new DCOptionsCheckbox("Allow Multiple Overlays", 4, config, this.menuRect.X + 50, this.menuRect.Y + 50 + lineHeight * 1));
-                    this.options.Add(new DCOptionsCheckbox("Show arrow to nearest task", 5, config, this.menuRect.X + 50, this.menuRect.Y + 50 + lineHeight * 2));
-                    this.options.Add(new DCOptionsCheckbox("Show task overlay", 6, config, this.menuRect.X + 50, this.menuRect.Y + 50 + lineHeight * 3));
+                    this.options.Add(new DCOptionsCheckbox("Show Arrow to Nearest Task", 5, config, this.menuRect.X + 50, this.menuRect.Y + 50 + lineHeight * 2));
+                    this.options.Add(new DCOptionsCheckbox("Show Task Overlay", 6, config, this.menuRect.X + 50, this.menuRect.Y + 50 + lineHeight * 3));
                     this.options.Add(new DCOptionsDropDown("Button Position", 1, config, this.menuRect.X + 50, this.menuRect.Y + 50 + lineHeight * 4));
                     this.options.Add(new DCOptionsInputListener("Open Menu Key", 2, this.menuRect.Width - 50, config, this.menuRect.X + 50, this.menuRect.Y + 50 + lineHeight * 5));
-
-                    // TODO: Implement
                     break;
                 default:
                     throw new NotImplementedException();
@@ -165,6 +162,27 @@
 
         public override void receiveRightClick(int x, int y, bool playSound = false)
         {
+        }
+
+        // TODO: Controller support
+        public override void setUpForGamePadMode()
+        {
+            base.setUpForGamePadMode();
+        }
+
+        public override void snapCursorToCurrentSnappedComponent()
+        {
+            base.snapCursorToCurrentSnappedComponent();
+        }
+
+        public override void receiveGamePadButton(Buttons b)
+        {
+            base.receiveGamePadButton(b);
+        }
+
+        protected override void customSnapBehavior(int direction, int oldRegion, int oldID)
+        {
+            base.customSnapBehavior(direction, oldRegion, oldID);
         }
 
         private static Rectangle CreateCenteredRectangle(xTile.Dimensions.Rectangle v, int width, int height)
