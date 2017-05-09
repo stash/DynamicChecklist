@@ -3,10 +3,10 @@
     using System;
     using System.Collections.Generic;
     using System.IO;
-    using DynamicChecklist.Graph.Graphs;
-    using DynamicChecklist.ObjectLists;
+    using Graph.Graphs;
     using Microsoft.Xna.Framework.Graphics;
     using Microsoft.Xna.Framework.Input;
+    using ObjectLists;
     using StardewModdingAPI;
     using StardewModdingAPI.Events;
     using StardewValley;
@@ -20,10 +20,10 @@
         private List<ObjectList> objectLists = new List<ObjectList>();
         private CompleteGraph graph;
         private OpenChecklistButton checklistButton;
+        private bool doneLoading;
 
         public override void Entry(IModHelper helper)
         {
-            // TODO: Controller support
             this.helper = helper;
             this.config = helper.ReadConfig<ModConfig>();
             helper.WriteConfig(this.config);
@@ -65,7 +65,7 @@
 
         private void DrawTick(object sender, EventArgs e)
         {
-            if (Game1.currentLocation == null || Game1.gameMode == 11 || Game1.currentMinigame != null || Game1.showingEndOfNightStuff || Game1.gameMode == 6 || Game1.gameMode == 0 || Game1.menuUp || Game1.activeClickableMenu != null)
+            if (!this.doneLoading || Game1.currentLocation == null || Game1.gameMode == 11 || Game1.currentMinigame != null || Game1.showingEndOfNightStuff || Game1.gameMode == 6 || Game1.gameMode == 0 || Game1.menuUp || Game1.activeClickableMenu != null)
             {
                 return;
             }
@@ -81,7 +81,7 @@
 
         private void UpdatePaths(object sender, EventArgs e)
         {
-            if (Game1.currentLocation == null || Game1.gameMode == 11 || Game1.currentMinigame != null || Game1.showingEndOfNightStuff || Game1.gameMode == 6 || Game1.gameMode == 0 || Game1.menuUp || Game1.activeClickableMenu != null)
+            if (!this.doneLoading || Game1.currentLocation == null || Game1.gameMode == 11 || Game1.currentMinigame != null || Game1.showingEndOfNightStuff || Game1.gameMode == 6 || Game1.gameMode == 0 || Game1.menuUp || Game1.activeClickableMenu != null)
             {
                 return;
             }
@@ -238,6 +238,7 @@
             Func<int> crt = this.CountRemainingTasks;
             this.checklistButton = new OpenChecklistButton(() => ChecklistMenu.Open(this.config), crt, this.config);
             Game1.onScreenMenus.Insert(0, this.checklistButton); // So that click is registered with priority
+            this.doneLoading = true;
         }
 
         private int CountRemainingTasks()
