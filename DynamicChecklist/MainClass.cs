@@ -31,11 +31,12 @@
             ControlEvents.KeyPressed += this.ReceiveKeyPress;
             SaveEvents.AfterLoad += this.GameLoadedEvent;
             SaveEvents.AfterSave += this.OnAfterSave;
-            GameEvents.GameLoaded += this.OnGameLoaded;
-            TimeEvents.DayOfMonthChanged += this.OnDayOfMonthChanged;
+            TimeEvents.AfterDayStarted += this.AfterDayStarted;
             GraphicsEvents.OnPreRenderHudEvent += this.DrawTick;
             GameEvents.OneSecondTick += this.UpdatePaths;
             LocationEvents.CurrentLocationChanged += this.UpdatePaths;
+
+            OverlayTextures.LoadTextures(this.helper.DirectoryPath);
             try
             {
                 this.openMenuKey = (Keys)Enum.Parse(typeof(Keys), this.config.OpenMenuKey);
@@ -107,7 +108,7 @@
             }
         }
 
-        private void OnDayOfMonthChanged(object sender, EventArgs e)
+        private void AfterDayStarted(object sender, EventArgs e)
         {
             foreach (ObjectList ol in this.objectLists)
             {
@@ -136,11 +137,6 @@
                     }
                 }
             }
-        }
-
-        private void OnGameLoaded(object sender, EventArgs e)
-        {
-            OverlayTextures.LoadTextures(this.helper.DirectoryPath);
         }
 
         private void InitializeObjectLists()
