@@ -56,7 +56,7 @@
 
         public override void BeforeDraw()
         {
-            if (Game1.currentLocation == Game1.getFarm())
+            if (Game1.currentLocation == Game1.getFarm() || Game1.currentLocation == Game1.getLocationFromName("Greenhouse"))
             {
                 this.UpdateObjectInfoList();
             }
@@ -66,26 +66,27 @@
         {
             this.ObjectInfoList.Clear();
             Farm farm = Game1.getFarm();
-            int nNeedWater = 0;
-            foreach (KeyValuePair<Vector2, TerrainFeature> entry in farm.terrainFeatures)
+            GameLocation greenhouse = Game1.getLocationFromName("Greenhouse");
+
+            this.UpdateObjectInfoList(farm);
+            this.UpdateObjectInfoList(greenhouse);
+
+            this.TaskDone = this.CountNeedAction == 0;
+        }
+
+        private void UpdateObjectInfoList(GameLocation loc)
+        {
+            foreach (KeyValuePair<Vector2, TerrainFeature> entry in loc.terrainFeatures)
             {
                 var terrainFeature = entry.Value;
                 if (terrainFeature is HoeDirt)
                 {
                     var coordinate = entry.Key;
                     var hoeDirt = (HoeDirt)terrainFeature;
-                    StardewObjectInfo soi = this.CreateSOI(hoeDirt, coordinate, farm, this.action);
+                    StardewObjectInfo soi = this.CreateSOI(hoeDirt, coordinate, loc, this.action);
                     this.ObjectInfoList.Add(soi);
-                    if (soi.NeedAction)
-                    {
-                        nNeedWater++;
-                    }
                 }
             }
-
-            var a = this.TaskExistedAtStartOfDay;
-            var b = this.TaskExistsNow;
-            this.TaskDone = this.CountNeedAction == 0;
         }
 
         private StardewObjectInfo CreateSOI(HoeDirt hoeDirt, Vector2 coordinate, GameLocation loc, Action action)

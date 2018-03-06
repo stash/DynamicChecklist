@@ -28,11 +28,15 @@
         public void Populate()
         {
             var vertexToInclude = new List<WarpVertex>();
-            var warps = this.Location.warps;
+            List<Warp> warps = new List<Warp>(this.Location.warps); // Shallow copy to allow adding to list without changing original list
 
             if (this.Location is Farm)
             {
                 var farmBuildings = ((Farm)this.Location).buildings;
+                var greenhouse = Game1.getLocationFromName("Greenhouse");
+                var w = greenhouse.warps[0];
+                warps.Add(new Warp(w.TargetX, w.TargetY, "Greenhouse", 0, 0, false));
+
                 foreach (Building building in farmBuildings)
                 {
                     if (building.indoors != null && building.indoors.GetType() == typeof(AnimalHouse))
