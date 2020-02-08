@@ -43,13 +43,9 @@
 
         protected override void UpdateObjectInfoList()
         {
-            foreach (Building b in Game1.getFarm().buildings)
+            foreach (var animalHouse in ListHelper.GetFarmAnimalHouses())
             {
-                var indoors = b.indoors.Value;
-                if (indoors != null && indoors is AnimalHouse)
-                {
-                    this.UpdateObjectInfoList((AnimalHouse)indoors);
-                }
+                this.UpdateObjectInfoList(animalHouse);
             }
 
             this.TaskDone = !this.ObjectInfoList.Any(soi => soi.NeedAction);
@@ -58,31 +54,19 @@
         private void UpdateObjectInfoList(AnimalHouse animalHouse)
         {
             this.ObjectInfoList.RemoveAll(soi => soi.Location == animalHouse);
-            foreach (KeyValuePair<Vector2, StardewValley.Object> o in animalHouse.Objects.Pairs)
-            {
-                if (o.Value.Name.Equals("Hay"))
-                {
-                    var soi = new StardewObjectInfo();
-                    soi.Coordinate = o.Key * Game1.tileSize + new Vector2(Game1.tileSize / 2, Game1.tileSize / 2);
-                    soi.Location = animalHouse;
-                }
-            }
 
             var houseWidth = animalHouse.map.Layers[0].LayerWidth;
             var houseHeight = animalHouse.map.Layers[0].LayerHeight;
             for (int tileX = 0; tileX < houseWidth; tileX++)
             {
-                for (int tileY = 0; tileY < houseWidth; tileY++)
+                for (int tileY = 0; tileY < houseHeight; tileY++)
                 {
                     bool tileIsTrough = animalHouse.doesTileHaveProperty(tileX, tileY, "Trough", "Back") != null;
                     if (tileIsTrough)
                     {
-                        bool tileHasHay = animalHouse.Objects.ContainsKey(new Vector2(tileX, tileY));
-                        var soi = new StardewObjectInfo();
-                        soi.Coordinate = new Vector2((tileX + 0.5f) * Game1.tileSize, (tileY + 0.5f) * Game1.tileSize);
-                        soi.Location = animalHouse;
-                        soi.NeedAction = !tileHasHay;
-                        this.ObjectInfoList.Add(soi);
+                        var loc = new Vector2(tileX, tileY);
+                        bool tileHasHay = animalHouse.Objects.ContainsKey(loc);
+                        this.ObjectInfoList.Add(new StardewObjectInfo(loc, animalHouse, !tileHasHay));
                     }
                 }
             }

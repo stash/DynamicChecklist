@@ -93,6 +93,7 @@
     <Compile Include="ObjectLists\CropList.cs" />
     <Compile Include="ObjectLists\EggList.cs" />
     <Compile Include="ObjectLists\HayList.cs" />
+    <Compile Include="ObjectLists\ListHelper.cs" />
     <Compile Include="ObjectLists\ObjectList.cs" />
     <Compile Include="DynamicSelectableCheckbox.cs" />
     <Compile Include="MainClass.cs" />

@@ -28,6 +28,8 @@
 
         protected override Texture2D ImageTexture { get; set; }
 
+        private bool IsPlayerLuremaster { get; set; }
+
         public override void BeforeDraw()
         {
             this.UpdateObjectInfoList(Game1.currentLocation);
@@ -40,6 +42,7 @@
 
         protected override void UpdateObjectInfoList()
         {
+            this.IsPlayerLuremaster = Game1.player.professions.Contains(11);
             foreach (GameLocation loc in Game1.locations)
             {
                 this.UpdateObjectInfoList(loc);
@@ -51,27 +54,25 @@
         private void UpdateObjectInfoList(GameLocation loc)
         {
             this.ObjectInfoList.RemoveAll(soi => soi.Location == loc);
-            foreach (KeyValuePair<Vector2, StardewValley.Object> o in loc.Objects.Pairs)
+            foreach (var pair in from pair in loc.Objects.Pairs
+                                 where pair.Value is CrabPot
+                                 select pair)
             {
-                if (o.Value is CrabPot)
+                var currentCrabPot = (CrabPot)pair.Value;
+
+                bool needAction = false;
+                if (currentCrabPot.readyForHarvest.Value)
                 {
-                    CrabPot currentCrabPot = (CrabPot)o.Value;
-                    var soi = new StardewObjectInfo();
-                    soi.Coordinate = o.Key * Game1.tileSize + new Vector2(Game1.tileSize / 2, Game1.tileSize / 2);
-                    soi.Location = loc;
-                    if (currentCrabPot.readyForHarvest.Value)
-                    {
-                        soi.NeedAction = true;
-                    }
-
-                    // if player is luremaster, crab pots dont need bait
-                    if (currentCrabPot.bait.Value == null && !Game1.player.professions.Contains(11))
-                    {
-                        soi.NeedAction = true;
-                    }
-
-                    this.ObjectInfoList.Add(soi);
+                    needAction = true;
                 }
+
+                // if player is luremaster, crab pots dont need bait
+                if (currentCrabPot.bait.Value == null && !this.IsPlayerLuremaster)
+                {
+                    needAction = true;
+                }
+
+                this.ObjectInfoList.Add(new StardewObjectInfo(pair.Key, loc, needAction));
             }
         }
     }

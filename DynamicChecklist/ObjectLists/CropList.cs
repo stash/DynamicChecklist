@@ -65,49 +65,41 @@
         protected override void UpdateObjectInfoList()
         {
             this.ObjectInfoList.Clear();
-            Farm farm = Game1.getFarm();
-            GameLocation greenhouse = Game1.getLocationFromName("Greenhouse");
 
-            this.UpdateObjectInfoList(farm);
-            this.UpdateObjectInfoList(greenhouse);
+            this.AddFromLocation(Game1.getFarm());
+            this.AddFromLocation(Game1.getLocationFromName("Greenhouse"));
 
             this.TaskDone = this.CountNeedAction == 0;
         }
 
-        private void UpdateObjectInfoList(GameLocation loc)
+        private void AddFromLocation(GameLocation loc)
         {
-            foreach (KeyValuePair<Vector2, TerrainFeature> entry in loc.terrainFeatures.Pairs)
-            {
-                var terrainFeature = entry.Value;
-                if (terrainFeature is HoeDirt)
-                {
-                    var coordinate = entry.Key;
-                    var hoeDirt = (HoeDirt)terrainFeature;
-                    StardewObjectInfo soi = this.CreateSOI(hoeDirt, coordinate, loc, this.action);
-                    this.ObjectInfoList.Add(soi);
-                }
-            }
+            this.ObjectInfoList.AddRange(from pair in loc.terrainFeatures.Pairs
+                                         let terrainFeature = pair.Value
+                                         where terrainFeature is HoeDirt
+                                         let coordinate = pair.Key
+                                         let hoeDirt = (HoeDirt)terrainFeature
+                                         let soi = this.CreateSOI(hoeDirt, coordinate, loc)
+                                         select soi);
         }
 
-        private StardewObjectInfo CreateSOI(HoeDirt hoeDirt, Vector2 coordinate, GameLocation loc, Action action)
+        private StardewObjectInfo CreateSOI(HoeDirt hoeDirt, Vector2 coordinate, GameLocation loc)
         {
-            var soi = new StardewObjectInfo();
-            soi.Coordinate = coordinate * Game1.tileSize + new Vector2(Game1.tileSize / 2, Game1.tileSize / 2);
-            soi.Location = loc;
-            switch (action)
+            bool needAction;
+            switch (this.action)
             {
                 case Action.Water:
                     var isWatered = hoeDirt.state.Value == HoeDirt.watered;
-                    soi.NeedAction = hoeDirt.needsWatering() && !isWatered && !hoeDirt.crop.dead.Value;
+                    needAction = hoeDirt.needsWatering() && !isWatered && !hoeDirt.crop.dead.Value;
                     break;
                 case Action.Harvest:
-                    soi.NeedAction = hoeDirt.readyForHarvest();
+                    needAction = hoeDirt.readyForHarvest();
                     break;
                 default:
                     throw new NotImplementedException();
             }
 
-            return soi;
+            return new StardewObjectInfo(coordinate, loc, needAction);
         }
     }
 }

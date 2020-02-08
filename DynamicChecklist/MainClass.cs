@@ -164,10 +164,10 @@
                         this.objectLists.Add(new EggList(this.config));
                         break;
                     case TaskName.Water:
-                        this.objectLists.Add(new ObjectLists.CropList(this.config, ObjectLists.CropList.Action.Water));
+                        this.objectLists.Add(new CropList(this.config, CropList.Action.Water));
                         break;
                     case TaskName.Harvest:
-                        this.objectLists.Add(new ObjectLists.CropList(this.config, ObjectLists.CropList.Action.Harvest));
+                        this.objectLists.Add(new CropList(this.config, CropList.Action.Harvest));
                         break;
                     default:
                         throw new NotImplementedException();

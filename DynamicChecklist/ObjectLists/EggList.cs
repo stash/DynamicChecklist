@@ -33,6 +33,7 @@
             if (!this.TaskDone && Game1.currentLocation.IsFarm)
             {
                 this.UpdateObjectInfoList();
+                this.TaskDone = !this.ObjectInfoList.Any(soi => soi.NeedAction);
             }
         }
 
@@ -44,44 +45,15 @@
         protected override void UpdateObjectInfoList()
         {
             this.ObjectInfoList.Clear();
-            var farmBuildings = Game1.getFarm().buildings;
-            foreach (Building building in farmBuildings)
+
+            foreach (var animalHouse in ListHelper.GetFarmAnimalHouses())
             {
-                var indoors = building.indoors.Value;
-                if (indoors != null && indoors is AnimalHouse)
-                {
-                    var animalHouse = (AnimalHouse)indoors;
-                    foreach (KeyValuePair<Vector2, StardewValley.Object> obj in animalHouse.Objects.Pairs)
-                    {
-                        if (obj.Value.IsSpawnedObject)
-                        {
-                            StardewObjectInfo soi = this.CreateSOI(obj, animalHouse);
-                            this.ObjectInfoList.Add(soi);
-                        }
-                    }
-                }
+                var range = from pair in animalHouse.Objects.Pairs
+                            where pair.Value.IsSpawnedObject
+                            let soi = new StardewObjectInfo(pair.Key, animalHouse, true)
+                            select soi;
+                this.ObjectInfoList.AddRange(range);
             }
-
-            var taskDone = true;
-            foreach (StardewObjectInfo soi in this.ObjectInfoList)
-            {
-                if (soi.NeedAction)
-                {
-                    taskDone = false;
-                    break;
-                }
-            }
-
-            this.TaskDone = taskDone;
-        }
-
-        private StardewObjectInfo CreateSOI(KeyValuePair<Vector2, StardewValley.Object> obj, GameLocation loc)
-        {
-            var soi = new StardewObjectInfo();
-            soi.Coordinate = obj.Key * Game1.tileSize + new Vector2(Game1.tileSize / 2, Game1.tileSize / 2);
-            soi.Location = loc;
-            soi.NeedAction = true;
-            return soi;
         }
     }
 }

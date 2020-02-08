@@ -74,53 +74,48 @@
             this.ObjectInfoList.Clear();
 
             // Outside animals
-            var outsideAnimals = Game1.getFarm().animals.Values.ToList<FarmAnimal>();
-            foreach (FarmAnimal animal in outsideAnimals)
-            {
-                StardewObjectInfo soi = this.CreateSOI(animal, Game1.getFarm(), this.action);
-                this.ObjectInfoList.Add(soi);
-            }
+            Farm farm = Game1.getFarm();
+            this.AddAnimalsFromLocation(farm, farm.animals.Values);
 
             // Inside animals
-            var farmBuildings = Game1.getFarm().buildings;
-
-            foreach (Building building in farmBuildings)
+            foreach (var animalHouse in ListHelper.GetFarmAnimalHouses())
             {
-                var indoors = building.indoors.Value;
-                if (indoors != null && indoors is AnimalHouse)
-                {
-                    var animalHouse = (AnimalHouse)indoors;
-                    foreach (FarmAnimal animal in animalHouse.animals.Values.ToList())
-                    {
-                        StardewObjectInfo soi = this.CreateSOI(animal, animalHouse, this.action);
-                        this.ObjectInfoList.Add(soi);
-                    }
-                }
+                this.AddAnimalsFromLocation(animalHouse, animalHouse.animals.Values);
             }
 
-            this.TaskDone = this.CountNeedAction == 0;
+            this.TaskDone = !this.ObjectInfoList.Any(soi => soi.NeedAction);
         }
 
-        private StardewObjectInfo CreateSOI(FarmAnimal animal, GameLocation loc, Action action)
+        private void AddAnimalsFromLocation(GameLocation loc, IEnumerable<FarmAnimal> animals)
         {
-            var soi = new StardewObjectInfo();
-            soi.Coordinate = animal.getStandingPosition();
-            soi.Location = loc;
-            switch (action)
+            this.ObjectInfoList.AddRange(from animal in animals
+                                         select this.CreateSOI(animal, loc));
+        }
+
+        private StardewObjectInfo CreateSOI(FarmAnimal animal, GameLocation loc)
+        {
+            bool needAction;
+            switch (this.action)
             {
                 case Action.Pet:
-                    soi.NeedAction = !animal.wasPet.Value;
+                    needAction = !animal.wasPet.Value;
                     break;
                 case Action.Milk:
-                    soi.NeedAction = animal.currentProduce.Value > 0 && animal.toolUsedForHarvest.Value == "Milk Pail";
+                    needAction = animal.currentProduce.Value > 0 && animal.toolUsedForHarvest.Value == "Milk Pail";
                     break;
                 case Action.Shear:
-                    soi.NeedAction = animal.currentProduce.Value > 0 && animal.toolUsedForHarvest.Value == "Shears";
+                    needAction = animal.currentProduce.Value > 0 && animal.toolUsedForHarvest.Value == "Shears";
                     break;
                 default:
                     throw new NotImplementedException();
             }
 
+            var soi = new StardewObjectInfo
+            {
+                Coordinate = animal.getStandingPosition(),
+                Location = loc,
+                NeedAction = needAction
+            };
             return soi;
         }
     }
