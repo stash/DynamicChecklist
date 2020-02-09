@@ -104,22 +104,7 @@
 
         protected abstract Texture2D ImageTexture { get; set; }
 
-        protected int CountNeedAction
-        {
-            get
-            {
-                var count = 0;
-                foreach (StardewObjectInfo soi in this.ObjectInfoList)
-                {
-                    if (soi.NeedAction)
-                    {
-                        count++;
-                    }
-                }
-
-                return count;
-            }
-        }
+        protected int CountNeedAction => this.ObjectInfoList.Count(soi => soi.NeedAction);
 
         public abstract void OnMenuOpen();
 
