@@ -13,6 +13,7 @@
     public class CropList : ObjectList
     {
         private Action action;
+        private Func<TerrainFeature, bool> filter;
 
         public CropList(ModConfig config, Action action)
             : base(config)
@@ -25,12 +26,21 @@
                     this.OptionMenuLabel = "Water Crops";
                     this.TaskDoneMessage = "All crops have been watered";
                     this.Name = TaskName.Water;
+                    this.filter = this.WaterFilter;
                     break;
                 case Action.Harvest:
                     this.ImageTexture = OverlayTextures.Plus;
                     this.OptionMenuLabel = "Harvest Crops";
                     this.TaskDoneMessage = "All crops have been harvested";
                     this.Name = TaskName.Harvest;
+                    this.filter = this.HarvestFilter;
+                    break;
+                case Action.PickTree:
+                    this.ImageTexture = OverlayTextures.Plus;
+                    this.OptionMenuLabel = "Pick Trees";
+                    this.TaskDoneMessage = "All trees have been picked";
+                    this.Name = TaskName.PickTree;
+                    this.filter = this.PickTreeFilter;
                     break;
                 default:
                     throw new NotImplementedException();
@@ -41,7 +51,7 @@
 
         public enum Action
         {
-            Water, Harvest
+            Water, Harvest, PickTree
         }
 
         public override string OptionMenuLabel { get; protected set; }
@@ -69,37 +79,73 @@
             this.AddFromLocation(Game1.getFarm());
             this.AddFromLocation(Game1.getLocationFromName("Greenhouse"));
 
-            this.TaskDone = this.CountNeedAction == 0;
+            this.TaskDone = !this.ObjectInfoList.Any(soi => soi.NeedAction);
+        }
+
+        private static bool IsDead(HoeDirt dirt)
+        {
+            return dirt != null && dirt.crop != null && dirt.crop.dead.Value;
+        }
+
+        private static bool IsUnwatered(HoeDirt dirt)
+        {
+            return dirt != null &&
+                dirt.state.Value != HoeDirt.watered &&
+                dirt.needsWatering() &&
+                !IsDead(dirt);
+        }
+
+        private bool WaterFilter(TerrainFeature terrainFeature)
+        {
+            if (terrainFeature is HoeDirt)
+            {
+                return IsUnwatered((HoeDirt)terrainFeature);
+            }
+
+            return false;
+        }
+
+        private bool IsHarvestable(HoeDirt dirt)
+        {
+            var crop = dirt?.crop;
+            if (dirt == null || !dirt.readyForHarvest() || crop == null)
+            {
+                return false;
+            }
+
+            // TODO configure this feature:
+            return ListHelper.ObjectCategories[crop.indexOfHarvest.Value] != StardewValley.Object.flowersCategory;
+        }
+
+        private bool HarvestFilter(TerrainFeature terrainFeature)
+        {
+            if (terrainFeature is HoeDirt)
+            {
+                return this.IsHarvestable((HoeDirt)terrainFeature);
+            }
+
+            return false;
+        }
+
+        private bool PickTreeFilter(TerrainFeature terrainFeature)
+        {
+            if (terrainFeature is FruitTree)
+            {
+                var tree = (FruitTree)terrainFeature;
+                return tree.fruitsOnTree.Value >= 3;
+            }
+
+            return false;
         }
 
         private void AddFromLocation(GameLocation loc)
         {
-            this.ObjectInfoList.AddRange(from pair in loc.terrainFeatures.Pairs
-                                         let terrainFeature = pair.Value
-                                         where terrainFeature is HoeDirt
-                                         let coordinate = pair.Key
-                                         let hoeDirt = (HoeDirt)terrainFeature
-                                         let soi = this.CreateSOI(hoeDirt, coordinate, loc)
-                                         select soi);
-        }
-
-        private StardewObjectInfo CreateSOI(HoeDirt hoeDirt, Vector2 coordinate, GameLocation loc)
-        {
-            bool needAction;
-            switch (this.action)
-            {
-                case Action.Water:
-                    var isWatered = hoeDirt.state.Value == HoeDirt.watered;
-                    needAction = hoeDirt.needsWatering() && !isWatered && !hoeDirt.crop.dead.Value;
-                    break;
-                case Action.Harvest:
-                    needAction = hoeDirt.readyForHarvest();
-                    break;
-                default:
-                    throw new NotImplementedException();
-            }
-
-            return new StardewObjectInfo(coordinate, loc, needAction);
+            var range = from pair in loc.terrainFeatures.Pairs
+                        let coordinate = pair.Key
+                        let terrainFeature = pair.Value
+                        where this.filter(terrainFeature)
+                        select new StardewObjectInfo(coordinate, loc, true);
+            this.ObjectInfoList.AddRange(range);
         }
     }
 }

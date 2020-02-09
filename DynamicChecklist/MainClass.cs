@@ -169,6 +169,9 @@
                     case TaskName.Harvest:
                         this.objectLists.Add(new CropList(this.config, CropList.Action.Harvest));
                         break;
+                    case TaskName.PickTree:
+                        this.objectLists.Add(new CropList(this.config, CropList.Action.PickTree));
+                        break;
                     default:
                         throw new NotImplementedException();
                 }
