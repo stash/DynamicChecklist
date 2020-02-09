@@ -24,6 +24,7 @@
         public override void Entry(IModHelper helper)
         {
             this.config = this.Helper.ReadConfig<ModConfig>();
+            this.config.Check();
             helper.WriteConfig(this.config);
             IModEvents events = helper.Events;
             events.Input.ButtonPressed += this.Input_ButtonPressed;

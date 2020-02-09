@@ -9,11 +9,7 @@
         public ModConfig()
         {
             this.IncludeTask = new Dictionary<TaskName, bool>();
-            var listNames = (TaskName[])Enum.GetValues(typeof(TaskName));
-            foreach (var listName in listNames)
-            {
-                this.IncludeTask.Add(listName, true);
-            }
+            this.AddMissingTasks();
         }
 
         public enum ButtonLocation
@@ -34,5 +30,23 @@
         public ButtonLocation OpenChecklistButtonLocation { get; set; } = ButtonLocation.BelowJournal;
 
         public Dictionary<TaskName, bool> IncludeTask { get; set; }
+
+        public void Check()
+        {
+            // Add any new tasks to the list, but set them to be disabled
+            this.AddMissingTasks();
+        }
+
+        private void AddMissingTasks()
+        {
+            var listNames = (TaskName[])Enum.GetValues(typeof(TaskName));
+            foreach (var listName in listNames)
+            {
+                if (!this.IncludeTask.ContainsKey(listName))
+                {
+                    this.IncludeTask.Add(listName, true);
+                }
+            }
+        }
     }
 }
