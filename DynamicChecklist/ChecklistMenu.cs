@@ -15,12 +15,12 @@
 
     public class ChecklistMenu : IClickableMenu
     {
-        private static int iSelectedTab = 0;
+        public const int MenuWidth = 13 * Game1.tileSize;
+        public const int MenuHeight = 9 * Game1.tileSize;
+        private static int selectedTab = 0; // persist between invocations
         private Rectangle menuRect;
         private List<OptionsElement> options = new List<OptionsElement>();
         private List<ClickableComponent> tabs = new List<ClickableComponent>();
-        private List<string> tabNames = new List<string> { "Checklist", "Settings" };
-        private ClickableComponent selectedTab;
         private ModConfig config;
 
         public ChecklistMenu(ModConfig config)
@@ -28,50 +28,11 @@
             this.config = config;
 
             Game1.playSound("bigSelect");
-            this.menuRect = CreateCenteredRectangle(Game1.viewport, Game1.tileSize * 13, Game1.tileSize * 9);
+            this.menuRect = CreateCenteredRectangle(Game1.viewport, MenuWidth, MenuHeight);
             this.initialize(this.menuRect.X, this.menuRect.Y, this.menuRect.Width, this.menuRect.Height, true);
 
-            int lblWidth = 150;
-            int lblx = this.xPositionOnScreen - lblWidth;
-            int lbly = this.yPositionOnScreen + 20;
-            int lblSeperation = 80;
-            int lblHeight = 60;
-            int i = 0;
-            foreach (string s in Enum.GetNames(typeof(TabName)))
-            {
-                this.tabs.Add(new ClickableComponent(new Rectangle(lblx, lbly + lblSeperation * i++, lblWidth, lblHeight), s));
-            }
-
-            this.selectedTab = this.tabs[iSelectedTab];
-            int lineHeight;
-            switch (this.selectedTab.name)
-            {
-                case "Checklist":
-                    lineHeight = 50;
-                    int j = 0;
-                    foreach (ObjectList ol in ObjectLists)
-                    {
-                        if (ol.ShowInMenu)
-                        {
-                            var checkbox = new DynamicSelectableCheckbox(ol, this.menuRect.X + 50, this.menuRect.Y + 50 + lineHeight * j);
-                            this.options.Add(checkbox);
-                            j++;
-                        }
-                    }
-
-                    break;
-                case "Settings":
-                    lineHeight = 65;
-                    this.options.Add(new DCOptionsCheckbox("Show All Tasks", 3, config, this.menuRect.X + 50, this.menuRect.Y + 50 + lineHeight * 0));
-                    this.options.Add(new DCOptionsCheckbox("Allow Multiple Overlays", 4, config, this.menuRect.X + 50, this.menuRect.Y + 50 + lineHeight * 1));
-                    this.options.Add(new DCOptionsCheckbox("Show Arrow to Nearest Task", 5, config, this.menuRect.X + 50, this.menuRect.Y + 50 + lineHeight * 2));
-                    this.options.Add(new DCOptionsCheckbox("Show Task Overlay", 6, config, this.menuRect.X + 50, this.menuRect.Y + 50 + lineHeight * 3));
-                    this.options.Add(new DCOptionsDropDown("Button Position", 1, config, this.menuRect.X + 50, this.menuRect.Y + 50 + lineHeight * 4));
-                    this.options.Add(new DCOptionsInputListener("Open Menu Key", 2, this.menuRect.Width - 50, config, this.menuRect.X + 50, this.menuRect.Y + 50 + lineHeight * 5));
-                    break;
-                default:
-                    throw new NotImplementedException();
-            }
+            this.DrawTabs();
+            this.DrawContents();
         }
 
         private enum TabName
@@ -101,13 +62,12 @@
             b.Draw(Game1.fadeToBlackRect, Game1.graphics.GraphicsDevice.Viewport.Bounds, Color.Black * 0.75f);
             SpriteText.drawStringWithScrollCenteredAt(b, "Checklist", this.xPositionOnScreen + this.width / 2, this.yPositionOnScreen - Game1.tileSize, string.Empty, 1f, -1, 0, 0.88f, false);
             drawTextureBox(Game1.spriteBatch, this.menuRect.X, this.menuRect.Y, this.menuRect.Width, this.menuRect.Height, Color.White);
-            var mouseX = Game1.getMouseX();
-            var mouseY = Game1.getMouseY();
 
             int j = 0;
             foreach (ClickableComponent t in this.tabs)
             {
-                drawTextureBox(Game1.spriteBatch, t.bounds.X, t.bounds.Y, t.bounds.Width, t.bounds.Height, Color.White * (iSelectedTab == j ? 1F : 0.7F));
+                var highlight = Color.White * (selectedTab == j ? 1f : 0.7f);
+                drawTextureBox(Game1.spriteBatch, t.bounds.X, t.bounds.Y, t.bounds.Width, t.bounds.Height, highlight);
                 b.DrawString(Game1.smallFont, t.name, new Vector2(t.bounds.X + 15, t.bounds.Y + 15), Color.Black);
                 j++;
             }
@@ -128,18 +88,14 @@
             {
                 if (this.tabs[i].bounds.Contains(x, y))
                 {
-                    iSelectedTab = i;
-                    Game1.activeClickableMenu = new ChecklistMenu(this.config);
+                    selectedTab = i;
+                    Game1.activeClickableMenu = new ChecklistMenu(this.config); // Yes, needs to be a new object
+                    return;
                 }
             }
 
-            foreach (OptionsElement o in this.options)
-            {
-                if (o.bounds.Contains(x, y))
-                {
-                    o.receiveLeftClick(x, y);
-                }
-            }
+            // Send click to a menu item
+            this.options.FirstOrDefault(o => o.bounds.Contains(x, y))?.receiveLeftClick(x, y);
         }
 
         public override void leftClickHeld(int x, int y)
@@ -162,6 +118,7 @@
 
         public override void receiveRightClick(int x, int y, bool playSound = false)
         {
+            // ignore
         }
 
         // TODO: Controller support
@@ -190,6 +147,57 @@
             var x = v.Width / 2 - width / 2;
             var y = v.Height / 2 - height / 2;
             return new Rectangle(x, y, width, height);
+        }
+
+        private void DrawTabs()
+        {
+            const int labelWidth = 150;
+            int labelX = this.xPositionOnScreen - labelWidth;
+            int labelY = this.yPositionOnScreen + 20;
+            const int labelSeparation = 80;
+            const int labelHeight = 60;
+            int i = 0;
+            foreach (string s in Enum.GetNames(typeof(TabName)))
+            {
+                this.tabs.Add(new ClickableComponent(new Rectangle(labelX, labelY + labelSeparation * i++, labelWidth, labelHeight), s));
+            }
+        }
+
+        private void DrawContents()
+        {
+            var config = this.config;
+            int lineHeight;
+            const int margin = 50;
+            int marginX = this.menuRect.X + margin;
+            int marginY = this.menuRect.Y + margin;
+            switch (selectedTab)
+            {
+                case 0:
+                    lineHeight = 50;
+                    int j = 0;
+                    foreach (ObjectList ol in ObjectLists)
+                    {
+                        if (ol.ShowInMenu)
+                        {
+                            var checkbox = new DynamicSelectableCheckbox(ol, marginX, marginY + lineHeight * j);
+                            this.options.Add(checkbox);
+                            j++;
+                        }
+                    }
+
+                    break;
+                case 1:
+                    lineHeight = 65;
+                    this.options.Add(new DCOptionsCheckbox("Show All Tasks", 3, config, marginX, marginY + lineHeight * 0));
+                    this.options.Add(new DCOptionsCheckbox("Allow Multiple Overlays", 4, config, marginX, marginY + lineHeight * 1));
+                    this.options.Add(new DCOptionsCheckbox("Show Arrow to Nearest Task", 5, config, marginX, marginY + lineHeight * 2));
+                    this.options.Add(new DCOptionsCheckbox("Show Task Overlay", 6, config, marginX, marginY + lineHeight * 3));
+                    this.options.Add(new DCOptionsDropDown("Button Position", 1, config, marginX, marginY + lineHeight * 4));
+                    this.options.Add(new DCOptionsInputListener("Open Menu Key", 2, this.menuRect.Width - margin, config, marginX, marginY + lineHeight * 5));
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
         }
     }
 }

@@ -13,6 +13,7 @@
 
     internal class DynamicSelectableCheckbox : OptionsCheckbox
     {
+        private static Texture2D whitePixel;
         private bool isDone = true;
         private ObjectList objectList;
         private Vector2 labelSize;
@@ -30,12 +31,9 @@
         {
             this.isChecked = this.objectList.OverlayActive;
             base.draw(b, slotX, slotY);
-            var whitePixel = new Texture2D(Game1.graphics.GraphicsDevice, 1, 1);
-            whitePixel.SetData(new Color[] { Color.White });
-            var destRect = new Rectangle(slotX + this.bounds.X + this.bounds.Width + Game1.pixelZoom * 2, slotY + this.bounds.Y + (int)this.labelSize.Y / 3, (int)this.labelSize.X, Game1.pixelZoom);
             if (this.isDone)
             {
-                b.Draw(whitePixel, destRect, Color.Red);
+                this.StrikeThrough(b, slotX, slotY);
             }
         }
 
@@ -46,6 +44,18 @@
             {
                 this.objectList.OverlayActive = this.isChecked;
             }
+        }
+
+        private void StrikeThrough(SpriteBatch b, int slotX, int slotY)
+        {
+            if (whitePixel == null || whitePixel.GraphicsDevice != Game1.graphics.GraphicsDevice)
+            {
+                whitePixel = new Texture2D(Game1.graphics.GraphicsDevice, 1, 1);
+                whitePixel.SetData(new Color[] { Color.White });
+            }
+
+            var destRect = new Rectangle(slotX + this.bounds.X + this.bounds.Width + Game1.pixelZoom * 2, slotY + this.bounds.Y + (int)this.labelSize.Y / 3, (int)this.labelSize.X, Game1.pixelZoom);
+            b.Draw(whitePixel, destRect, Color.Red);
         }
     }
 }
