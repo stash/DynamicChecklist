@@ -2,7 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.IO;
+    using System.Linq;
     using Graph.Graphs;
     using Microsoft.Xna.Framework.Graphics;
     using Microsoft.Xna.Framework.Input;
@@ -26,7 +26,6 @@
             this.config = this.Helper.ReadConfig<ModConfig>();
             helper.WriteConfig(this.config);
             IModEvents events = helper.Events;
-            events.Display.MenuChanged += this.Display_MenuChanged;
             events.Input.ButtonPressed += this.Input_ButtonPressed;
             events.GameLoop.SaveLoaded += this.GameLoop_SaveLoaded;
             events.GameLoop.Saved += this.GameLoop_Saved;
@@ -188,13 +187,6 @@
             }
         }
 
-        private Texture2D LoadTexture(string texName)
-        {
-            var textureStream = new FileStream(Path.Combine(this.Helper.DirectoryPath, "Resources", texName), FileMode.Open);
-            var t = Texture2D.FromStream(Game1.graphics.GraphicsDevice, textureStream);
-            return t;
-        }
-
         private void Input_ButtonPressed(object sender, ButtonPressedEventArgs e)
         {
             if (e.Button.ToString() == this.config.OpenMenuKey)
@@ -214,16 +206,6 @@
             }
         }
 
-        private void Display_MenuChanged(object sender, MenuChangedEventArgs e)
-        {
-            if (!(e.NewMenu is GameMenu))
-            {
-                return;
-            }
-
-            var gameMenu = e.NewMenu;
-        }
-
         private void GameLoop_SaveLoaded(object sender, EventArgs e)
         {
             this.graph = new CompleteGraph(Game1.locations);
@@ -238,7 +220,7 @@
 
         private int CountRemainingTasks()
         {
-            return this.objectLists.FindAll(x => x.TaskLeft).Count;
+            return this.objectLists.Count(x => x.TaskLeft);
         }
     }
 }
