@@ -21,6 +21,9 @@
         private OpenChecklistButton checklistButton;
         private bool doneLoading;
 
+        public static bool MenuAllowed =>
+            Context.IsPlayerFree && !Game1.isFestival() && !Game1.showingEndOfNightStuff;
+
         public override void Entry(IModHelper helper)
         {
             this.config = this.Helper.ReadConfig<ModConfig>();
@@ -46,18 +49,6 @@
             }
         }
 
-        private bool MenuAllowed()
-        {
-            if ((Game1.dayOfMonth <= 0 ? 0 : (Game1.player.CanMove ? 1 : 0)) != 0 && !Game1.dialogueUp && (!Game1.eventUp || (Game1.isFestival() && Game1.CurrentEvent.festivalTimer <= 0)) && Game1.currentMinigame == null && Game1.activeClickableMenu == null)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
         private void GameLoop_Saved(object sender, EventArgs e)
         {
             this.Helper.WriteConfig(this.config);
@@ -65,14 +56,18 @@
 
         private void Display_RenderingHud(object sender, EventArgs e)
         {
-            if (!this.doneLoading || Game1.currentLocation == null || Game1.gameMode == 11 || Game1.currentMinigame != null || Game1.showingEndOfNightStuff || Game1.gameMode == 6 || Game1.gameMode == 0 || Game1.menuUp || Game1.activeClickableMenu != null)
+            if (!MenuAllowed || Game1.currentMinigame != null)
             {
                 return;
             }
 
-            foreach (ObjectList ol in this.objectLists)
+            foreach (var ol in this.objectLists)
             {
                 ol.BeforeDraw();
+            }
+
+            foreach (var ol in this.objectLists)
+            {
                 ol.Draw(Game1.spriteBatch);
             }
 
@@ -81,7 +76,7 @@
 
         private void UpdatePaths(object sender, EventArgs e)
         {
-            if (!this.doneLoading || Game1.currentLocation == null || Game1.gameMode == 11 || Game1.currentMinigame != null || Game1.showingEndOfNightStuff || Game1.gameMode == 6 || Game1.gameMode == 0 || Game1.menuUp || Game1.activeClickableMenu != null)
+            if (!MenuAllowed || Game1.currentMinigame != null)
             {
                 return;
             }
@@ -109,7 +104,7 @@
 
         private void GameLoop_DayStarted(object sender, EventArgs e)
         {
-            foreach (ObjectList ol in this.objectLists)
+            foreach (var ol in this.objectLists)
             {
                 ol.OnNewDay();
             }
@@ -128,7 +123,7 @@
             activatedObjectList.UpdatePath();
             if (!this.config.AllowMultipleOverlays)
             {
-                foreach (ObjectList ol in this.objectLists)
+                foreach (var ol in this.objectLists)
                 {
                     if (ol != sender)
                     {
@@ -140,6 +135,7 @@
 
         private void InitializeObjectLists()
         {
+            this.objectLists.Clear();
             var listNames = (TaskName[])Enum.GetValues(typeof(TaskName));
             foreach (var listName in listNames)
             {
@@ -203,7 +199,7 @@
                 }
                 else
                 {
-                    if (this.MenuAllowed())
+                    if (MenuAllowed)
                     {
                         ChecklistMenu.Open(this.config);
                     }

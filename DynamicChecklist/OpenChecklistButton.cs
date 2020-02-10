@@ -33,6 +33,7 @@
 
         public override void receiveRightClick(int x, int y, bool playSound = true)
         {
+            // ignore
         }
 
         public override void receiveLeftClick(int x, int y, bool playSound = true)
@@ -48,6 +49,11 @@
 
         public override void draw(SpriteBatch b)
         {
+            if (!MainClass.MenuAllowed)
+            {
+                return;
+            }
+
             this.UpdateButtonPosition(this.config.OpenChecklistButtonLocation);
             int tasks = this.countRemainingTasks();
             SpriteFont font = (tasks > 9) ? Game1.smallFont : Game1.dialogueFont;
