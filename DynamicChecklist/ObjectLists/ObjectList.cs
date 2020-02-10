@@ -19,6 +19,7 @@
         public ObjectList(ModConfig config)
         {
             this.config = config;
+            this.ObjectInfoList = new List<StardewObjectInfo>();
         }
 
         public event EventHandler TaskFinished;
@@ -29,7 +30,7 @@
 
         public static CompleteGraph Graph { get; set; }
 
-        public abstract string OptionMenuLabel { get; protected set; }
+        public string OptionMenuLabel { get; protected set; }
 
         public bool TaskExistsNow { get; private set; }
 
@@ -37,7 +38,7 @@
 
         public List<StardewObjectInfo> ObjectInfoList { get; set; }
 
-        public abstract string TaskDoneMessage { get; protected set; }
+        public string TaskDoneMessage { get; protected set; }
 
         public bool ShowInMenu
         {
@@ -102,15 +103,17 @@
 
         protected int Count { get; set; }
 
-        protected abstract Texture2D ImageTexture { get; set; }
+        protected Texture2D ImageTexture { get; set; } = null;
 
         protected int CountNeedAction => this.ObjectInfoList.Count(soi => soi.NeedAction);
 
-        public abstract void OnMenuOpen();
+        protected virtual bool HasPerItemOverlay => true;
 
-        public abstract void BeforeDraw();
+        public virtual void BeforeDraw()
+        {
+        }
 
-        public void OnNewDay()
+        public virtual void OnNewDay()
         {
             this.UpdateObjectInfoList();
             this.TaskExistedAtStartOfDay = this.ObjectInfoList.Count > 0;
@@ -142,7 +145,7 @@
 
                         if (objectInfo.Location == currentPlayerLocation)
                         {
-                            if (this.config.ShowOverlay)
+                            if (this.HasPerItemOverlay && this.config.ShowOverlay)
                             {
                                 this.DrawObjectInfo(b, objectInfo);
                             }

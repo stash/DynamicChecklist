@@ -89,11 +89,11 @@
     <Compile Include="Graph\Graphs\PartialGraph.cs" />
     <Compile Include="ModConfig.cs" />
     <Compile Include="ObjectLists\AnimalList.cs" />
-    <Compile Include="ObjectLists\CrabPotList.cs" />
     <Compile Include="ObjectLists\CropList.cs" />
     <Compile Include="ObjectLists\EggList.cs" />
     <Compile Include="ObjectLists\HayList.cs" />
     <Compile Include="ObjectLists\ListHelper.cs" />
+    <Compile Include="ObjectLists\MachineList.cs" />
     <Compile Include="ObjectLists\ObjectList.cs" />
     <Compile Include="DynamicSelectableCheckbox.cs" />
     <Compile Include="MainClass.cs" />

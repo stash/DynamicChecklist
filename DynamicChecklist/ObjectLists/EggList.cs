@@ -19,14 +19,7 @@
             this.OptionMenuLabel = "Collect Animal Products";
             this.TaskDoneMessage = "All animal products have been collected";
             this.Name = TaskName.Egg;
-            this.ObjectInfoList = new List<StardewObjectInfo>();
         }
-
-        public override string OptionMenuLabel { get; protected set; }
-
-        public override string TaskDoneMessage { get; protected set; }
-
-        protected override Texture2D ImageTexture { get; set; }
 
         public override void BeforeDraw()
         {
@@ -35,11 +28,6 @@
                 this.UpdateObjectInfoList();
                 this.TaskDone = !this.ObjectInfoList.Any(soi => soi.NeedAction);
             }
-        }
-
-        public override void OnMenuOpen()
-        {
-            throw new NotImplementedException();
         }
 
         protected override void UpdateObjectInfoList()

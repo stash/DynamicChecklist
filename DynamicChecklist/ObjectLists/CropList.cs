@@ -45,23 +45,11 @@
                 default:
                     throw new NotImplementedException();
             }
-
-            this.ObjectInfoList = new List<StardewObjectInfo>();
         }
 
         public enum Action
         {
             Water, Harvest, PickTree
-        }
-
-        public override string OptionMenuLabel { get; protected set; }
-
-        public override string TaskDoneMessage { get; protected set; }
-
-        protected override Texture2D ImageTexture { get; set; }
-
-        public override void OnMenuOpen()
-        {
         }
 
         public override void BeforeDraw()

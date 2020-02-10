@@ -17,6 +17,8 @@
 
         private static Dictionary<int, int> objectCategories = null;
 
+        private static Dictionary<string, bool> locationHasWater = new Dictionary<string, bool>();
+
         internal static Dictionary<int, string> ObjectNames
         {
             get
@@ -61,6 +63,40 @@
             {
                 yield return pair;
             }
+        }
+
+        /// <summary>
+        /// Returns the currently active locations (i.e., locations with a player)
+        /// </summary>
+        /// <returns>currently active locations</returns>
+        public static IEnumerable<GameLocation> GetActiveLocations()
+        {
+            // TODO: only return actually active locations
+            return Game1.locations.AsEnumerable();
+        }
+
+        public static bool LocationHasWater(GameLocation location)
+        {
+            var name = location.NameOrUniqueName;
+            if (!locationHasWater.ContainsKey(name))
+            {
+                bool foundWater = false;
+                if (location.waterTiles != null)
+                {
+                    foreach (var t in location.waterTiles)
+                    {
+                        if (t)
+                        {
+                            foundWater = true;
+                            break;
+                        }
+                    }
+                }
+
+                locationHasWater[name] = foundWater;
+            }
+
+            return locationHasWater[name];
         }
 
         internal static void PopulateObjectsNames()

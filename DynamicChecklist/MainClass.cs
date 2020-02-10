@@ -155,7 +155,7 @@
                         this.objectLists.Add(new AnimalList(this.config, AnimalList.Action.Shear));
                         break;
                     case TaskName.CrabPot:
-                        this.objectLists.Add(new CrabPotList(this.config));
+                        this.objectLists.Add(new MachineList(this.config, MachineList.Action.CrabPot));
                         break;
                     case TaskName.Hay:
                         this.objectLists.Add(new HayList(this.config));
@@ -172,14 +172,15 @@
                     case TaskName.PickTree:
                         this.objectLists.Add(new CropList(this.config, CropList.Action.PickTree));
                         break;
+                    case TaskName.EmptyKeg:
+                        this.objectLists.Add(new MachineList(this.config, MachineList.Action.EmptyKeg));
+                        break;
+                    case TaskName.EmptyTapper:
+                        this.objectLists.Add(new MachineList(this.config, MachineList.Action.EmptyTapper));
+                        break;
                     default:
                         throw new NotImplementedException();
                 }
-            }
-
-            foreach (ObjectList ol in this.objectLists)
-            {
-                ol.OnNewDay();
             }
 
             ObjectList.Graph = this.graph;

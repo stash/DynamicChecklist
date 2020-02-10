@@ -19,14 +19,7 @@
             this.OptionMenuLabel = "Filled Troughs";
             this.TaskDoneMessage = "All troughs have been filled";
             this.Name = TaskName.Hay;
-            this.ObjectInfoList = new List<StardewObjectInfo>();
         }
-
-        public override string OptionMenuLabel { get; protected set; }
-
-        public override string TaskDoneMessage { get; protected set; }
-
-        protected override Texture2D ImageTexture { get; set; }
 
         public override void BeforeDraw()
         {
@@ -35,10 +28,6 @@
                 this.UpdateObjectInfoList((AnimalHouse)Game1.currentLocation);
                 this.TaskDone = !this.ObjectInfoList.Any(soi => soi.NeedAction);
             }
-        }
-
-        public override void OnMenuOpen()
-        {
         }
 
         protected override void UpdateObjectInfoList()
