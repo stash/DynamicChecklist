@@ -39,7 +39,7 @@
                     break;
                 case Action.EmptyCask:
                     this.objectFilter = this.CaskTaskFilter;
-                    this.OptionMenuLabel = "Bottle Casked Wine";
+                    this.OptionMenuLabel = "Empty Casks";
                     var quality = "Iridium"; // TODO: "Gold or higher", "Silver or higher"
                     this.TaskDoneMessage = $"All {quality} quality casks have been emptied";
                     this.Name = TaskName.EmptyCask;
@@ -111,12 +111,15 @@
 
         private bool GeneralTaskFilter(StardewValley.Object obj)
         {
-            // Casks handled by CaskTaskFilter
-            return obj.bigCraftable.Value && obj.readyForHarvest.Value && !(obj is Cask);
+            return obj.bigCraftable.Value &&
+                obj.readyForHarvest.Value &&
+                !(obj is Cask) && // Handled by CaskTaskFilter
+                obj.ParentSheetIndex != EggList.AutoGrabberId; // Handled by EggList
         }
 
         private bool CaskTaskFilter(StardewValley.Object obj)
         {
+            // Implicit in this function: exclude AutoGrabbers
             bool needAction = false;
             if (obj is Cask cask)
             {

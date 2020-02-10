@@ -13,17 +13,16 @@
 
     public class ListHelper
     {
-        private static Dictionary<int, string> objectNames = null;
-
-        private static Dictionary<int, int> objectCategories = null;
-
+        private static Dictionary<int, string> objectNames = new Dictionary<int, string>();
+        private static Dictionary<string, int> objectIndexes = new Dictionary<string, int>();
+        private static Dictionary<int, int> objectCategories = new Dictionary<int, int>();
         private static Dictionary<string, bool> locationHasWater = new Dictionary<string, bool>();
 
         internal static Dictionary<int, string> ObjectNames
         {
             get
             {
-                if (objectNames == null)
+                if (objectNames.Count == 0)
                 {
                     PopulateObjectsNames();
                 }
@@ -32,11 +31,22 @@
             }
         }
 
+        internal static Dictionary<string, int> ObjectIndexes {
+            get {
+                if (objectIndexes.Count == 0)
+                {
+                    PopulateObjectsNames();
+                }
+
+                return objectIndexes;
+            }
+        }
+
         internal static Dictionary<int, int> ObjectCategories
         {
             get
             {
-                if (objectCategories == null)
+                if (objectCategories.Count == 0)
                 {
                     PopulateObjectsNames();
                 }
@@ -101,29 +111,18 @@
 
         internal static void PopulateObjectsNames()
         {
-            if (objectCategories != null)
-            {
-                objectCategories.Clear();
-            }
-            else
-            {
-                objectCategories = new Dictionary<int, int>();
-            }
-
-            if (objectNames != null)
-            {
-                objectNames.Clear();
-            }
-            else
-            {
-                objectNames = new Dictionary<int, string>();
-            }
+            objectCategories.Clear();
+            objectNames.Clear();
+            objectIndexes.Clear();
 
             foreach (var pair in Game1.objectInformation)
             {
-                ObjectNames[pair.Key] = pair.Value.Split("/".ToCharArray())[0];
-                var o = new StardewValley.Object(pair.Key, 0);
-                ObjectCategories[pair.Key] = o.Category;
+                string name = pair.Value.Split("/".ToCharArray())[0];
+                int index = pair.Key;
+                objectNames[index] = name;
+                objectIndexes[name] = index;
+                var o = new StardewValley.Object(index, 0);
+                objectCategories[index] = o.Category;
             }
         }
     }
