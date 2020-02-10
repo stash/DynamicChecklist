@@ -107,7 +107,7 @@
 
         protected int CountNeedAction => this.ObjectInfoList.Count(soi => soi.NeedAction);
 
-        protected virtual bool HasPerItemOverlay => true;
+        protected virtual bool NeedsPerItemOverlay => true;
 
         public virtual void BeforeDraw()
         {
@@ -145,7 +145,7 @@
 
                         if (objectInfo.Location == currentPlayerLocation)
                         {
-                            if (this.HasPerItemOverlay && this.config.ShowOverlay)
+                            if (this.NeedsPerItemOverlay && this.config.ShowOverlay)
                             {
                                 this.DrawObjectInfo(b, objectInfo);
                             }

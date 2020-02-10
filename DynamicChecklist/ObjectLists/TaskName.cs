@@ -2,6 +2,6 @@
 {
     public enum TaskName
     {
-        Pet, Milk, Shear, CrabPot, Hay, Egg, Water, Harvest, PickTree, EmptyKeg, EmptyTapper
+        Pet, Milk, Shear, CrabPot, Hay, Egg, Water, Harvest, PickTree, EmptyKeg, EmptyTapper, EmptyCask
     }
 }

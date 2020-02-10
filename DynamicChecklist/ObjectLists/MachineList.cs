@@ -12,11 +12,11 @@
 
     public class MachineList : ObjectList
     {
-        private Action action;
-        private System.Action newDayAction;
-        private Func<GameLocation, bool> locationFilter = (loc) => true;
-        private Func<StardewValley.Object, bool> objectFilter = (obj) => true;
-        private string generalMachineFilterName = string.Empty;
+        private readonly Action action;
+        private readonly System.Action newDayAction;
+        private readonly Func<GameLocation, bool> locationFilter = (loc) => true;
+        private readonly Func<StardewValley.Object, bool> objectFilter = (obj) => true;
+        private readonly string generalMachineFilterName = string.Empty;
 
         public MachineList(ModConfig config, Action action)
             : base(config)
@@ -27,24 +27,31 @@
                 case Action.CrabPot:
                     this.newDayAction = () => this.IsPlayerLuremaster = Game1.player.professions.Contains(11);
                     this.locationFilter = (loc) => ListHelper.LocationHasWater(loc);
-                    this.objectFilter = this.CrabPotObjectFilter;
+                    this.objectFilter = this.CrabPotTaskFilter;
                     this.OptionMenuLabel = "Collect From And Bait Crab Pots";
                     this.TaskDoneMessage = "All crab pots have been collected from and baited";
                     this.Name = TaskName.CrabPot;
                     break;
                 case Action.EmptyKeg:
-                    this.objectFilter = this.GeneralMachineFilter;
+                    this.objectFilter = this.GeneralTaskFilter;
                     this.generalMachineFilterName = "Keg";
                     this.OptionMenuLabel = "Empty Kegs";
                     this.TaskDoneMessage = "All kegs have been emptied";
                     this.Name = TaskName.EmptyKeg;
                     break;
                 case Action.EmptyTapper:
-                    this.objectFilter = this.GeneralMachineFilter;
+                    this.objectFilter = this.GeneralTaskFilter;
                     this.generalMachineFilterName = "Tapper";
                     this.OptionMenuLabel = "Empty Tappers";
                     this.TaskDoneMessage = "All tappers have been emptied";
                     this.Name = TaskName.EmptyTapper;
+                    break;
+                case Action.EmptyCask:
+                    this.objectFilter = this.CaskTaskFilter;
+                    this.OptionMenuLabel = "Bottle Casked Wine";
+                    var quality = "Iridium"; // TODO: "Gold or higher", "Silver or higher"
+                    this.TaskDoneMessage = $"All {quality} quality casks have been emptied";
+                    this.Name = TaskName.EmptyCask;
                     break;
                 default:
                     throw new NotImplementedException();
@@ -53,10 +60,10 @@
 
         public enum Action
         {
-            CrabPot, EmptyKeg, EmptyTapper
+            CrabPot, EmptyKeg, EmptyTapper, EmptyCask
         }
 
-        protected override bool HasPerItemOverlay => false; // all harvestable machines have their own overlay already
+        protected override bool NeedsPerItemOverlay => false; // all harvestable machines have their own overlay already
 
         private bool IsPlayerLuremaster { get; set; } = false;
 
@@ -91,7 +98,7 @@
                 select new StardewObjectInfo(pair.Key, loc, true));
         }
 
-        private bool CrabPotObjectFilter(StardewValley.Object obj)
+        private bool CrabPotTaskFilter(StardewValley.Object obj)
         {
             bool needAction = false;
             if (obj is CrabPot currentCrabPot)
@@ -111,11 +118,23 @@
             return needAction;
         }
 
-        private bool GeneralMachineFilter(StardewValley.Object obj)
+        private bool GeneralTaskFilter(StardewValley.Object obj)
         {
             return obj.bigCraftable.Value &&
                 obj.readyForHarvest.Value &&
                 obj.Name == this.generalMachineFilterName;
+        }
+
+        private bool CaskTaskFilter(StardewValley.Object obj)
+        {
+            bool needAction = false;
+            if (obj is Cask cask)
+            {
+                // TODO: configurable value, also change TaskDoneMessage
+                needAction = cask.heldObject.Value?.Quality >= StardewValley.Object.bestQuality;
+            }
+
+            return needAction;
         }
     }
 }

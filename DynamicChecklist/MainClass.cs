@@ -178,6 +178,9 @@
                     case TaskName.EmptyTapper:
                         this.objectLists.Add(new MachineList(this.config, MachineList.Action.EmptyTapper));
                         break;
+                    case TaskName.EmptyCask:
+                        this.objectLists.Add(new MachineList(this.config, MachineList.Action.EmptyCask));
+                        break;
                     default:
                         throw new NotImplementedException();
                 }

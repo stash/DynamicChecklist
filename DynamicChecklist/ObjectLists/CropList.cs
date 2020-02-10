@@ -38,7 +38,8 @@
                 case Action.PickTree:
                     this.ImageTexture = OverlayTextures.Plus;
                     this.OptionMenuLabel = "Pick Trees";
-                    this.TaskDoneMessage = "All trees have been picked";
+                    var number = "three fruits"; // TODO: "two or more fruits", "fruit"
+                    this.TaskDoneMessage = $"All trees with {number} have been picked";
                     this.Name = TaskName.PickTree;
                     this.filter = this.PickTreeFilter;
                     break;
