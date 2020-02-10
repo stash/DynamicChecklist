@@ -172,11 +172,8 @@
                     case TaskName.PickTree:
                         this.objectLists.Add(new CropList(this.config, CropList.Action.PickTree));
                         break;
-                    case TaskName.EmptyKeg:
-                        this.objectLists.Add(new MachineList(this.config, MachineList.Action.EmptyKeg));
-                        break;
-                    case TaskName.EmptyTapper:
-                        this.objectLists.Add(new MachineList(this.config, MachineList.Action.EmptyTapper));
+                    case TaskName.EmptyRefiner:
+                        this.objectLists.Add(new MachineList(this.config, MachineList.Action.EmptyRefiner));
                         break;
                     case TaskName.EmptyCask:
                         this.objectLists.Add(new MachineList(this.config, MachineList.Action.EmptyCask));

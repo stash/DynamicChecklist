@@ -16,7 +16,6 @@
         private readonly System.Action newDayAction;
         private readonly Func<GameLocation, bool> locationFilter = (loc) => true;
         private readonly Func<StardewValley.Object, bool> objectFilter = (obj) => true;
-        private readonly string generalMachineFilterName = string.Empty;
 
         public MachineList(ModConfig config, Action action)
             : base(config)
@@ -32,19 +31,11 @@
                     this.TaskDoneMessage = "All crab pots have been collected from and baited";
                     this.Name = TaskName.CrabPot;
                     break;
-                case Action.EmptyKeg:
+                case Action.EmptyRefiner:
                     this.objectFilter = this.GeneralTaskFilter;
-                    this.generalMachineFilterName = "Keg";
-                    this.OptionMenuLabel = "Empty Kegs";
-                    this.TaskDoneMessage = "All kegs have been emptied";
-                    this.Name = TaskName.EmptyKeg;
-                    break;
-                case Action.EmptyTapper:
-                    this.objectFilter = this.GeneralTaskFilter;
-                    this.generalMachineFilterName = "Tapper";
-                    this.OptionMenuLabel = "Empty Tappers";
-                    this.TaskDoneMessage = "All tappers have been emptied";
-                    this.Name = TaskName.EmptyTapper;
+                    this.OptionMenuLabel = "Empty Refining Machines";
+                    this.TaskDoneMessage = "All refining machines have been emptied";
+                    this.Name = TaskName.EmptyRefiner;
                     break;
                 case Action.EmptyCask:
                     this.objectFilter = this.CaskTaskFilter;
@@ -60,7 +51,7 @@
 
         public enum Action
         {
-            CrabPot, EmptyKeg, EmptyTapper, EmptyCask
+            CrabPot, EmptyRefiner, EmptyCask
         }
 
         protected override bool NeedsPerItemOverlay => false; // all harvestable machines have their own overlay already
@@ -120,9 +111,8 @@
 
         private bool GeneralTaskFilter(StardewValley.Object obj)
         {
-            return obj.bigCraftable.Value &&
-                obj.readyForHarvest.Value &&
-                obj.Name == this.generalMachineFilterName;
+            // Casks handled by CaskTaskFilter
+            return obj.bigCraftable.Value && obj.readyForHarvest.Value && !(obj is Cask);
         }
 
         private bool CaskTaskFilter(StardewValley.Object obj)
