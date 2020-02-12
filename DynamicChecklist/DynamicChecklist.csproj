@@ -97,6 +97,7 @@
     <Compile Include="ObjectLists\ObjectList.cs" />
     <Compile Include="DynamicSelectableCheckbox.cs" />
     <Compile Include="MainClass.cs" />
+    <Compile Include="ObjectLists\StardewObjectInfo.cs" />
     <Compile Include="ObjectLists\TaskName.cs" />
     <Compile Include="ObjectLists\OverlayTextures.cs" />
     <Compile Include="OpenChecklistButton.cs" />

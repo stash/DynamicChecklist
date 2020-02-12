@@ -246,7 +246,7 @@
             var tex = OverlayTextures.ArrowRight;
             Point center = new Point(Game1.viewport.Width / 2, Game1.viewport.Height / 2);
 
-            var destinationRectangle = new Microsoft.Xna.Framework.Rectangle(center.X - tex.Width / 2, center.Y - tex.Height / 2, tex.Width, tex.Height);
+            var destinationRectangle = new Rectangle(center.X - tex.Width / 2, center.Y - tex.Height / 2, tex.Width, tex.Height);
             destinationRectangle.X += (int)(Math.Cos(rotation) * distanceFromCenter);
             destinationRectangle.Y += (int)(Math.Sin(rotation) * distanceFromCenter);
 
@@ -264,53 +264,6 @@
             spriteBoxSpeechBubble.Offset(0, Game1.pixelZoom / 2);
             b.Draw(OverlayTextures.SpeechBubble, spriteBoxSpeechBubble, Color.White);
             b.Draw(this.ImageTexture, spriteBox, Color.White);
-        }
-
-        public class StardewObjectInfo
-        {
-            public StardewObjectInfo()
-            {
-            }
-
-            public StardewObjectInfo(FarmAnimal animal, GameLocation location, bool needAction = true)
-            {
-                this.Coordinate = animal.getStandingPosition();
-                this.Location = location;
-                this.NeedAction = needAction;
-            }
-
-            public StardewObjectInfo(Vector2 coordinate, GameLocation location, bool needAction = true)
-            {
-                this.Coordinate = coordinate * Game1.tileSize + new Vector2(Game1.tileSize / 2, Game1.tileSize / 2);
-                this.Location = location;
-                this.NeedAction = needAction;
-            }
-
-            public GameLocation Location { get; set; }
-
-            public Vector2 Coordinate { get; set; }
-
-            public bool NeedAction { get; set; }
-
-            public float GetDistance(Character c)
-            {
-                var charPos = c.getStandingPosition();
-                return Vector2.Distance(charPos, this.Coordinate);
-            }
-
-            public bool IsOnScreen()
-            {
-                var v = Game1.viewport;
-                bool leftOrRight = this.Coordinate.X < v.X || this.Coordinate.X > v.X + v.Width;
-                bool belowOrAbove = this.Coordinate.Y < v.Y || this.Coordinate.Y > v.Y + v.Height;
-                return !leftOrRight && !belowOrAbove;
-            }
-
-            public float GetDirection(Character c)
-            {
-                var v = this.Coordinate - c.getStandingPosition();
-                return (float)Math.Atan2(v.Y, v.X);
-            }
         }
     }
 }
