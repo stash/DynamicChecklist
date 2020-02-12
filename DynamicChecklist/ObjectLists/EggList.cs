@@ -42,21 +42,22 @@
             this.Name = TaskName.Egg;
         }
 
-        public override void BeforeDraw()
+        protected override void InitializeObjectInfoList()
         {
-            if (!this.TaskDone && Game1.currentLocation.IsFarm)
-            {
-                this.UpdateObjectInfoList();
-                this.TaskDone = !this.ObjectInfoList.Any(soi => soi.NeedAction);
-            }
+            this.ScanAnimalHousesAndFarm(ListHelper.GetFarmAnimalHouses());
         }
 
         protected override void UpdateObjectInfoList()
         {
-            this.ObjectInfoList.Clear();
+            this.ScanAnimalHousesAndFarm(ListHelper.GetActiveFarmAnimalHouses());
+        }
 
-            foreach (var animalHouse in ListHelper.GetFarmAnimalHouses())
+        private void ScanAnimalHousesAndFarm(IEnumerable<AnimalHouse> animalHouses)
+        {
+            // Scan barns/coops/etc. for collectables and autograbbers
+            foreach (var animalHouse in animalHouses)
             {
+                this.ObjectInfoList.RemoveAll(soi => soi.Location == animalHouse);
                 var range = from pair in animalHouse.Objects.Pairs
                             where this.IsCollectable(pair.Value) || this.IsAutoGrabberReady(pair.Value)
                             let soi = new StardewObjectInfo(pair.Key, animalHouse, true)
@@ -66,6 +67,7 @@
 
             // Scan farm to get things like Truffles
             var farm = Game1.getFarm();
+            this.ObjectInfoList.RemoveAll(soi => soi.Location == farm);
             var farmCollectables = from pair in farm.Objects.Pairs
                                    where this.IsCollectable(pair.Value)
                                    let soi = new StardewObjectInfo(pair.Key, farm, true)

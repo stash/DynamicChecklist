@@ -31,8 +31,10 @@
             }
         }
 
-        internal static Dictionary<string, int> ObjectIndexes {
-            get {
+        internal static Dictionary<string, int> ObjectIndexes
+        {
+            get
+            {
                 if (objectIndexes.Count == 0)
                 {
                     PopulateObjectsNames();
@@ -60,9 +62,33 @@
             foreach (Building b in Game1.getFarm().buildings)
             {
                 var indoors = b.indoors.Value;
-                if (indoors != null && indoors is AnimalHouse)
+                if (indoors != null && !b.isUnderConstruction() && indoors is AnimalHouse animalHouse)
                 {
-                    yield return (AnimalHouse)indoors;
+                    yield return animalHouse;
+                }
+            }
+        }
+
+        public static IEnumerable<AnimalHouse> GetActiveFarmAnimalHouses()
+        {
+            return IsActive(GetFarmAnimalHouses());
+        }
+
+        /// <summary>
+        /// Discards locations that don't have at least one farmer.
+        /// </summary>
+        /// <typeparam name="T">The specific <c>GameLocation</c> type</typeparam>
+        /// <param name="locations">Any enumerable set of <c>GameLocation</c>s</param>
+        /// <returns>Locations with at least one farmer</returns>
+        public static IEnumerable<T> IsActive<T>(IEnumerable<T> locations)
+            where T : GameLocation
+        {
+            var farmers = Game1.getAllFarmers().ToArray();
+            foreach (var loc in locations)
+            {
+                if (farmers.Any(farmer => farmer.currentLocation == loc))
+                {
+                    yield return loc;
                 }
             }
         }
@@ -81,8 +107,7 @@
         /// <returns>currently active locations</returns>
         public static IEnumerable<GameLocation> GetActiveLocations()
         {
-            // TODO: only return actually active locations
-            return Game1.locations.AsEnumerable();
+            return IsActive(Game1.locations);
         }
 
         public static bool LocationHasWater(GameLocation location)

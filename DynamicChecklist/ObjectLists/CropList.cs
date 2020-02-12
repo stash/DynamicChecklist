@@ -8,6 +8,7 @@
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
     using StardewValley;
+    using StardewValley.Objects;
     using StardewValley.TerrainFeatures;
 
     public class CropList : ObjectList
@@ -53,22 +54,24 @@
             Water, Harvest, PickTree
         }
 
-        public override void BeforeDraw()
+        protected override void InitializeObjectInfoList()
         {
-            if (Game1.currentLocation == Game1.getFarm() || Game1.currentLocation == Game1.getLocationFromName("Greenhouse"))
+            // Initially use all locations
+            foreach (var loc in Game1.locations)
             {
-                this.UpdateObjectInfoList();
+                this.AddFromLocation(loc);
             }
         }
 
         protected override void UpdateObjectInfoList()
         {
-            this.ObjectInfoList.Clear();
-
-            this.AddFromLocation(Game1.getFarm());
-            this.AddFromLocation(Game1.getLocationFromName("Greenhouse"));
-
-            this.TaskDone = !this.ObjectInfoList.Any(soi => soi.NeedAction);
+            // Use just active locations when updating
+            // TODO: handle Junimo picking while not in that location? Player warping back to Farm from building will trigger the event
+            foreach (var loc in ListHelper.GetActiveLocations())
+            {
+                this.ObjectInfoList.RemoveAll(soi => soi.Location == loc);
+                this.AddFromLocation(loc);
+            }
         }
 
         private static bool IsDead(HoeDirt dirt)
@@ -86,9 +89,9 @@
 
         private bool WaterFilter(TerrainFeature terrainFeature)
         {
-            if (terrainFeature is HoeDirt)
+            if (terrainFeature is HoeDirt dirt)
             {
-                return IsUnwatered((HoeDirt)terrainFeature);
+                return IsUnwatered(dirt);
             }
 
             return false;
@@ -108,9 +111,9 @@
 
         private bool HarvestFilter(TerrainFeature terrainFeature)
         {
-            if (terrainFeature is HoeDirt)
+            if (terrainFeature is HoeDirt dirt)
             {
-                return this.IsHarvestable((HoeDirt)terrainFeature);
+                return this.IsHarvestable(dirt);
             }
 
             return false;
@@ -135,6 +138,8 @@
                         where this.filter(terrainFeature)
                         select new StardewObjectInfo(coordinate, loc, true);
             this.ObjectInfoList.AddRange(range);
+
+            // TODO: consider IndoorPot for Water or Harvest actions
         }
     }
 }

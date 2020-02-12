@@ -21,23 +21,21 @@
             this.Name = TaskName.Hay;
         }
 
-        public override void BeforeDraw()
-        {
-            if (Game1.currentLocation.IsFarm && Game1.currentLocation is AnimalHouse)
-            {
-                this.UpdateObjectInfoList((AnimalHouse)Game1.currentLocation);
-                this.TaskDone = !this.ObjectInfoList.Any(soi => soi.NeedAction);
-            }
-        }
-
-        protected override void UpdateObjectInfoList()
+        protected override void InitializeObjectInfoList()
         {
             foreach (var animalHouse in ListHelper.GetFarmAnimalHouses())
             {
                 this.UpdateObjectInfoList(animalHouse);
             }
+        }
 
-            this.TaskDone = !this.ObjectInfoList.Any(soi => soi.NeedAction);
+        protected override void UpdateObjectInfoList()
+        {
+            // Currently possible to exploit removing hey from bench by setting off a bomb, so can't skip updates
+            foreach (var animalHouse in ListHelper.GetActiveFarmAnimalHouses())
+            {
+                this.UpdateObjectInfoList(animalHouse);
+            }
         }
 
         private void UpdateObjectInfoList(AnimalHouse animalHouse)

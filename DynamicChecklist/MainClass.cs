@@ -26,14 +26,19 @@
 
         public override void Entry(IModHelper helper)
         {
+            ObjectList.Monitor = this.Monitor;
+            ObjectList.Helper = this.Helper;
+
             this.config = this.Helper.ReadConfig<ModConfig>();
             this.config.Check();
             helper.WriteConfig(this.config);
-            IModEvents events = helper.Events;
+
+            var events = helper.Events;
             events.Input.ButtonPressed += this.Input_ButtonPressed;
             events.GameLoop.SaveLoaded += this.GameLoop_SaveLoaded;
             events.GameLoop.Saved += this.GameLoop_Saved;
             events.GameLoop.DayStarted += this.GameLoop_DayStarted;
+            events.GameLoop.DayEnding += this.GameLoop_DayEnding;
             events.Display.RenderingHud += this.Display_RenderingHud;
             events.GameLoop.OneSecondUpdateTicked += this.UpdatePaths;
             events.Player.Warped += this.UpdatePaths;
@@ -59,11 +64,6 @@
             if (!MenuAllowed || Game1.currentMinigame != null)
             {
                 return;
-            }
-
-            foreach (var ol in this.objectLists)
-            {
-                ol.BeforeDraw();
             }
 
             foreach (var ol in this.objectLists)
@@ -104,9 +104,34 @@
 
         private void GameLoop_DayStarted(object sender, EventArgs e)
         {
+            this.Monitor.Log("Day Started, waiting for first tick");
+            this.doneLoading = true;
+            this.Helper.Events.GameLoop.UpdateTicked += this.FirstTickOfTheDay;
+        }
+
+        private void GameLoop_DayEnding(object sender, DayEndingEventArgs e)
+        {
+            this.Monitor.Log("Day Ending, disabling updates");
+            this.Helper.Events.GameLoop.UpdateTicked -= this.GameLoop_UpdateTicked;
+        }
+
+        private void FirstTickOfTheDay(object sender, UpdateTickedEventArgs e)
+        {
+            this.Monitor.Log("First Tick of Day, enabling updates");
+            this.Helper.Events.GameLoop.UpdateTicked -= this.FirstTickOfTheDay;
+            this.Helper.Events.GameLoop.UpdateTicked += this.GameLoop_UpdateTicked;
             foreach (var ol in this.objectLists)
             {
                 ol.OnNewDay();
+            }
+        }
+
+        private void GameLoop_UpdateTicked(object sender, UpdateTickedEventArgs e)
+        {
+            this.Monitor.VerboseLog("Update Tick");
+            foreach (var ol in this.objectLists)
+            {
+                ol.OnUpdateTicked(e.Ticks);
             }
         }
 
@@ -216,7 +241,7 @@
             Func<int> crt = this.CountRemainingTasks;
             this.checklistButton = new OpenChecklistButton(() => ChecklistMenu.Open(this.config), crt, this.config, this.Helper.Events);
             Game1.onScreenMenus.Insert(0, this.checklistButton); // So that click is registered with priority
-            this.doneLoading = true;
+            // NOTE: game hasn't had an update tick at this point
         }
 
         private int CountRemainingTasks()

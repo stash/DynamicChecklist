@@ -58,16 +58,13 @@
 
         private bool IsPlayerLuremaster { get; set; } = false;
 
-        public override void OnNewDay()
+        protected override void InitializeObjectInfoList()
         {
             this.newDayAction?.Invoke();
-            base.OnNewDay();
-        }
-
-        public override void BeforeDraw()
-        {
-            this.UpdateObjectInfoList(Game1.currentLocation);
-            this.TaskDone = !this.ObjectInfoList.Any(soi => soi.NeedAction);
+            foreach (var loc in Game1.locations.Where(this.locationFilter))
+            {
+                this.UpdateObjectInfoList(loc);
+            }
         }
 
         protected override void UpdateObjectInfoList()
@@ -76,8 +73,6 @@
             {
                 this.UpdateObjectInfoList(loc);
             }
-
-            this.TaskDone = !this.ObjectInfoList.Any(soi => soi.NeedAction);
         }
 
         private void UpdateObjectInfoList(GameLocation loc)

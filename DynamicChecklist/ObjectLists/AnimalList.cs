@@ -49,16 +49,19 @@
             Pet, Milk, Shear
         }
 
-        public override void BeforeDraw()
+        protected override void InitializeObjectInfoList()
         {
-            if (!this.TaskDone && Game1.currentLocation.IsFarm)
-            {
-                this.UpdateObjectInfoList();
-            }
+            this.UpdateObjectInfoList();
         }
 
         protected override void UpdateObjectInfoList()
         {
+            if (this.TaskDone && this.action != Action.Pet)
+            {
+                return; // Animals can't become un-sheared or un-milked, so once it's done for the day, it's done
+            }
+
+            // Have to wipe it out every time since animals move around.
             this.ObjectInfoList.Clear();
 
             // Outside animals
@@ -70,17 +73,16 @@
             {
                 this.AddAnimalsFromLocation(animalHouse, animalHouse.animals.Values);
             }
-
-            this.TaskDone = !this.ObjectInfoList.Any(soi => soi.NeedAction);
         }
 
         private void AddAnimalsFromLocation(GameLocation loc, IEnumerable<FarmAnimal> animals)
         {
             this.ObjectInfoList.AddRange(from animal in animals
-                                         select this.CreateSOI(animal, loc));
+                                         where this.AnimalFilter(animal, loc)
+                                         select new StardewObjectInfo(animal, loc, true));
         }
 
-        private StardewObjectInfo CreateSOI(FarmAnimal animal, GameLocation loc)
+        private bool AnimalFilter(FarmAnimal animal, GameLocation loc)
         {
             bool needAction;
             switch (this.action)
@@ -98,13 +100,7 @@
                     throw new NotImplementedException();
             }
 
-            var soi = new StardewObjectInfo
-            {
-                Coordinate = animal.getStandingPosition(),
-                Location = loc,
-                NeedAction = needAction
-            };
-            return soi;
+            return needAction;
         }
     }
 }

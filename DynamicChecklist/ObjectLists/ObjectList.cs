@@ -7,6 +7,7 @@
     using Graph.Graphs;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
+    using StardewModdingAPI;
     using StardewValley;
 
     public abstract class ObjectList
@@ -32,10 +33,6 @@
 
         public string OptionMenuLabel { get; protected set; }
 
-        public bool TaskExistsNow { get; private set; }
-
-        public bool IgnoreTask { get; private set; }
-
         public List<StardewObjectInfo> ObjectInfoList { get; set; }
 
         public string TaskDoneMessage { get; protected set; }
@@ -44,7 +41,7 @@
         {
             get
             {
-                return (this.TaskExistsNow || this.config.ShowAllTasks) && this.config.IncludeTask[this.Name];
+                return (!this.taskDone || this.config.ShowAllTasks) && this.config.IncludeTask[this.Name];
             }
         }
 
@@ -79,6 +76,11 @@
             }
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this list of tasks is complete.
+        /// Triggers <c>OnTaskFinished</c> when changed from false to true.
+        /// </summary>
+        /// <see cref="OnTaskFinished(EventArgs)"/>
         public bool TaskDone
         {
             get
@@ -97,38 +99,49 @@
             }
         }
 
+        internal static IMonitor Monitor { get; set; }
+
+        internal static IModHelper Helper { get; set; }
+
         protected bool TaskExistedAtStartOfDay { get; private set; }
 
         protected TaskName Name { get; set; }
 
-        protected int Count { get; set; }
-
         protected Texture2D ImageTexture { get; set; } = null;
 
-        protected int CountNeedAction => this.ObjectInfoList.Count(soi => soi.NeedAction);
+        protected bool AnyTasksNeedAction => this.ObjectInfoList.Any(soi => soi.NeedAction);
+
+        protected bool NoTasksNeedAction => this.ObjectInfoList.All(soi => !soi.NeedAction);
 
         protected virtual bool NeedsPerItemOverlay => true;
 
-        public virtual void BeforeDraw()
+        public void OnNewDay()
         {
+            this.taskDone = false; // skip accessor
+            this.ObjectInfoList.Clear();
+            this.InitializeObjectInfoList();
+            this.TaskDone = this.NoTasksNeedAction;
+            this.TaskExistedAtStartOfDay = !this.TaskDone;
         }
 
-        public virtual void OnNewDay()
+        /// <summary>
+        /// Game tick event, by default just calls <c>UpdateObjectInfoList()</c> and updates <c>TaskDone</c>
+        /// </summary>
+        /// <param name="ticks">Game time in ticks</param>
+        public void OnUpdateTicked(uint ticks)
         {
             this.UpdateObjectInfoList();
-            this.TaskExistedAtStartOfDay = this.ObjectInfoList.Count > 0;
-            this.TaskExistedAtStartOfDay = this.CountNeedAction > 0;
-            this.TaskExistsNow = this.TaskExistedAtStartOfDay;
+            this.TaskDone = this.NoTasksNeedAction;
         }
 
+        /// <summary>
+        /// Invoked by the Mod to draw overlays for this list.
+        /// Either <c>InitializeObjectInfoList</c> or <c>UpdateObjectInfoList</c> is guaranteed to have been called before this.
+        /// </summary>
+        /// <param name="b">Batch in which to draw the overlay</param>
         public void Draw(SpriteBatch b)
         {
-            if (!this.TaskExistedAtStartOfDay && !this.TaskExistsNow && this.CountNeedAction > 0)
-            {
-                this.TaskExistsNow = true;
-            }
-
-            if (this.OverlayActive)
+            if (this.OverlayActive && !this.TaskDone)
             {
                 var currentPlayerLocation = Game1.currentLocation;
                 var smallestDistanceFromPlayer = float.PositiveInfinity;
@@ -211,6 +224,19 @@
             this.OverlayActiveChanged?.Invoke(this, e);
         }
 
+        /// <summary>
+        /// Called on the first tick of the day.
+        /// An empty <c>this.ObjectInfoList</c> will have been created.
+        /// Subclasses are responsible for filling this list with individual tasks.
+        /// </summary>
+        /// <seealso cref="UpdateObjectInfoList"/>
+        protected abstract void InitializeObjectInfoList();
+
+        /// <summary>
+        /// Called on every game update tick except the first.
+        /// Subclasses should update <c>this.ObjectInfoList</c> with the current set of tasks (add, remove, and change are all OK!)
+        /// </summary>
+        /// <seealso cref="InitializeObjectInfoList"/>
         protected abstract void UpdateObjectInfoList();
 
         private static void DrawArrow(SpriteBatch b, float rotation)
@@ -243,6 +269,13 @@
         {
             public StardewObjectInfo()
             {
+            }
+
+            public StardewObjectInfo(FarmAnimal animal, GameLocation location, bool needAction = true)
+            {
+                this.Coordinate = animal.getStandingPosition();
+                this.Location = location;
+                this.NeedAction = needAction;
             }
 
             public StardewObjectInfo(Vector2 coordinate, GameLocation location, bool needAction = true)
