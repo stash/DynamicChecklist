@@ -12,6 +12,8 @@
 
     public class HayList : ObjectList
     {
+        private const int TickOffset = 40;
+
         public HayList(ModConfig config)
             : base(config)
         {
@@ -29,10 +31,13 @@
             }
         }
 
-        protected override void UpdateObjectInfoList()
+        protected override void UpdateObjectInfoList(uint ticks)
         {
-            // Currently possible to exploit removing hey from bench by setting off a bomb, so can't skip updates
-            foreach (var animalHouse in ListHelper.GetActiveFarmAnimalHouses())
+            // According to wiki, it's possible to exploit removing hey from bench by setting off a bomb!
+            // So, just update every second or so for AnimalHouses without an active Farmer
+            var houses = (this.TaskDone && ticks % 60 == TickOffset) ? ListHelper.GetFarmAnimalHouses() : ListHelper.GetActiveFarmAnimalHouses();
+
+            foreach (var animalHouse in houses)
             {
                 this.UpdateObjectInfoList(animalHouse);
             }

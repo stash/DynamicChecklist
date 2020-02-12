@@ -12,10 +12,12 @@
 
     public class MachineList : ObjectList
     {
+        private const int TickOffset = 50;
         private readonly Action action;
         private readonly System.Action newDayAction;
         private readonly Func<GameLocation, bool> locationFilter = (loc) => true;
         private readonly Func<StardewValley.Object, bool> objectFilter = (obj) => true;
+        private readonly bool machinesCanUpdate = true;
 
         public MachineList(ModConfig config, Action action)
             : base(config)
@@ -24,6 +26,7 @@
             switch (action)
             {
                 case Action.CrabPot:
+                    this.machinesCanUpdate = false; // only updates at start of day
                     this.newDayAction = () => this.IsPlayerLuremaster = Game1.player.professions.Contains(11);
                     this.locationFilter = (loc) => ListHelper.LocationHasWater(loc);
                     this.objectFilter = this.CrabPotTaskFilter;
@@ -61,27 +64,38 @@
         protected override void InitializeObjectInfoList()
         {
             this.newDayAction?.Invoke();
-            foreach (var loc in Game1.locations.Where(this.locationFilter))
-            {
-                this.UpdateObjectInfoList(loc);
-            }
+            this.UpdateLocations(Game1.locations);
         }
 
-        protected override void UpdateObjectInfoList()
+        protected override void UpdateObjectInfoList(uint ticks)
         {
-            foreach (var loc in ListHelper.GetActiveLocations().Where(this.locationFilter))
+            // update all locations once per second (refiners that update)
+            IEnumerable<GameLocation> locations;
+            if (this.machinesCanUpdate)
             {
-                this.UpdateObjectInfoList(loc);
+                // Both farmers and machines can change task list, so update Active ones fast, everything else slow
+                // Offset by action ID to distribute a bit more evenly.
+                locations = (ticks % 60 == TickOffset + (int)this.action) ? Game1.locations : ListHelper.GetActiveLocations();
             }
+            else
+            {
+                // Only farmers can update
+                locations = ListHelper.GetActiveLocations();
+            }
+
+            this.UpdateLocations(locations);
         }
 
-        private void UpdateObjectInfoList(GameLocation loc)
+        private void UpdateLocations(IEnumerable<GameLocation> locations)
         {
-            this.ObjectInfoList.RemoveAll(soi => soi.Location == loc);
-            this.ObjectInfoList.AddRange(
-                from pair in loc.Objects.Pairs
-                where this.objectFilter(pair.Value)
-                select new StardewObjectInfo(pair.Key, loc, true));
+            foreach (var loc in locations.Where(this.locationFilter))
+            {
+                this.ObjectInfoList.RemoveAll(soi => soi.Location == loc);
+                this.ObjectInfoList.AddRange(
+                    from pair in loc.Objects.Pairs
+                    where this.objectFilter(pair.Value)
+                    select new StardewObjectInfo(pair.Key, loc, true));
+            }
         }
 
         private bool CrabPotTaskFilter(StardewValley.Object obj)

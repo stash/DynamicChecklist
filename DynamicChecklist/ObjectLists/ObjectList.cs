@@ -130,7 +130,7 @@
         /// <param name="ticks">Game time in ticks</param>
         public void OnUpdateTicked(uint ticks)
         {
-            this.UpdateObjectInfoList();
+            this.UpdateObjectInfoList(ticks);
             this.TaskDone = this.NoTasksNeedAction;
         }
 
@@ -236,8 +236,9 @@
         /// Called on every game update tick except the first.
         /// Subclasses should update <c>this.ObjectInfoList</c> with the current set of tasks (add, remove, and change are all OK!)
         /// </summary>
+        /// <param name="ticks">Number of elapsed game ticks (approx 60Hz)</param>
         /// <seealso cref="InitializeObjectInfoList"/>
-        protected abstract void UpdateObjectInfoList();
+        protected abstract void UpdateObjectInfoList(uint ticks);
 
         private static void DrawArrow(SpriteBatch b, float rotation)
         {

@@ -51,10 +51,10 @@
 
         protected override void InitializeObjectInfoList()
         {
-            this.UpdateObjectInfoList();
+            this.UpdateObjectInfoList(0);
         }
 
-        protected override void UpdateObjectInfoList()
+        protected override void UpdateObjectInfoList(uint ticks)
         {
             if (this.TaskDone && this.action != Action.Pet)
             {

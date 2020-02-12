@@ -83,7 +83,7 @@
         public static IEnumerable<T> IsActive<T>(IEnumerable<T> locations)
             where T : GameLocation
         {
-            var farmers = Game1.getAllFarmers().ToArray();
+            var farmers = Game1.getAllFarmers().ToArray(); // convert to array so it can be queried repeatedly
             foreach (var loc in locations)
             {
                 if (farmers.Any(farmer => farmer.currentLocation == loc))
@@ -91,6 +91,16 @@
                     yield return loc;
                 }
             }
+        }
+
+        /// <summary>
+        /// Checks if any farmers are active in this location.
+        /// </summary>
+        /// <param name="location">Any location</param>
+        /// <returns>If at least one farmer is in this location</returns>
+        public static bool IsActive(GameLocation location)
+        {
+            return Game1.getAllFarmers().Any(farmer => farmer.currentLocation == location);
         }
 
         public static IEnumerable<KeyValuePair<Vector2, StardewValley.Object>> EnumerateObjects(OverlaidDictionary objects)

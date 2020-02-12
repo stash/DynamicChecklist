@@ -13,6 +13,7 @@
 
     public class CropList : ObjectList
     {
+        private const int TickOffset = 20;
         private Action action;
         private Func<TerrainFeature, bool> filter;
 
@@ -63,11 +64,11 @@
             }
         }
 
-        protected override void UpdateObjectInfoList()
+        protected override void UpdateObjectInfoList(uint ticks)
         {
-            // Use just active locations when updating
-            // TODO: handle Junimo picking while not in that location? Player warping back to Farm from building will trigger the event
-            foreach (var loc in ListHelper.GetActiveLocations())
+            var bigUpdate = (ticks % 60) == TickOffset;
+            var locations = bigUpdate ? Game1.locations : ListHelper.GetActiveLocations();
+            foreach (var loc in locations)
             {
                 this.ObjectInfoList.RemoveAll(soi => soi.Location == loc);
                 this.AddFromLocation(loc);

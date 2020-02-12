@@ -18,6 +18,7 @@
     public class EggList : ObjectList
     {
         public const int AutoGrabberId = 165;
+        private const int TickOffset = 30;
 
         private static readonly int[] CollectableCategories = new int[]
         {
@@ -44,15 +45,23 @@
 
         protected override void InitializeObjectInfoList()
         {
-            this.ScanAnimalHousesAndFarm(ListHelper.GetFarmAnimalHouses());
+            this.UpdateObjectInfoList(TickOffset);
         }
 
-        protected override void UpdateObjectInfoList()
+        protected override void UpdateObjectInfoList(uint ticks)
         {
-            this.ScanAnimalHousesAndFarm(ListHelper.GetActiveFarmAnimalHouses());
+            // Ideally, only scan the farm every second when all farmers are absent.
+            var bigUpdate = ticks % 60 == TickOffset;
+            if (bigUpdate || ListHelper.IsActive(Game1.getFarm()))
+            {
+                this.ScanFarm();
+            }
+
+            var animalHouses = bigUpdate ? ListHelper.GetFarmAnimalHouses() : ListHelper.GetActiveFarmAnimalHouses();
+            this.ScanAnimalHouses(animalHouses);
         }
 
-        private void ScanAnimalHousesAndFarm(IEnumerable<AnimalHouse> animalHouses)
+        private void ScanAnimalHouses(IEnumerable<AnimalHouse> animalHouses)
         {
             // Scan barns/coops/etc. for collectables and autograbbers
             foreach (var animalHouse in animalHouses)
@@ -64,7 +73,10 @@
                             select soi;
                 this.ObjectInfoList.AddRange(range);
             }
+        }
 
+        private void ScanFarm()
+        {
             // Scan farm to get things like Truffles
             var farm = Game1.getFarm();
             this.ObjectInfoList.RemoveAll(soi => soi.Location == farm);
