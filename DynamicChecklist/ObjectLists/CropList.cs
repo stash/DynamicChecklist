@@ -140,7 +140,14 @@
                         select new StardewObjectInfo(coordinate, loc, true);
             this.ObjectInfoList.AddRange(range);
 
-            // TODO: consider IndoorPot for Water or Harvest actions
+            if (this.action == Action.Water || this.action == Action.Harvest)
+            {
+                var potRange = from pair in loc.Objects.Pairs
+                               where pair.Value is IndoorPot pot && this.filter(pot.hoeDirt.Value)
+                               let coordinate = pair.Key
+                               select new StardewObjectInfo(coordinate, loc, true);
+                this.ObjectInfoList.AddRange(potRange);
+            }
         }
     }
 }
