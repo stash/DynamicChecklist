@@ -10,16 +10,22 @@
         {
         }
 
-        public StardewObjectInfo(FarmAnimal animal, GameLocation location, bool needAction = true)
+        public StardewObjectInfo(Character c, bool needAction = true)
         {
-            this.Coordinate = animal.getStandingPosition();
-            this.Location = location;
+            this.SetCharacterPosition(c);
             this.NeedAction = needAction;
         }
 
-        public StardewObjectInfo(Vector2 coordinate, GameLocation location, bool needAction = true)
+        public StardewObjectInfo(Character c, GameLocation location, bool needAction = true)
         {
-            this.Coordinate = coordinate * Game1.tileSize + new Vector2(Game1.tileSize / 2, Game1.tileSize / 2);
+            this.SetCharacterPosition(c);
+            this.Location = location; // overrides call above
+            this.NeedAction = needAction;
+        }
+
+        public StardewObjectInfo(Vector2 tileCoord, GameLocation location, bool needAction = true)
+        {
+            this.SetTileCoordinate(tileCoord);
             this.Location = location;
             this.NeedAction = needAction;
         }
@@ -48,6 +54,17 @@
         {
             var v = this.Coordinate - c.getStandingPosition();
             return (float)Math.Atan2(v.Y, v.X);
+        }
+
+        public void SetTileCoordinate(Vector2 tilePosition)
+        {
+            this.Coordinate = tilePosition * Game1.tileSize + new Vector2(Game1.tileSize / 2, Game1.tileSize / 2);
+        }
+
+        public void SetCharacterPosition(Character c)
+        {
+            this.Location = c.currentLocation;
+            this.Coordinate = c.getStandingPosition();
         }
     }
 }

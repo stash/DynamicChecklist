@@ -144,6 +144,17 @@
             return locationHasWater[name];
         }
 
+        public static IEnumerable<NPC> GetNPCs()
+        {
+            foreach (var location in Game1.locations)
+            {
+                foreach (var npc in location.characters)
+                {
+                    yield return npc;
+                }
+            }
+        }
+
         internal static void PopulateObjectsNames()
         {
             objectCategories.Clear();

@@ -94,6 +94,7 @@
     <Compile Include="ObjectLists\HayList.cs" />
     <Compile Include="ObjectLists\ListHelper.cs" />
     <Compile Include="ObjectLists\MachineList.cs" />
+    <Compile Include="ObjectLists\NPCList.cs" />
     <Compile Include="ObjectLists\ObjectList.cs" />
     <Compile Include="DynamicSelectableCheckbox.cs" />
     <Compile Include="MainClass.cs" />

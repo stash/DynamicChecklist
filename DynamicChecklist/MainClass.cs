@@ -199,6 +199,15 @@
                     case TaskName.EmptyCask:
                         this.objectLists.Add(new MachineList(this.config, MachineList.Action.EmptyCask));
                         break;
+                    case TaskName.Birthday:
+                        this.objectLists.Add(new NPCList(this.config, NPCList.Action.Birthday));
+                        break;
+                    case TaskName.Spouse:
+                        this.objectLists.Add(new NPCList(this.config, NPCList.Action.Spouse));
+                        break;
+                    case TaskName.Child:
+                        this.objectLists.Add(new NPCList(this.config, NPCList.Action.Child));
+                        break;
                     default:
                         throw new NotImplementedException();
                 }
