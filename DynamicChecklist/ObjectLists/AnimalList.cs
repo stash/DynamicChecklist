@@ -79,7 +79,7 @@
         {
             this.ObjectInfoList.AddRange(from animal in animals
                                          where this.AnimalFilter(animal, loc)
-                                         select new StardewObjectInfo(animal, loc, true));
+                                         select new StardewObjectInfo(animal));
         }
 
         private bool AnimalFilter(FarmAnimal animal, GameLocation loc)
