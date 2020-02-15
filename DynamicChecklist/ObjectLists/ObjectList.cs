@@ -147,28 +147,22 @@
                 var smallestDistanceFromPlayer = float.PositiveInfinity;
                 StardewObjectInfo closestSOI = null;
                 bool anyOnScreen = false;
-                foreach (StardewObjectInfo objectInfo in this.ObjectInfoList)
+                foreach (var soi in this.ObjectInfoList)
                 {
-                    if (objectInfo.NeedAction)
+                    if (soi.NeedAction && soi.Location == currentPlayerLocation)
                     {
-                        if (objectInfo.IsOnScreen())
+                        anyOnScreen |= soi.IsOnScreen();
+
+                        if (this.NeedsPerItemOverlay && this.config.ShowOverlay)
                         {
-                            anyOnScreen = true;
+                            this.DrawObjectInfo(b, soi);
                         }
 
-                        if (objectInfo.Location == currentPlayerLocation)
+                        var distanceFromPlayer = soi.GetDistance(Game1.player);
+                        if (distanceFromPlayer < smallestDistanceFromPlayer)
                         {
-                            if (this.NeedsPerItemOverlay && this.config.ShowOverlay)
-                            {
-                                this.DrawObjectInfo(b, objectInfo);
-                            }
-
-                            var distanceFromPlayer = objectInfo.GetDistance(Game1.player);
-                            if (distanceFromPlayer < smallestDistanceFromPlayer)
-                            {
-                                smallestDistanceFromPlayer = distanceFromPlayer;
-                                closestSOI = objectInfo;
-                            }
+                            smallestDistanceFromPlayer = distanceFromPlayer;
+                            closestSOI = soi;
                         }
                     }
                 }
