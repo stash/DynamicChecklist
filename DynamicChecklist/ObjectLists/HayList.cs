@@ -56,9 +56,9 @@
                     bool tileIsTrough = animalHouse.doesTileHaveProperty(tileX, tileY, "Trough", "Back") != null;
                     if (tileIsTrough)
                     {
-                        var loc = new Vector2(tileX, tileY);
-                        bool tileHasHay = animalHouse.Objects.ContainsKey(loc);
-                        this.ObjectInfoList.Add(new StardewObjectInfo(loc, animalHouse, !tileHasHay));
+                        var coord = new Vector2(tileX, tileY);
+                        bool tileHasHay = animalHouse.Objects.ContainsKey(coord);
+                        this.ObjectInfoList.Add(new StardewObjectInfo(coord, animalHouse, !tileHasHay));
                     }
                 }
             }
