@@ -108,8 +108,7 @@
             foreach (var npc in this.trackedNPCs)
             {
                 var soi = this.ObjectInfoList[i++];
-                soi.Location = npc.currentLocation;
-                soi.Coordinate = npc.getStandingPosition();
+                soi.SetCharacterPosition(npc);
                 soi.NeedAction = this.taskCheck(npc);
             }
         }
