@@ -60,6 +60,7 @@
 
         protected override void InitializeObjectInfoList()
         {
+            this.trackedNPCs.Clear();
             switch (this.action)
             {
                 case Action.Birthday:
