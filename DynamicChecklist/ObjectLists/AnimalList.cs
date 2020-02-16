@@ -16,19 +16,19 @@
             switch (action)
             {
                 case Action.Pet:
-                    this.ImageTexture = OverlayTextures.Heart;
+                    this.ImageTexture = GameTexture.Heart;
                     this.OptionMenuLabel = "Pet Animals";
                     this.TaskDoneMessage = "All animals have been petted";
                     this.Name = TaskName.Pet;
                     break;
                 case Action.Milk:
-                    this.ImageTexture = OverlayTextures.MilkPail;
+                    this.ImageTexture = GameTexture.MilkPail;
                     this.OptionMenuLabel = "Milk Cows/Goats";
                     this.TaskDoneMessage = "All Cows and Goats have been milked";
                     this.Name = TaskName.Milk;
                     break;
                 case Action.Shear:
-                    this.ImageTexture = OverlayTextures.Shears;
+                    this.ImageTexture = GameTexture.Shears;
                     this.OptionMenuLabel = "Shear Sheep";
                     this.TaskDoneMessage = "All sheep have been sheared";
                     this.Name = TaskName.Shear;

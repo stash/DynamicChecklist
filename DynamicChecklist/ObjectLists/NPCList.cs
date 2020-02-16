@@ -20,23 +20,25 @@
             : base(config)
         {
             this.action = action;
-            this.ImageTexture = OverlayTextures.Heart;
             this.trackedNPCs = new List<NPC>();
             switch (action)
             {
                 case Action.Birthday:
+                    this.ImageTexture = GameTexture.Present;
                     this.OptionMenuLabel = BirthdayMenuGeneric;
                     this.TaskDoneMessage = BirthdayDoneGeneric;
                     this.Name = TaskName.Birthday;
                     this.taskCheck = this.CheckBirthday;
                     break;
                 case Action.Spouse:
+                    this.ImageTexture = GameTexture.Heart;
                     this.OptionMenuLabel = "Kiss Spouse";
                     this.TaskDoneMessage = "Happy spouse, happy house!";
                     this.Name = TaskName.Spouse;
                     this.taskCheck = this.CheckSpouse;
                     break;
                 case Action.Child:
+                    this.ImageTexture = GameTexture.Heart;
                     this.OptionMenuLabel = "Hug Children";
                     this.TaskDoneMessage = "All children hugged!";
                     this.Name = TaskName.Child;

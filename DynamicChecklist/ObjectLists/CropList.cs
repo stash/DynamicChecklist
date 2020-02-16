@@ -19,21 +19,21 @@
             switch (action)
             {
                 case Action.Water:
-                    this.ImageTexture = OverlayTextures.WateringCan;
+                    this.ImageTexture = GameTexture.WateringCan;
                     this.OptionMenuLabel = "Water Crops";
                     this.TaskDoneMessage = "All crops have been watered";
                     this.Name = TaskName.Water;
                     this.filter = this.WaterFilter;
                     break;
                 case Action.Harvest:
-                    this.ImageTexture = OverlayTextures.Plus;
+                    this.ImageTexture = GameTexture.Plus;
                     this.OptionMenuLabel = "Harvest Crops";
                     this.TaskDoneMessage = "All crops have been harvested";
                     this.Name = TaskName.Harvest;
                     this.filter = this.HarvestFilter;
                     break;
                 case Action.PickTree:
-                    this.ImageTexture = OverlayTextures.Plus;
+                    this.ImageTexture = GameTexture.BerryBush;
                     this.OptionMenuLabel = "Pick Trees";
                     var number = "three fruits"; // TODO: "two or more fruits", "fruit"
                     this.TaskDoneMessage = $"All trees with {number} have been picked";

@@ -19,10 +19,10 @@
         private ModConfig config;
 
         public DCOptionsInputListener(string label, int whichOption, int slotWidth, ModConfig config, int x = -1, int y = -1)
-          : base(label, x, y, slotWidth, GameTextures.SetButton.ZoomHeight, whichOption)
+          : base(label, x, y, slotWidth, GameTexture.SetButton.ZoomHeight, whichOption)
         {
             this.config = config;
-            this.setbuttonBounds = new Rectangle(x + slotWidth - GameTextures.SetButton.ZoomWidth - ButtonOffset, y, GameTextures.SetButton.ZoomWidth, GameTextures.SetButton.ZoomHeight);
+            this.setbuttonBounds = new Rectangle(x + slotWidth - GameTexture.SetButton.ZoomWidth - ButtonOffset, y, GameTexture.SetButton.ZoomWidth, GameTexture.SetButton.ZoomHeight);
 
             if (whichOption == -1)
             {
@@ -107,7 +107,7 @@
             }
 
             var slotBounds = new Vector2(this.setbuttonBounds.X + slotX, this.setbuttonBounds.Y + slotY);
-            Utility.drawWithShadow(b, GameTextures.SetButton.Tex, slotBounds, GameTextures.SetButton.Src, Color.White, 0.0f, Vector2.Zero, (float)Game1.pixelZoom, false, 0.15f, -1, -1, 0.35f);
+            Utility.drawWithShadow(b, GameTexture.SetButton.Tex, slotBounds, GameTexture.SetButton.Src, Color.White, 0.0f, Vector2.Zero, (float)Game1.pixelZoom, false, 0.15f, -1, -1, 0.35f);
             if (!this.listening)
             {
                 return;

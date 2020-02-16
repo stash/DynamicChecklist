@@ -78,7 +78,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ChecklistMenu.cs" />
-    <Compile Include="GameTextures.cs" />
+    <Compile Include="GameTexture.cs" />
     <Compile Include="Graph\Edges\PlayerEdge.cs" />
     <Compile Include="Graph\Edges\StardewEdge.cs" />
     <Compile Include="Graph\Graphs\StardewGraph.cs" />
@@ -92,6 +92,7 @@
     <Compile Include="ObjectLists\AnimalList.cs" />
     <Compile Include="ObjectLists\CropList.cs" />
     <Compile Include="ObjectLists\EggList.cs" />
+    <Compile Include="ObjectLists\FishPondList.cs" />
     <Compile Include="ObjectLists\HayList.cs" />
     <Compile Include="ObjectLists\ListHelper.cs" />
     <Compile Include="ObjectLists\MachineList.cs" />
@@ -101,7 +102,6 @@
     <Compile Include="MainClass.cs" />
     <Compile Include="ObjectLists\StardewObjectInfo.cs" />
     <Compile Include="ObjectLists\TaskName.cs" />
-    <Compile Include="ObjectLists\OverlayTextures.cs" />
     <Compile Include="ObjectLists\TravellingMerchantList.cs" />
     <Compile Include="OpenChecklistButton.cs" />
     <Compile Include="Options\DCOptionsDropdown.cs" />
@@ -115,37 +115,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Resources\arrowRight.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\crab.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\empty.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\hand.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\heart.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\milkPail.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\plus.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\shears.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="Resources\Sign.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\speechBubble.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\wateringCan.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

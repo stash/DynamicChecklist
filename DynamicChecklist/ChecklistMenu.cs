@@ -345,15 +345,15 @@
             var leftArrowOffset = this.xPositionOnScreen + this.width + Game1.tileSize / 4;
             var leftBarOffset = leftArrowOffset + Game1.pixelZoom * 3;
 
-            this.upArrow = GameTextures.UpArrow.AsClickableTextureComponent(
+            this.upArrow = GameTexture.ArrowUpSmall.AsClickableTextureComponent(
                 "up-arrow",
                 leftArrowOffset,
                 this.yPositionOnScreen);
-            this.downArrow = GameTextures.DownArrow.AsClickableTextureComponent(
+            this.downArrow = GameTexture.ArrowDownSmall.AsClickableTextureComponent(
                 "down-arrow",
                 leftArrowOffset,
-                this.yPositionOnScreen + this.height - GameTextures.DownArrow.ZoomHeight);
-            this.scrollbar = GameTextures.Scrollbar.AsClickableTextureComponent(
+                this.yPositionOnScreen + this.height - GameTexture.ArrowDownSmall.ZoomHeight);
+            this.scrollbar = GameTexture.Scrollbar.AsClickableTextureComponent(
                 "scrollbar",
                 leftBarOffset,
                 0);
@@ -362,7 +362,7 @@
             this.scrollbarRunner = new Rectangle(
                 leftBarOffset,
                 this.yPositionOnScreen + this.upArrow.bounds.Height + Game1.pixelZoom,
-                GameTextures.ScrollbarRunner.ZoomWidth,
+                GameTexture.ScrollbarRunner.ZoomWidth,
                 this.height - this.upArrow.bounds.Height - this.downArrow.bounds.Height - Game1.pixelZoom * 2);
 
             this.SetScrollBarToCurrentIndex();
@@ -442,7 +442,7 @@
         {
             this.upArrow.draw(b);
             var dst = this.scrollbarRunner;
-            drawTextureBox(b, GameTextures.ScrollbarRunner.Tex, GameTextures.ScrollbarRunner.Src, dst.X, dst.Y, dst.Width, dst.Height, Color.White, Game1.pixelZoom, false);
+            drawTextureBox(b, GameTexture.ScrollbarRunner.Tex, GameTexture.ScrollbarRunner.Src, dst.X, dst.Y, dst.Width, dst.Height, Color.White, Game1.pixelZoom, false);
             this.scrollbar.draw(b);
             this.downArrow.draw(b);
         }

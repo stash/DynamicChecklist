@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.IO;
     using System.Linq;
     using Graph.Graphs;
     using Microsoft.Xna.Framework.Input;
@@ -31,6 +32,8 @@
             this.config.Check();
             helper.WriteConfig(this.config);
 
+            GameTexture.TextureDirectory = Path.Combine(this.Helper.DirectoryPath, "Resources");
+
             var events = helper.Events;
             events.Input.ButtonPressed += this.Input_ButtonPressed;
             events.GameLoop.SaveLoaded += this.GameLoop_SaveLoaded;
@@ -40,8 +43,6 @@
             events.Display.RenderingHud += this.Display_RenderingHud;
             events.GameLoop.OneSecondUpdateTicked += this.UpdatePaths;
             events.Player.Warped += this.UpdatePaths;
-
-            OverlayTextures.LoadTextures(this.Helper.DirectoryPath);
             try
             {
                 this.openMenuKey = (Keys)Enum.Parse(typeof(Keys), this.config.OpenMenuKey);

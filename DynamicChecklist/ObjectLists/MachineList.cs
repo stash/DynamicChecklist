@@ -19,7 +19,7 @@
             : base(config)
         {
             this.action = action;
-            this.ImageTexture = OverlayTextures.Empty; // always hidden though
+            this.ImageTexture = GameTexture.Empty; // always hidden
             switch (action)
             {
                 case Action.CrabPot:

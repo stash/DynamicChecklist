@@ -10,7 +10,7 @@
         public HayList(ModConfig config)
             : base(config)
         {
-            this.ImageTexture = OverlayTextures.Hand;
+            this.ImageTexture = GameTexture.Hay;
             this.OptionMenuLabel = "Filled Troughs";
             this.TaskDoneMessage = "All troughs have been filled";
             this.Name = TaskName.Hay;

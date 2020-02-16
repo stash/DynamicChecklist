@@ -107,7 +107,9 @@
 
         protected TaskName Name { get; set; }
 
-        protected Texture2D ImageTexture { get; set; } = null;
+        protected GameTexture ImageTexture { get; set; } = GameTexture.Empty;
+
+        protected Color ImageTint { get; set; } = Color.White;
 
         protected bool AnyTasksNeedAction => this.ObjectInfoList.Any(soi => soi.NeedAction);
 
@@ -254,29 +256,32 @@
         {
             const float distanceFromCenter = 2 * Game1.tileSize;
             var viewport = Game1.viewport;
-            var tex = OverlayTextures.ArrowRight;
+            var sprite = GameTexture.ArrowRight;
             var standPos = Game1.player.getStandingPosition();
             var center = new Point((int)standPos.X - viewport.X, (int)standPos.Y - viewport.Y);
 
             var destinationRectangle = new Rectangle(
                 (int)(standPos.X - viewport.X + Math.Cos(rotation) * distanceFromCenter),
                 (int)(standPos.Y - viewport.Y + Math.Sin(rotation) * distanceFromCenter),
-                tex.Width,
-                tex.Height);
+                sprite.Width,
+                sprite.Height);
             destinationRectangle.X += (int)(Math.Cos(rotation) * distanceFromCenter);
             destinationRectangle.Y += (int)(Math.Sin(rotation) * distanceFromCenter);
-            b.Draw(tex, destinationRectangle, null, Color.White, rotation, new Vector2(tex.Width / 2, tex.Height / 2), SpriteEffects.None, 0);
+            b.Draw(sprite.Tex, destinationRectangle, sprite.Src, Color.White, rotation, new Vector2(sprite.Width / 2, sprite.Height / 2), SpriteEffects.None, 0);
         }
 
         private void DrawObjectInfo(SpriteBatch b, StardewObjectInfo objectInfo)
         {
-            var viewport = Game1.viewport;
-            var drawLoc = new Vector2(objectInfo.Coordinate.X - viewport.X, objectInfo.Coordinate.Y - viewport.Y - Game1.tileSize / 2);
-            var spriteBox = new Rectangle((int)drawLoc.X - this.ImageTexture.Width / 4 * Game1.pixelZoom, (int)drawLoc.Y - this.ImageTexture.Height / 4 * Game1.pixelZoom - Game1.tileSize / 2, this.ImageTexture.Width * Game1.pixelZoom / 2, this.ImageTexture.Height * Game1.pixelZoom / 2);
-            var spriteBoxSpeechBubble = new Rectangle((int)drawLoc.X - OverlayTextures.SpeechBubble.Width / 4 * Game1.pixelZoom, (int)drawLoc.Y - OverlayTextures.SpeechBubble.Height / 4 * Game1.pixelZoom - Game1.tileSize / 2, OverlayTextures.SpeechBubble.Width * Game1.pixelZoom / 2, OverlayTextures.SpeechBubble.Height * Game1.pixelZoom / 2);
-            spriteBoxSpeechBubble.Offset(0, Game1.pixelZoom / 2);
-            b.Draw(OverlayTextures.SpeechBubble, spriteBoxSpeechBubble, Color.White);
-            b.Draw(this.ImageTexture, spriteBox, Color.White);
+            var bubble = GameTexture.SpeechBubble;
+            var image = this.ImageTexture;
+
+            int x = (int)objectInfo.Coordinate.X - Game1.viewport.X;
+            int y = (int)objectInfo.Coordinate.Y - Game1.viewport.Y - Game1.tileSize / 2;
+            var dstImage = new Rectangle(x - image.Width / 4 * Game1.pixelZoom, y - image.Height / 4 * Game1.pixelZoom - Game1.tileSize / 2, image.Width * Game1.pixelZoom / 2, image.Height * Game1.pixelZoom / 2);
+            var dstBubble = new Rectangle(x - bubble.Width / 4 * Game1.pixelZoom, y - bubble.Height / 4 * Game1.pixelZoom - Game1.tileSize / 2, bubble.Width * Game1.pixelZoom / 2, bubble.Height * Game1.pixelZoom / 2);
+            dstBubble.Offset(0, Game1.pixelZoom / 2);
+            b.Draw(bubble.Tex, dstBubble, bubble.Src, Color.White);
+            b.Draw(image.Tex, dstImage, image.Src, this.ImageTint);
         }
     }
 }

@@ -17,7 +17,7 @@
         public TravellingMerchantList(ModConfig config)
             : base(config)
         {
-            this.ImageTexture = OverlayTextures.Empty;
+            this.ImageTexture = GameTexture.TravellingMerchant;
             this.OptionMenuLabel = "Visit Travelling Merchant";
             this.TaskDoneMessage = "Travelling Merchant Visited!";
             Helper.Events.Display.MenuChanged += this.Display_MenuChanged;

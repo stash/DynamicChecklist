@@ -10,18 +10,16 @@
 
     public class OpenChecklistButton : IClickableMenu
     {
-        private readonly Texture2D texture;
         private Action openChecklist;
         private string hoverText = string.Empty;
         private Func<int> countRemainingTasks;
         private ModConfig config;
 
         public OpenChecklistButton(Action openChecklist, Func<int> countRemainingTasks, ModConfig config, IModEvents events)
-            : base(0, 0, OverlayTextures.Sign.Width * Game1.pixelZoom, OverlayTextures.Sign.Height * Game1.pixelZoom, false)
+            : base(0, 0, GameTexture.Sign.ZoomWidth, GameTexture.Sign.ZoomHeight, false)
         {
             this.config = config;
             this.countRemainingTasks = countRemainingTasks;
-            this.texture = OverlayTextures.Sign;
             this.openChecklist = openChecklist;
             events.Display.MenuChanged += this.OnMenuClosed;
             this.UpdateButtonPosition(config.OpenChecklistButtonLocation);
@@ -56,7 +54,7 @@
             string s = tasks.ToString();
             Vector2 sSize = font.MeasureString(s);
             Vector2 sPos = new Vector2(this.xPositionOnScreen + this.width / 2 - sSize.X / 2, this.yPositionOnScreen + this.height / 2 - sSize.Y / 2 + 10);
-            b.Draw(this.texture, new Rectangle(this.xPositionOnScreen, this.yPositionOnScreen, this.width, this.height), Color.White);
+            b.Draw(GameTexture.Sign.Tex, new Rectangle(this.xPositionOnScreen, this.yPositionOnScreen, this.width, this.height), GameTexture.Sign.Src, Color.White);
             b.DrawString(font, tasks.ToString(), sPos, Color.Black);
             if (this.isWithinBounds(Game1.getOldMouseX(), Game1.getOldMouseY()))
             {
