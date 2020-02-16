@@ -122,21 +122,24 @@
             {
                 this.DownArrowPressed();
                 Game1.soundBank.PlayCue("shwip");
+                return;
             }
             else if (this.upArrow.containsPoint(x, y) && this.scrollOffset > 0)
             {
                 this.UpArrowPressed();
                 Game1.soundBank.PlayCue("shwip");
+                return;
             }
             else if (this.scrollbar.containsPoint(x, y))
             {
                 this.isScrolling = true;
+                return;
             }
-            else if (!this.downArrow.containsPoint(x, y) && x > this.xPositionOnScreen + this.width && (x < this.xPositionOnScreen + this.width + Game1.tileSize * 2 && y > this.yPositionOnScreen) && y < this.yPositionOnScreen + this.height)
+            else if (this.scrollbarRunner.Contains(x, y))
             {
                 this.isScrolling = true;
                 this.leftClickHeld(x, y);
-                this.releaseLeftClick(x, y);
+                return;
             }
 
             this.scrollOffset = Math.Max(0, Math.Min(this.options.Count - ItemsPerPage, this.scrollOffset));
@@ -175,16 +178,10 @@
             base.leftClickHeld(x, y);
             if (this.isScrolling)
             {
-                int num = this.scrollbar.bounds.Y;
-                this.scrollbar.bounds.Y = Math.Min(this.yPositionOnScreen + this.height - Game1.tileSize - Game1.pixelZoom * 3 - this.scrollbar.bounds.Height, Math.Max(y, this.yPositionOnScreen + this.upArrow.bounds.Height + Game1.pixelZoom * 5));
-                this.scrollOffset = Math.Min(this.options.Count - ItemsPerPage, Math.Max(0, (int)(this.options.Count * (double)((y - this.scrollbarRunner.Y) / (float)this.scrollbarRunner.Height))));
-                this.SetScrollBarToCurrentIndex();
-                if (num == this.scrollbar.bounds.Y)
+                if (this.DragScrollBar(y))
                 {
-                    return;
+                    Game1.soundBank.PlayCue("shiny4");
                 }
-
-                Game1.soundBank.PlayCue("shiny4");
             }
             else
             {
@@ -200,7 +197,15 @@
             }
 
             base.releaseLeftClick(x, y);
-            this.LeftClickHeldOrReleasedForOption(x, y, held: false);
+            if (this.isScrolling)
+            {
+                // Snap bar into position for the current offset
+                this.SetScrollBarToCurrentIndex();
+            }
+            else
+            {
+                this.LeftClickHeldOrReleasedForOption(x, y, held: false);
+            }
 
             this.optionsSlotHeld = -1;
             this.isScrolling = false;
@@ -234,6 +239,18 @@
             var x = v.Width / 2 - width / 2;
             var y = v.Height / 2 - height / 2;
             return new Rectangle(x, y, width, height);
+        }
+
+        /// <summary>
+        /// Clamps the specified value to the specified minimum and maximum range
+        /// </summary>
+        /// <param name="x">A value to clamp</param>
+        /// <param name="min">The specified minimum range</param>
+        /// <param name="max">The specified maximum range</param>
+        /// <returns>The clamped value for the <c>x</c> parameter</returns>
+        private static int Clamp(int x, int min, int max)
+        {
+            return (x > max) ? max : ((x < min) ? min : x);
         }
 
         private void MapOptionCoords(int x, int y, out int mappedX, out int mappedY, int slotIndex = -1)
@@ -325,35 +342,99 @@
 
         private void SetupScrollbar()
         {
-            this.upArrow = GameTextures.UpArrow.AsClickableTextureComponent("up-arrow", this.xPositionOnScreen + this.width + Game1.tileSize / 4, this.yPositionOnScreen + Game1.tileSize);
-            this.downArrow = GameTextures.DownArrow.AsClickableTextureComponent("down-arrow", this.xPositionOnScreen + this.width + Game1.tileSize / 4, this.yPositionOnScreen + this.height - Game1.tileSize);
-            this.scrollbar = GameTextures.Scrollbar.AsClickableTextureComponent("scrollbar", this.upArrow.bounds.X + Game1.pixelZoom * 3, this.upArrow.bounds.Y + this.upArrow.bounds.Height + Game1.pixelZoom);
-            this.scrollbarRunner = new Rectangle(this.scrollbar.bounds.X, this.upArrow.bounds.Y + this.upArrow.bounds.Height + Game1.pixelZoom, this.scrollbar.bounds.Width, this.height - Game1.tileSize * 2 - this.upArrow.bounds.Height - Game1.pixelZoom * 2);
+            var leftArrowOffset = this.xPositionOnScreen + this.width + Game1.tileSize / 4;
+            var leftBarOffset = leftArrowOffset + Game1.pixelZoom * 3;
+
+            this.upArrow = GameTextures.UpArrow.AsClickableTextureComponent(
+                "up-arrow",
+                leftArrowOffset,
+                this.yPositionOnScreen);
+            this.downArrow = GameTextures.DownArrow.AsClickableTextureComponent(
+                "down-arrow",
+                leftArrowOffset,
+                this.yPositionOnScreen + this.height - GameTextures.DownArrow.ZoomHeight);
+            this.scrollbar = GameTextures.Scrollbar.AsClickableTextureComponent(
+                "scrollbar",
+                leftBarOffset,
+                0);
+
+            // Give a 1 pixelZoom margin between each arrow
+            this.scrollbarRunner = new Rectangle(
+                leftBarOffset,
+                this.yPositionOnScreen + this.upArrow.bounds.Height + Game1.pixelZoom,
+                GameTextures.ScrollbarRunner.ZoomWidth,
+                this.height - this.upArrow.bounds.Height - this.downArrow.bounds.Height - Game1.pixelZoom * 2);
+
+            this.SetScrollBarToCurrentIndex();
         }
 
+        /// <summary>
+        /// Snaps the scroll bar position to the current <c>scrollOffset</c>
+        /// </summary>
         private void SetScrollBarToCurrentIndex()
         {
-            if (this.options.Count == 0)
+            int total = this.options.Count;
+            if (total == 0)
             {
                 return;
             }
 
-            this.scrollbar.bounds.Y = (this.scrollOffset == this.options.Count - ItemsPerPage) ?
-                this.scrollbarRunner.Height / Math.Max(1, this.options.Count - ItemsPerPage + 1) * this.scrollOffset + this.upArrow.bounds.Bottom + Game1.pixelZoom :
-                this.downArrow.bounds.Y - this.scrollbar.bounds.Height - Game1.pixelZoom;
+            int perPage = ItemsPerPage;
+            if (total <= perPage)
+            {
+                this.scrollbar.bounds.Y = this.scrollbarRunner.Y; // park handle at top
+                return;
+            }
+
+            int remainder = total - perPage;
+            int availableRunnerHeight = this.scrollbarRunner.Height - this.scrollbar.bounds.Height;
+
+            // Key formula; this is inverted in DragScrollBar
+            this.scrollbar.bounds.Y = this.scrollbarRunner.Y + availableRunnerHeight * this.scrollOffset / remainder;
+        }
+
+        /// <summary>
+        /// Handle user dragging the scroll bar.
+        /// Moves the top of the bar to the mouse Y coordinate, clamping at the top and bottom of the runner.
+        /// </summary>
+        /// <param name="y">Mouse position Y coordinate</param>
+        /// <returns>If the scroll index has changed</returns>
+        private bool DragScrollBar(int y)
+        {
+            var oldScrollOfset = this.scrollOffset;
+            var total = this.options.Count;
+            var remainder = total - ItemsPerPage;
+            int availableRunnerHeight = this.scrollbarRunner.Height - this.scrollbar.bounds.Height;
+
+            // Move top of bar to mouse position, with clamp
+            var newBarY = Clamp(y, this.scrollbarRunner.Y, this.scrollbarRunner.Y + availableRunnerHeight);
+            this.scrollbar.bounds.Y = newBarY;
+
+            // Now, figure out what the bar position corresponds to in terms of scrollOffset
+            var deltaY = newBarY - this.scrollbarRunner.Y; // How far from the top of the runner?
+            var newScrollOffset = deltaY * remainder / availableRunnerHeight; // Inverse of key formula in SetScrollBarToCurrentIndex
+            newScrollOffset = Clamp(newScrollOffset, 0, remainder);
+
+            if (newScrollOffset != oldScrollOfset)
+            {
+                this.scrollOffset = newScrollOffset;
+                return true;
+            }
+
+            return false;
         }
 
         private void DownArrowPressed()
         {
             this.downArrow.scale = this.downArrow.baseScale;
-            ++this.scrollOffset;
+            this.scrollOffset++;
             this.SetScrollBarToCurrentIndex();
         }
 
         private void UpArrowPressed()
         {
             this.upArrow.scale = this.upArrow.baseScale;
-            --this.scrollOffset;
+            this.scrollOffset--;
             this.SetScrollBarToCurrentIndex();
         }
 
