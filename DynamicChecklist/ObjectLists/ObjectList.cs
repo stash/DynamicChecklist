@@ -141,44 +141,48 @@
         /// <param name="b">Batch in which to draw the overlay</param>
         public void Draw(SpriteBatch b)
         {
-            if (this.OverlayActive && !this.TaskDone)
+            if (!this.OverlayActive || this.TaskDone)
             {
-                var currentPlayerLocation = Game1.currentLocation;
-                var smallestDistanceFromPlayer = float.PositiveInfinity;
-                StardewObjectInfo closestSOI = null;
-                bool anyOnScreen = false;
-                foreach (var soi in this.ObjectInfoList)
+                return;
+            }
+
+            if (!this.config.ShowOverlay && !this.config.ShowArrow)
+            {
+                return; // nothing to draw or calculate
+            }
+
+            var currentLocation = Game1.currentLocation;
+            var smallestDistanceFromPlayer = float.PositiveInfinity;
+            StardewObjectInfo closestSOI = null;
+            bool anyOnScreen = false;
+            foreach (var soi in from soi in this.ObjectInfoList
+                                where soi.NeedAction && soi.Location == currentLocation
+                                select soi)
+            {
+                anyOnScreen |= soi.IsOnScreen();
+                if (this.NeedsPerItemOverlay && this.config.ShowOverlay)
                 {
-                    if (soi.NeedAction && soi.Location == currentPlayerLocation)
-                    {
-                        anyOnScreen |= soi.IsOnScreen();
-
-                        if (this.NeedsPerItemOverlay && this.config.ShowOverlay)
-                        {
-                            this.DrawObjectInfo(b, soi);
-                        }
-
-                        var distanceFromPlayer = soi.GetDistance(Game1.player);
-                        if (distanceFromPlayer < smallestDistanceFromPlayer)
-                        {
-                            smallestDistanceFromPlayer = distanceFromPlayer;
-                            closestSOI = soi;
-                        }
-                    }
+                    this.DrawObjectInfo(b, soi);
                 }
 
-                if (this.config.ShowArrow && smallestDistanceFromPlayer == float.PositiveInfinity)
+                var distanceFromPlayer = soi.GetDistance(Game1.player);
+                if (distanceFromPlayer < smallestDistanceFromPlayer)
                 {
-                    if (this.path != null)
-                    {
-                        Step nextStep = this.path.GetNextStep(Game1.currentLocation);
-                        var warpSOI = new StardewObjectInfo();
-                        warpSOI.Coordinate = nextStep.Position * Game1.tileSize;
-                        DrawArrow(b, warpSOI.GetDirection(Game1.player));
-                    }
+                    smallestDistanceFromPlayer = distanceFromPlayer;
+                    closestSOI = soi;
+                }
+            }
+
+            if (this.config.ShowArrow && !anyOnScreen)
+            {
+                if (smallestDistanceFromPlayer == float.PositiveInfinity && this.path != null)
+                {
+                    // closestSOI was never assigned to if the distance is PositiveInfinity
+                    Step warp = this.path.GetNextStep(currentLocation);
+                    closestSOI = new StardewObjectInfo(warp.Position, currentLocation);
                 }
 
-                if (this.config.ShowArrow && !(closestSOI == null) && !anyOnScreen)
+                if (closestSOI != null)
                 {
                     DrawArrow(b, closestSOI.GetDirection(Game1.player));
                 }
@@ -236,16 +240,19 @@
 
         private static void DrawArrow(SpriteBatch b, float rotation)
         {
-            const float distanceFromCenter = 3 * Game1.tileSize;
+            const float distanceFromCenter = 2 * Game1.tileSize;
+            var viewport = Game1.viewport;
             var tex = OverlayTextures.ArrowRight;
-            Point center = new Point(Game1.viewport.Width / 2, Game1.viewport.Height / 2);
+            var standPos = Game1.player.getStandingPosition();
+            var center = new Point((int)standPos.X - viewport.X, (int)standPos.Y - viewport.Y);
 
-            var destinationRectangle = new Rectangle(center.X - tex.Width / 2, center.Y - tex.Height / 2, tex.Width, tex.Height);
+            var destinationRectangle = new Rectangle(
+                (int)(standPos.X - viewport.X + Math.Cos(rotation) * distanceFromCenter),
+                (int)(standPos.Y - viewport.Y + Math.Sin(rotation) * distanceFromCenter),
+                tex.Width,
+                tex.Height);
             destinationRectangle.X += (int)(Math.Cos(rotation) * distanceFromCenter);
             destinationRectangle.Y += (int)(Math.Sin(rotation) * distanceFromCenter);
-
-            destinationRectangle.X += destinationRectangle.Width / 2;
-            destinationRectangle.Y += destinationRectangle.Height / 2;
             b.Draw(tex, destinationRectangle, null, Color.White, rotation, new Vector2(tex.Width / 2, tex.Height / 2), SpriteEffects.None, 0);
         }
 

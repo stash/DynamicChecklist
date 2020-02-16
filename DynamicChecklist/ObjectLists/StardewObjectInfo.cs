@@ -6,6 +6,8 @@
 
     public class StardewObjectInfo
     {
+        public static readonly Vector2 HalfTile = new Vector2(Game1.tileSize / 2, Game1.tileSize / 2);
+
         public StardewObjectInfo()
         {
         }
@@ -32,6 +34,9 @@
 
         public GameLocation Location { get; set; }
 
+        /// <summary>
+        /// Gets or sets the screen-space coordinates of this task.
+        /// </summary>
         public Vector2 Coordinate { get; set; }
 
         public bool NeedAction { get; set; }
@@ -58,7 +63,7 @@
 
         public void SetTileCoordinate(Vector2 tilePosition)
         {
-            this.Coordinate = tilePosition * Game1.tileSize + new Vector2(Game1.tileSize / 2, Game1.tileSize / 2);
+            this.Coordinate = tilePosition * Game1.tileSize + HalfTile;
         }
 
         public void SetCharacterPosition(Character c)
