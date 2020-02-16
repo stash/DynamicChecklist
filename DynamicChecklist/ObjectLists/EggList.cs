@@ -1,14 +1,8 @@
 ﻿namespace DynamicChecklist.ObjectLists
 {
-    using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
-    using Microsoft.Xna.Framework;
-    using Microsoft.Xna.Framework.Graphics;
     using StardewValley;
-    using StardewValley.Buildings;
     using StardewValley.Objects;
     using SObject = StardewValley.Object;
 

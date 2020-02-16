@@ -4,13 +4,11 @@
     using System.Collections.Generic;
     using System.Linq;
     using Graph.Graphs;
-    using Microsoft.Xna.Framework.Graphics;
     using Microsoft.Xna.Framework.Input;
     using ObjectLists;
     using StardewModdingAPI;
     using StardewModdingAPI.Events;
     using StardewValley;
-    using StardewValley.Menus;
 
     public class MainClass : Mod
     {
