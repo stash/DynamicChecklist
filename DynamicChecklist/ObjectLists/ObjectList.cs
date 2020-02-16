@@ -207,6 +207,18 @@
             this.path = null;
         }
 
+        /// <summary>
+        /// Cancels all of the tasks in this list without triggering the <c>TaskFinished</c> event
+        /// </summary>
+        public virtual void Cancel()
+        {
+            this.taskDone = true;
+            foreach (var soi in this.ObjectInfoList)
+            {
+                soi.NeedAction = false;
+            }
+        }
+
         protected void OnTaskFinished(EventArgs e)
         {
             this.TaskFinished?.Invoke(this, e);

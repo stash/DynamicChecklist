@@ -208,6 +208,9 @@
                     case TaskName.Child:
                         this.objectLists.Add(new NPCList(this.config, NPCList.Action.Child));
                         break;
+                    case TaskName.TravellingMerchant:
+                        this.objectLists.Add(new TravellingMerchantList(this.config));
+                        break;
                     default:
                         throw new NotImplementedException();
                 }

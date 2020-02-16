@@ -101,6 +101,7 @@
     <Compile Include="ObjectLists\StardewObjectInfo.cs" />
     <Compile Include="ObjectLists\TaskName.cs" />
     <Compile Include="ObjectLists\OverlayTextures.cs" />
+    <Compile Include="ObjectLists\TravellingMerchantList.cs" />
     <Compile Include="OpenChecklistButton.cs" />
     <Compile Include="Options\DCOptionsDropdown.cs" />
     <Compile Include="Options\DCOptionsInputListener.cs" />
