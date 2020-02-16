@@ -8,6 +8,8 @@
 
     internal class DynamicSelectableCheckbox : OptionsCheckbox
     {
+        private static readonly Color StrikethroughColor = new Color(1f, 0, 0, 0.5f);
+
         private static Texture2D whitePixel;
         private bool isDone = true;
         private ObjectList objectList;
@@ -49,8 +51,8 @@
                 whitePixel.SetData(new Color[] { Color.White });
             }
 
-            var destRect = new Rectangle(slotX + this.bounds.X + this.bounds.Width + Game1.pixelZoom * 2, slotY + this.bounds.Y + (int)this.labelSize.Y / 3, (int)this.labelSize.X, Game1.pixelZoom);
-            b.Draw(whitePixel, destRect, Color.Red);
+            var destRect = new Rectangle(slotX + this.bounds.X + this.bounds.Width + Game1.pixelZoom * 1, slotY + this.bounds.Y + (int)this.labelSize.Y / 3 + 2 * Game1.pixelZoom, (int)this.labelSize.X + Game1.pixelZoom, Game1.pixelZoom * 5 / 4);
+            b.Draw(whitePixel, destRect, StrikethroughColor);
         }
     }
 }

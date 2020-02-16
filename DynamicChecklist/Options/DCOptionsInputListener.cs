@@ -11,7 +11,7 @@
 
     public class DCOptionsInputListener : OptionsElement
     {
-        private static Rectangle setButtonSource = new Rectangle(294, 428, 21, 11);
+        private const int ButtonOffset = 7 * Game1.pixelZoom;
         private List<string> buttonNames = new List<string>();
         private string listenerMessage;
         private bool listening;
@@ -19,10 +19,11 @@
         private ModConfig config;
 
         public DCOptionsInputListener(string label, int whichOption, int slotWidth, ModConfig config, int x = -1, int y = -1)
-          : base(label, x, y, slotWidth, 11 * Game1.pixelZoom, whichOption)
+          : base(label, x, y, slotWidth, GameTextures.SetButton.ZoomHeight, whichOption)
         {
             this.config = config;
-            this.setbuttonBounds = new Rectangle(x + slotWidth - 28 * Game1.pixelZoom, y, 21 * Game1.pixelZoom, 11 * Game1.pixelZoom);
+            this.setbuttonBounds = new Rectangle(x + slotWidth - GameTextures.SetButton.ZoomWidth - ButtonOffset, y, GameTextures.SetButton.ZoomWidth, GameTextures.SetButton.ZoomHeight);
+
             if (whichOption == -1)
             {
                 return;
@@ -97,7 +98,7 @@
             {
                 if (this.whichOption == -1)
                 {
-                    Utility.drawTextWithShadow(b, this.label, Game1.dialogueFont, new Vector2((float)(this.bounds.X + slotX), (float)(this.bounds.Y + slotY)), Game1.textColor, 1f, 0.15f, -1, -1, 1f, 3);
+                    Utility.drawTextWithShadow(b, this.label, Game1.dialogueFont, new Vector2(this.bounds.X + slotX, this.bounds.Y + slotY), Game1.textColor, 1f, 0.15f, -1, -1, 1f, 3);
                 }
                 else
                 {
@@ -105,7 +106,8 @@
                 }
             }
 
-            Utility.drawWithShadow(b, Game1.mouseCursors, new Vector2((float)(this.setbuttonBounds.X + slotX), (float)(this.setbuttonBounds.Y + slotY)), DCOptionsInputListener.setButtonSource, Color.White, 0.0f, Vector2.Zero, (float)Game1.pixelZoom, false, 0.15f, -1, -1, 0.35f);
+            var slotBounds = new Vector2(this.setbuttonBounds.X + slotX, this.setbuttonBounds.Y + slotY);
+            Utility.drawWithShadow(b, GameTextures.SetButton.Tex, slotBounds, GameTextures.SetButton.Src, Color.White, 0.0f, Vector2.Zero, (float)Game1.pixelZoom, false, 0.15f, -1, -1, 0.35f);
             if (!this.listening)
             {
                 return;

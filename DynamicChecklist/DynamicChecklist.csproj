@@ -78,6 +78,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ChecklistMenu.cs" />
+    <Compile Include="GameTextures.cs" />
     <Compile Include="Graph\Edges\PlayerEdge.cs" />
     <Compile Include="Graph\Edges\StardewEdge.cs" />
     <Compile Include="Graph\Graphs\StardewGraph.cs" />
