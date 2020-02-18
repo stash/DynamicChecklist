@@ -12,6 +12,7 @@
 
     public abstract class ObjectList
     {
+        private static readonly Color BubbleTint = Color.White * 0.75f;
         private ShortestPath path;
         private ModConfig config;
         private bool overlayActive;
@@ -272,16 +273,27 @@
 
         private void DrawObjectInfo(SpriteBatch b, StardewObjectInfo objectInfo)
         {
-            var bubble = GameTexture.SpeechBubble;
+            var bubble = GameTexture.TaskBubble;
             var image = this.ImageTexture;
+            var zoom = Game1.pixelZoom * 3 / 4;
+            Rectangle dstImage = new Rectangle(2 * zoom, 2 * zoom, 16 * zoom, 16 * zoom); // draw area is inset two pixels
+            Rectangle dstBubble = new Rectangle(0, 0, bubble.Width * zoom, bubble.Height * zoom);
+            dstImage = MathX.CenteredScaledRectangle(dstImage, image.Width, image.Height, zoom);
 
-            int x = (int)objectInfo.Coordinate.X - Game1.viewport.X;
-            int y = (int)objectInfo.Coordinate.Y - Game1.viewport.Y - Game1.tileSize / 2;
-            var dstImage = new Rectangle(x - image.Width / 4 * Game1.pixelZoom, y - image.Height / 4 * Game1.pixelZoom - Game1.tileSize / 2, image.Width * Game1.pixelZoom / 2, image.Height * Game1.pixelZoom / 2);
-            var dstBubble = new Rectangle(x - bubble.Width / 4 * Game1.pixelZoom, y - bubble.Height / 4 * Game1.pixelZoom - Game1.tileSize / 2, bubble.Width * Game1.pixelZoom / 2, bubble.Height * Game1.pixelZoom / 2);
-            dstBubble.Offset(0, Game1.pixelZoom / 2);
-            b.Draw(bubble.Tex, dstBubble, bubble.Src, Color.White);
-            b.Draw(image.Tex, dstImage, image.Src, this.ImageTint);
+            int x = (int)objectInfo.Coordinate.X - Game1.viewport.X; // viewport translation
+            x -= Game1.tileSize / 2; // middle of tile
+            x += (Game1.tileSize - dstBubble.Width) / 2; // shifted over by the width of the bubble
+            x += zoom; // the bubble is slightly to the left so that it's pointy, so shift over by one "apparent pixel" so it looks like it points correctly
+
+            int y = (int)objectInfo.Coordinate.Y - Game1.viewport.Y; // viewport translation
+            y -= dstBubble.Height; // align bottom of bubble with bottom of tile
+            y -= Game1.tileSize / 4; // raise it up 1/4 tile
+
+            dstBubble.Offset(x, y);
+            dstImage.Offset(x, y);
+
+            b.Draw(bubble.Tex, dstBubble, bubble.Src, BubbleTint);
+            b.Draw(image.Tex, dstImage, image.Src, BubbleTint);
         }
     }
 }

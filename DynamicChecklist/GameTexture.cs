@@ -28,7 +28,7 @@
         public static readonly GameTexture Handbasket = new GameTexture(32, 624, 16, 16);
         public static readonly GameTexture HandCursor = new GameTexture(32, 0, 16, 16);
         public static readonly GameTexture HandPointingRight = new GameTexture(32, 16, 16, 16, ObjectSpriteSheet);
-        public static readonly GameTexture HandSmall = new GameTexture(32, 0, 12, 12);
+        public static readonly GameTexture HandSmall = new GameTexture(32, 0, 10, 10);
         public static readonly GameTexture Hay = new GameTexture(160, 112, 16, 16);
         public static readonly GameTexture Heart = new GameTexture(170, 512, 13, 14);
         public static readonly GameTexture MilkPail = new GameTexture(96, 0, 16, 16, ToolSpriteSheet);
