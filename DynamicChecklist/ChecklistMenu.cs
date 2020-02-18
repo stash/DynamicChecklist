@@ -36,7 +36,7 @@
             this.config = config;
 
             Game1.playSound("bigSelect");
-            var menuRect = CreateCenteredRectangle(Game1.viewport, MenuWidth, MenuHeight);
+            var menuRect = MathX.CenteredRectangle(Game1.viewport.Width, Game1.viewport.Height, MenuWidth, MenuHeight);
             this.initialize(menuRect.X, menuRect.Y, menuRect.Width, menuRect.Height, true);
             this.SetupTabs();
             this.SetupContents();
@@ -245,25 +245,6 @@
             }
         }
 
-        private static Rectangle CreateCenteredRectangle(xTile.Dimensions.Rectangle v, int width, int height)
-        {
-            var x = v.Width / 2 - width / 2;
-            var y = v.Height / 2 - height / 2;
-            return new Rectangle(x, y, width, height);
-        }
-
-        /// <summary>
-        /// Clamps the specified value to the specified minimum and maximum range
-        /// </summary>
-        /// <param name="x">A value to clamp</param>
-        /// <param name="min">The specified minimum range</param>
-        /// <param name="max">The specified maximum range</param>
-        /// <returns>The clamped value for the <c>x</c> parameter</returns>
-        private static int Clamp(int x, int min, int max)
-        {
-            return (x > max) ? max : ((x < min) ? min : x);
-        }
-
         private void MapOptionCoords(int x, int y, out int mappedX, out int mappedY, int slotIndex = -1)
         {
             if (slotIndex == -1)
@@ -418,13 +399,13 @@
             int availableRunnerHeight = this.scrollbarRunner.Height - this.scrollbar.bounds.Height;
 
             // Move top of bar to mouse position, with clamp
-            var newBarY = Clamp(y, this.scrollbarRunner.Y, this.scrollbarRunner.Y + availableRunnerHeight);
+            var newBarY = MathX.Clamp(y, this.scrollbarRunner.Y, this.scrollbarRunner.Y + availableRunnerHeight);
             this.scrollbar.bounds.Y = newBarY;
 
             // Now, figure out what the bar position corresponds to in terms of scrollOffset
             var deltaY = newBarY - this.scrollbarRunner.Y; // How far from the top of the runner?
             var newScrollOffset = deltaY * remainder / availableRunnerHeight; // Inverse of key formula in SetScrollBarToCurrentIndex
-            newScrollOffset = Clamp(newScrollOffset, 0, remainder);
+            newScrollOffset = MathX.Clamp(newScrollOffset, 0, remainder);
 
             if (newScrollOffset != oldScrollOfset)
             {
