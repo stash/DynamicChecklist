@@ -10,7 +10,6 @@
     {
         private static readonly Color StrikethroughColor = new Color(1f, 0, 0, 0.5f);
 
-        private static Texture2D whitePixel;
         private bool isDone = true;
         private ObjectList objectList;
         private Vector2 labelSize;
@@ -45,14 +44,9 @@
 
         private void StrikeThrough(SpriteBatch b, int slotX, int slotY)
         {
-            if (whitePixel == null || whitePixel.GraphicsDevice != Game1.graphics.GraphicsDevice)
-            {
-                whitePixel = new Texture2D(Game1.graphics.GraphicsDevice, 1, 1);
-                whitePixel.SetData(new Color[] { Color.White });
-            }
-
+            var pixel = GameTexture.White;
             var destRect = new Rectangle(slotX + this.bounds.X + this.bounds.Width + Game1.pixelZoom * 1, slotY + this.bounds.Y + (int)this.labelSize.Y / 3 + 2 * Game1.pixelZoom, (int)this.labelSize.X + Game1.pixelZoom, Game1.pixelZoom * 5 / 4);
-            b.Draw(whitePixel, destRect, StrikethroughColor);
+            b.Draw(pixel.Tex, destRect, StrikethroughColor);
         }
     }
 }
