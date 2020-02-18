@@ -30,7 +30,6 @@
         private int scrollOffset;
         private int optionsSlotHeld = -1;
         private bool isScrolling;
-        private string hoverText = string.Empty;
 
         public ChecklistMenu(ModConfig config)
         {
@@ -80,6 +79,16 @@
             SpriteText.drawStringWithScrollCenteredAt(b, "Checklist", this.xPositionOnScreen + this.width / 2, this.yPositionOnScreen - Game1.tileSize, string.Empty, 1f, -1, 0, 0.88f, false);
             drawTextureBox(b, this.xPositionOnScreen, this.yPositionOnScreen, this.width, this.height, Color.White);
 
+            if (this.options.Count > ItemsPerPage)
+            {
+                this.DrawScrollbar(b);
+            }
+
+            if (!GameMenu.forcePreventClose)
+            {
+                this.DrawTabs(b);
+            }
+
             if (selectedTab == 1)
             { // Draw batch front-to-back so that pop-ups show over top of other options
                 b.End();
@@ -94,21 +103,21 @@
                 b.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null);
             }
 
-            if (!GameMenu.forcePreventClose)
-            {
-                this.DrawTabs(b);
-                if (this.options.Count > ItemsPerPage)
-                {
-                    this.DrawScrollbar(b);
-                }
-            }
+            base.draw(b);
 
-            if (this.hoverText != string.Empty)
+            if (!Game1.options.hardwareCursor)
             {
-                drawHoverText(b, this.hoverText, Game1.smallFont);
+                this.drawMouse(b);
             }
+        }
 
-            this.drawMouse(b);
+        public override void performHoverAction(int x, int y)
+        {
+            base.performHoverAction(x, y);
+            this.upArrow.tryHover(x, y, 0.2f);
+            this.downArrow.tryHover(x, y, 0.2f);
+
+            // TODO: try hover over options / slots
         }
 
         public override void receiveLeftClick(int x, int y, bool playSound = true)
@@ -166,6 +175,8 @@
                     return;
                 }
             }
+
+            base.receiveLeftClick(x, y, playSound);
         }
 
         public override void leftClickHeld(int x, int y)
