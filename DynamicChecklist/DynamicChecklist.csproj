@@ -118,6 +118,9 @@
     <Content Include="Resources\Sign.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Resources\TaskBubble.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <Analyzer Include="..\packages\Pathoschild.Stardew.ModBuildConfig.3.1.0\analyzers\dotnet\cs\SMAPI.ModBuildConfig.Analyzer.dll" />

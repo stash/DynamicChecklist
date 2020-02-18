@@ -49,6 +49,7 @@
         public static readonly GameTexture Black = new GameTexture(Color.Black);
 
         public static readonly GameTexture Sign = new GameTexture(11, 14, "Sign.png");
+        public static readonly GameTexture TaskBubble = new GameTexture(20, 24, "TaskBubble.png");
 
         private bool loaded = false;
         private Func<Texture2D> textureThunk = MainSpriteSheet;
@@ -87,6 +88,7 @@
                     {
                         throw new ArgumentException("Image does not match configured height and width");
                     }
+
                     return fileTex;
                 }
             };
@@ -154,7 +156,6 @@
             bounds.Y = y;
             return new ClickableTextureComponent(name, bounds, string.Empty, string.Empty, this.Tex, this.Src, scale, drawShadow);
         }
-
 
         private static Texture2D MainSpriteSheet() => Game1.mouseCursors;
 
