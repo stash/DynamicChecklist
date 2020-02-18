@@ -255,7 +255,7 @@
 
         private static void DrawArrow(SpriteBatch b, float rotation)
         {
-            const float distanceFromCenter = 2 * Game1.tileSize;
+            const float distanceFromCenter = 3 * Game1.tileSize;
             var viewport = Game1.viewport;
             var sprite = GameTexture.ArrowRight;
             var standPos = Game1.player.getStandingPosition();
@@ -266,8 +266,6 @@
                 (int)(standPos.Y - viewport.Y + Math.Sin(rotation) * distanceFromCenter),
                 sprite.Width,
                 sprite.Height);
-            destinationRectangle.X += (int)(Math.Cos(rotation) * distanceFromCenter);
-            destinationRectangle.Y += (int)(Math.Sin(rotation) * distanceFromCenter);
             b.Draw(sprite.Tex, destinationRectangle, sprite.Src, Color.White, rotation, new Vector2(sprite.Width / 2, sprite.Height / 2), SpriteEffects.None, 0);
         }
 
