@@ -16,7 +16,7 @@
             switch (action)
             {
                 case Action.Pet:
-                    this.ImageTexture = GameTexture.Heart;
+                    this.ImageTexture = GameTexture.HeartSmol;
                     this.OptionMenuLabel = "Pet Animals";
                     this.TaskDoneMessage = "All animals have been petted";
                     this.Name = TaskName.Pet;

@@ -31,6 +31,7 @@
         public static readonly GameTexture HandSmall = new GameTexture(32, 0, 10, 10);
         public static readonly GameTexture Hay = new GameTexture(160, 112, 16, 16);
         public static readonly GameTexture Heart = new GameTexture(170, 512, 13, 14);
+        public static readonly GameTexture HeartSmol = new GameTexture(211, 428, 7, 6);
         public static readonly GameTexture MilkPail = new GameTexture(96, 0, 16, 16, ToolSpriteSheet);
         public static readonly GameTexture Plus = new GameTexture(0, 411, 16, 16);
         public static readonly GameTexture PointingHandCursor = new GameTexture(0, 16, 16, 16);

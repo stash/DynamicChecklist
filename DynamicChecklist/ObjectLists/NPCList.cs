@@ -31,14 +31,14 @@
                     this.taskCheck = this.CheckBirthday;
                     break;
                 case Action.Spouse:
-                    this.ImageTexture = GameTexture.Heart;
+                    this.ImageTexture = GameTexture.HeartSmol;
                     this.OptionMenuLabel = "Kiss Spouse";
                     this.TaskDoneMessage = "Happy spouse, happy house!";
                     this.Name = TaskName.Spouse;
                     this.taskCheck = this.CheckSpouse;
                     break;
                 case Action.Child:
-                    this.ImageTexture = GameTexture.Heart;
+                    this.ImageTexture = GameTexture.HeartSmol;
                     this.OptionMenuLabel = "Hug Children";
                     this.TaskDoneMessage = "All children hugged!";
                     this.Name = TaskName.Child;
