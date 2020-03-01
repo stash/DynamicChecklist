@@ -208,6 +208,9 @@
                     case TaskName.TravellingMerchant:
                         this.objectLists.Add(new TravellingMerchantList(this.config));
                         break;
+                    case TaskName.FishPond:
+                        this.objectLists.Add(new FishPondList(this.config));
+                        break;
                     default:
                         throw new NotImplementedException();
                 }
