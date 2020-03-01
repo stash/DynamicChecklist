@@ -18,7 +18,6 @@
         private List<ObjectList> objectLists = new List<ObjectList>();
         private CompleteGraph graph;
         private OpenChecklistButton checklistButton;
-        private bool doneLoading;
 
         public static bool MenuAllowed =>
             Context.IsPlayerFree && !Game1.isFestival() && !Game1.showingEndOfNightStuff;
@@ -104,7 +103,6 @@
         private void GameLoop_DayStarted(object sender, EventArgs e)
         {
             this.Monitor.Log("Day Started, waiting for first tick");
-            this.doneLoading = true;
             this.Helper.Events.GameLoop.UpdateTicked += this.FirstTickOfTheDay;
         }
 
