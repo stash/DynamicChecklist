@@ -30,7 +30,8 @@
             {
                 this.isOpen = true;
                 this.visited = false;
-                this.ObjectInfoList.Add(new StardewObjectInfo(MerchantTile, forest));
+                var coord = MerchantTile + new Vector2(.25f, -.5f); // display above merchant, slightly right
+                this.ObjectInfoList.Add(new StardewObjectInfo(coord, forest));
             }
         }
 
