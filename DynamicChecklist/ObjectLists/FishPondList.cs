@@ -54,7 +54,7 @@
 
         private static bool PondNotReady(FishPond pond)
         {
-            return pond.isUnderConstruction() || !pond.hasSpawnedFish.Value;
+            return pond.isUnderConstruction() || pond.currentOccupants.Value == 0;
         }
 
         private bool Check(Subject subject)
