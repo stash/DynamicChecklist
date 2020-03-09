@@ -77,6 +77,7 @@
 
         private static bool IsUnwatered(HoeDirt dirt)
         {
+            // TODO: ignore fully-grown and wierd non-recurrent crops (e.g. Spring Onion)
             return dirt != null &&
                 dirt.state.Value != HoeDirt.watered &&
                 dirt.needsWatering() &&

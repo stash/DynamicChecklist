@@ -113,7 +113,8 @@
         private void TrackNPC(NPC npc)
         {
             this.trackedNPCs.Add(npc);
-            this.ObjectInfoList.Add(new StardewObjectInfo(npc));
+            var soi = new StardewObjectInfo(npc) { DrawOffset = StardewObjectInfo.TallCharacterOffset };
+            this.ObjectInfoList.Add(soi);
         }
 
         private bool CheckBirthday(NPC npc)

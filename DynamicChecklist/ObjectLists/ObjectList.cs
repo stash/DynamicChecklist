@@ -3,8 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using Graph;
-    using Graph.Graphs;
+    using Graph2;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
     using StardewModdingAPI;
@@ -13,10 +12,10 @@
     public abstract class ObjectList
     {
         private static readonly Color BubbleTint = Color.White * 0.75f;
-        private ShortestPath path;
         private ModConfig config;
         private bool overlayActive;
         private bool taskDone;
+        private bool anyOnScreen;
 
         public ObjectList(ModConfig config)
         {
@@ -29,8 +28,6 @@
         public event EventHandler OverlayActivated;
 
         public event EventHandler OverlayActiveChanged;
-
-        public static CompleteGraph Graph { get; set; }
 
         public string OptionMenuLabel { get; protected set; }
 
@@ -118,6 +115,10 @@
 
         protected virtual bool NeedsPerItemOverlay => true;
 
+        protected StardewObjectInfo ClosestSOI { get; set; }
+
+        protected Vector2 ClosestHop { get; set; }
+
         public void OnNewDay()
         {
             this.taskDone = false; // skip accessor
@@ -144,6 +145,7 @@
         /// <param name="b">Batch in which to draw the overlay</param>
         public void Draw(SpriteBatch b)
         {
+            this.anyOnScreen = false;
             if (!this.OverlayActive || this.TaskDone)
             {
                 return;
@@ -155,59 +157,87 @@
             }
 
             var currentLocation = Game1.currentLocation;
-            var smallestDistanceFromPlayer = float.PositiveInfinity;
-            StardewObjectInfo closestSOI = null;
-            bool anyOnScreen = false;
+            var nearestDistance = float.PositiveInfinity;
+            StardewObjectInfo nearestLocal = null;
             foreach (var soi in from soi in this.ObjectInfoList
                                 where soi.NeedAction && soi.Location == currentLocation
                                 select soi)
             {
-                anyOnScreen |= soi.IsOnScreen();
-                if (this.NeedsPerItemOverlay && this.config.ShowOverlay)
+                var onScreen = soi.IsOnScreen();
+                this.anyOnScreen |= onScreen;
+
+                if (soi.IsOnScreen() && this.NeedsPerItemOverlay && this.config.ShowOverlay)
                 {
                     this.DrawObjectInfo(b, soi);
+                    continue;
                 }
 
-                var distanceFromPlayer = soi.GetDistance(Game1.player);
-                if (distanceFromPlayer < smallestDistanceFromPlayer)
+                if (this.config.ShowArrow)
                 {
-                    smallestDistanceFromPlayer = distanceFromPlayer;
-                    closestSOI = soi;
+                    var distance = soi.GetDistance(Game1.player);
+                    if (distance < nearestDistance)
+                    {
+                        nearestDistance = distance;
+                        nearestLocal = soi;
+                    }
                 }
             }
 
-            if (this.config.ShowArrow && !anyOnScreen)
+            if (this.config.ShowArrow && !this.anyOnScreen)
             {
-                if (smallestDistanceFromPlayer == float.PositiveInfinity && this.path != null)
+                if (nearestLocal != null)
                 {
-                    // closestSOI was never assigned to if the distance is PositiveInfinity
-                    Step warp = this.path.GetNextStep(currentLocation);
-                    closestSOI = new StardewObjectInfo(warp.Position, currentLocation);
+                    this.DrawArrow(b, nearestLocal, false);
                 }
-
-                if (closestSOI != null)
+                else if (this.ClosestSOI != null)
                 {
-                    DrawArrow(b, closestSOI.GetDirection(Game1.player));
+                    var virtualSOI = new StardewObjectInfo() { Location = Game1.currentLocation, Coordinate = this.ClosestHop };
+                    this.DrawArrow(b, virtualSOI, true);
                 }
             }
         }
 
         public void UpdatePath()
         {
-            var targetLocation = this.ObjectInfoList.FirstOrDefault(x => x.NeedAction)?.Location;
-            if (targetLocation != null)
+            this.ClearPath();
+
+            if (!this.OverlayActive || !this.config.ShowArrow || this.anyOnScreen || !this.AnyTasksNeedAction)
             {
-                this.path = Graph.GetPathToTarget(Game1.currentLocation, targetLocation);
+                return; // don't pathfind if we don't need to
             }
-            else
+
+            var currentLocation = Game1.player.currentLocation;
+            var externalSOIs = this.ObjectInfoList.Where(soi => soi.NeedAction && soi.Location != currentLocation);
+            if (MainClass.WorldGraph.PlayerHasOnlyOneWayOut(out var onlyHop))
             {
-                this.path = null;
+                var firstSoi = externalSOIs.FirstOrDefault();
+                if (firstSoi != default)
+                {
+                    this.ClosestSOI = firstSoi;
+                    this.ClosestHop = onlyHop;
+                } // else, no external SOIs need action
+
+                return;
+            }
+
+            // find closest SOI that's outside of the current location
+            float limit = float.PositiveInfinity;
+            foreach (var soi in externalSOIs)
+            {
+                MainClass.WorldGraph.TryFindNextHopForPlayer(soi.WorldPoint, out var distance, out var nextHop, limit);
+                if (distance < limit)
+                {
+                    limit = distance;
+                    this.ClosestSOI = soi;
+                    this.ClosestHop = nextHop;
+                }
             }
         }
 
         public void ClearPath()
         {
-            this.path = null;
+            this.ClosestSOI = null;
+            this.ClosestHop = default;
         }
 
         /// <summary>
@@ -253,23 +283,47 @@
         /// <seealso cref="InitializeObjectInfoList"/>
         protected abstract void UpdateObjectInfoList(uint ticks);
 
-        private static void DrawArrow(SpriteBatch b, float rotation)
+        private static void DrawArrowCommon(SpriteBatch b, float rotation, float distance, bool isWarp)
         {
-            const float distanceFromCenter = 3 * Game1.tileSize;
-            var viewport = Game1.viewport;
             var sprite = GameTexture.ArrowRight;
             var standPos = Game1.player.getStandingPosition();
-            var center = new Point((int)standPos.X - viewport.X, (int)standPos.Y - viewport.Y);
-
-            var destinationRectangle = new Rectangle(
-                (int)(standPos.X - viewport.X + Math.Cos(rotation) * distanceFromCenter),
-                (int)(standPos.Y - viewport.Y + Math.Sin(rotation) * distanceFromCenter),
+            var destRect = new Rectangle(
+                (int)(standPos.X - Game1.viewport.X + Math.Cos(rotation) * distance),
+                (int)(standPos.Y - Game1.viewport.Y + Math.Sin(rotation) * distance),
                 sprite.Width,
                 sprite.Height);
-            b.Draw(sprite.Tex, destinationRectangle, sprite.Src, Color.White, rotation, new Vector2(sprite.Width / 2, sprite.Height / 2), SpriteEffects.None, 0);
+            var color = isWarp ? Color.CornflowerBlue : Color.White;
+            var origin = new Vector2(sprite.Width / 2, sprite.Height / 2);
+            b.Draw(sprite.Tex, destRect, sprite.Src, color, rotation, origin, SpriteEffects.None, 0);
         }
 
-        private void DrawObjectInfo(SpriteBatch b, StardewObjectInfo objectInfo)
+        private static void DrawArrow(SpriteBatch b, float rotation, bool isWarp = false)
+        {
+            const float maxDistance = 3 * Game1.tileSize;
+
+            DrawArrowCommon(b, rotation, maxDistance, isWarp);
+        }
+
+        private void DrawArrow(SpriteBatch b, StardewObjectInfo nearest, bool isWarp = false)
+        {
+            const float maxDistance = 3 * Game1.tileSize;
+
+            var rotation = nearest.GetDirection(Game1.player);
+            var distance = Math.Min(nearest.GetDistance(Game1.player), maxDistance);
+            if (distance <= Game1.tileSize)
+            {
+                return;
+            }
+
+            DrawArrowCommon(b, rotation, distance, isWarp);
+        }
+
+        /// <summary>
+        /// Draws the bubble for the selected object info.
+        /// </summary>
+        /// <param name="b">Drawing context</param>
+        /// <param name="soi">Task item to draw a bubble for</param>
+        private void DrawObjectInfo(SpriteBatch b, StardewObjectInfo soi)
         {
             var bubble = GameTexture.TaskBubble;
             var image = this.ImageTexture;
@@ -277,13 +331,14 @@
             Rectangle dstImage = new Rectangle(2 * zoom, 2 * zoom, 16 * zoom, 16 * zoom); // draw area is inset two pixels
             Rectangle dstBubble = new Rectangle(0, 0, bubble.Width * zoom, bubble.Height * zoom);
             dstImage = MathX.CenteredScaledRectangle(dstImage, image.Width, image.Height, zoom);
+            var drawCoord = soi.DrawCoordinate;
 
-            int x = (int)objectInfo.Coordinate.X - Game1.viewport.X; // viewport translation
+            int x = (int)drawCoord.X - Game1.viewport.X; // viewport translation
             x -= Game1.tileSize / 2; // middle of tile
             x += (Game1.tileSize - dstBubble.Width) / 2; // shifted over by the width of the bubble
             x += zoom; // the bubble is slightly to the left so that it's pointy, so shift over by one "apparent pixel" so it looks like it points correctly
 
-            int y = (int)objectInfo.Coordinate.Y - Game1.viewport.Y; // viewport translation
+            int y = (int)drawCoord.Y - Game1.viewport.Y; // viewport translation
             y -= dstBubble.Height; // align bottom of bubble with bottom of tile
             y -= Game1.tileSize / 4; // raise it up 1/4 tile
 

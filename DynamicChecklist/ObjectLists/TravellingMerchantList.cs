@@ -10,6 +10,7 @@
     public class TravellingMerchantList : ObjectList
     {
         private static readonly Vector2 MerchantTile = new Vector2(27, 11);
+        private static readonly Vector2 DrawOffset = new Vector2(.75f, 0f); // displays above merchant, slightly right
 
         private bool visited = false;
         private bool isOpen = false;
@@ -30,8 +31,8 @@
             {
                 this.isOpen = true;
                 this.visited = false;
-                var coord = MerchantTile + new Vector2(.25f, -.5f); // display above merchant, slightly right
-                this.ObjectInfoList.Add(new StardewObjectInfo(coord, forest));
+                var soi = new StardewObjectInfo(MerchantTile, forest) { DrawOffset = DrawOffset };
+                this.ObjectInfoList.Add(soi);
             }
         }
 
@@ -43,6 +44,7 @@
             }
 
             this.isOpen = Game1.timeOfDay < 2000; // 8PM
+            this.ObjectInfoList[0].DrawOffset = new Vector2(.75f * Game1.tileSize, -.75f * Game1.tileSize);
             if (!this.isOpen && !this.visited)
             {
                 this.Cancel(); // cannot be completed

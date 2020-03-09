@@ -4,7 +4,7 @@
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
-    using Graph.Graphs;
+    using DynamicChecklist.Graph2;
     using Microsoft.Xna.Framework.Input;
     using ObjectLists;
     using StardewModdingAPI;
@@ -16,16 +16,18 @@
         private Keys openMenuKey = Keys.NumPad1;
         private ModConfig config;
         private List<ObjectList> objectLists = new List<ObjectList>();
-        private CompleteGraph graph;
         private OpenChecklistButton checklistButton;
 
         public static bool MenuAllowed =>
             Context.IsPlayerFree && !Game1.isFestival() && !Game1.showingEndOfNightStuff;
 
+        public static WorldGraph WorldGraph { get; private set; }
+
         public override void Entry(IModHelper helper)
         {
             ObjectList.Monitor = this.Monitor;
             ObjectList.Helper = this.Helper;
+            WorldGraph.Monitor = this.Monitor;
 
             this.config = this.Helper.ReadConfig<ModConfig>();
             this.config.Check();
@@ -34,14 +36,17 @@
             GameTexture.TextureDirectory = Path.Combine(this.Helper.DirectoryPath, "Resources");
 
             var events = helper.Events;
+            events.Display.RenderingHud += this.Display_RenderingHud;
             events.Input.ButtonPressed += this.Input_ButtonPressed;
             events.GameLoop.SaveLoaded += this.GameLoop_SaveLoaded;
             events.GameLoop.Saved += this.GameLoop_Saved;
             events.GameLoop.DayStarted += this.GameLoop_DayStarted;
             events.GameLoop.DayEnding += this.GameLoop_DayEnding;
-            events.Display.RenderingHud += this.Display_RenderingHud;
+            events.World.LocationListChanged += this.World_LocationListChanged;
+
             events.GameLoop.OneSecondUpdateTicked += this.UpdatePaths;
             events.Player.Warped += this.UpdatePaths;
+
             try
             {
                 this.openMenuKey = (Keys)Enum.Parse(typeof(Keys), this.config.OpenMenuKey);
@@ -50,6 +55,11 @@
             {
                 // use default value
             }
+        }
+
+        private void World_LocationListChanged(object sender, LocationListChangedEventArgs e)
+        {
+            WorldGraph.LocationListChanged(e.Added, e.Removed);
         }
 
         private void GameLoop_Saved(object sender, EventArgs e)
@@ -79,23 +89,11 @@
                 return;
             }
 
-            if (this.graph.LocationInGraph(Game1.currentLocation))
+            foreach (ObjectList ol in this.objectLists)
             {
-                this.graph.SetPlayerPosition(Game1.currentLocation, Game1.player.Position);
-                this.graph.Calculate(Game1.currentLocation);
-                foreach (ObjectList ol in this.objectLists)
+                if (ol.OverlayActive)
                 {
-                    if (ol.OverlayActive)
-                    {
-                        ol.UpdatePath();
-                    }
-                }
-            }
-            else
-            {
-                foreach (ObjectList ol in this.objectLists)
-                {
-                    ol.ClearPath();
+                    ol.UpdatePath();
                 }
             }
         }
@@ -117,10 +115,26 @@
             this.Monitor.Log("First Tick of Day, enabling updates");
             this.Helper.Events.GameLoop.UpdateTicked -= this.FirstTickOfTheDay;
             this.Helper.Events.GameLoop.UpdateTicked += this.GameLoop_UpdateTicked;
+
+            this.InitializeGraph();
             foreach (var ol in this.objectLists)
             {
                 ol.OnNewDay();
             }
+        }
+
+        private void InitializeGraph()
+        {
+            this.Monitor.Log("Starting world graph generation");
+            WorldGraph = new WorldGraph(WorldGraph.AllLocations());
+            this.Monitor.Log("World graph generation done!");
+
+#if DEBUG
+            var filename = Path.Combine(this.Helper.DirectoryPath, "world.dot");
+            var gv = new WorldGraph.GraphViz(WorldGraph);
+            gv.Write(filename);
+            this.Monitor.Log($"Wrote GraphViz to {filename}");
+#endif
         }
 
         private void GameLoop_UpdateTicked(object sender, UpdateTickedEventArgs e)
@@ -140,7 +154,6 @@
 
         private void OnOverlayActivated(object sender, EventArgs e)
         {
-            this.graph.Calculate(Game1.currentLocation);
             var activatedObjectList = (ObjectList)sender;
             activatedObjectList.UpdatePath();
             if (!this.config.AllowMultipleOverlays)
@@ -216,8 +229,6 @@
                 }
             }
 
-            ObjectList.Graph = this.graph;
-
             foreach (ObjectList o in this.objectLists)
             {
                 o.TaskFinished += new EventHandler(this.ShowTaskDoneMessage);
@@ -246,8 +257,6 @@
 
         private void GameLoop_SaveLoaded(object sender, EventArgs e)
         {
-            this.graph = new CompleteGraph(Game1.locations);
-            this.graph.Populate();
             this.InitializeObjectLists();
             ChecklistMenu.ObjectLists = this.objectLists;
             Func<int> crt = this.CountRemainingTasks;

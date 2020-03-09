@@ -57,21 +57,8 @@
     <CodeAnalysisRuleSet>DynamicChecklist.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="QuickGraph, Version=3.6.61114.0, Culture=neutral, PublicKeyToken=f3fb40175eec2af3, processorArchitecture=MSIL">
-      <HintPath>..\packages\QuickGraph.3.6.61119.7\lib\net4\QuickGraph.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="QuickGraph.Data, Version=3.6.61114.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\QuickGraph.3.6.61119.7\lib\net4\QuickGraph.Data.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="QuickGraph.Graphviz, Version=3.6.61114.0, Culture=neutral, PublicKeyToken=f3fb40175eec2af3, processorArchitecture=MSIL">
-      <HintPath>..\packages\QuickGraph.3.6.61119.7\lib\net4\QuickGraph.Graphviz.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="QuickGraph.Serialization, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\QuickGraph.3.6.61119.7\lib\net4\QuickGraph.Serialization.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Priority Queue, Version=4.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\OptimizedPriorityQueue.4.2.0\lib\net45\Priority Queue.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Xml" />
@@ -79,15 +66,14 @@
   <ItemGroup>
     <Compile Include="ChecklistMenu.cs" />
     <Compile Include="GameTexture.cs" />
-    <Compile Include="Graph\Edges\PlayerEdge.cs" />
-    <Compile Include="Graph\Edges\StardewEdge.cs" />
-    <Compile Include="Graph\Graphs\StardewGraph.cs" />
-    <Compile Include="Graph\Graphs\CompleteGraph.cs" />
-    <Compile Include="Graph\ShortestPath.cs" />
-    <Compile Include="Graph\Vertices\StardewVertex.cs" />
-    <Compile Include="Graph\Vertices\MovableVertex.cs" />
-    <Compile Include="Graph\Vertices\WarpVertex.cs" />
-    <Compile Include="Graph\Graphs\PartialGraph.cs" />
+    <Compile Include="Graph2\LocationGraph.GraphViz.cs" />
+    <Compile Include="Graph2\WorldGraph.GraphViz.cs" />
+    <Compile Include="Graph2\WorldPoint.cs" />
+    <Compile Include="Graph2\ExteriorShortestPathTree.cs" />
+    <Compile Include="Graph2\LocationGraph.cs" />
+    <Compile Include="Graph2\InteriorShortestPathTree.cs" />
+    <Compile Include="Graph2\WarpNode.cs" />
+    <Compile Include="Graph2\WorldGraph.cs" />
     <Compile Include="MathX.cs" />
     <Compile Include="ModConfig.cs" />
     <Compile Include="ObjectLists\AnimalList.cs" />
@@ -129,6 +115,7 @@
     <Analyzer Include="..\packages\StyleCop.Analyzers.1.0.0\analyzers\dotnet\cs\StyleCop.Analyzers.CodeFixes.dll" />
     <Analyzer Include="..\packages\StyleCop.Analyzers.1.0.0\analyzers\dotnet\cs\StyleCop.Analyzers.dll" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\Pathoschild.Stardew.ModBuildConfig.3.1.0\build\Pathoschild.Stardew.ModBuildConfig.targets" Condition="Exists('..\packages\Pathoschild.Stardew.ModBuildConfig.3.1.0\build\Pathoschild.Stardew.ModBuildConfig.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

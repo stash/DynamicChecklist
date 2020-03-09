@@ -52,31 +52,34 @@
         {
             if (this.TaskDone && this.action != Action.Pet)
             {
-                return; // Animals can't become un-sheared or un-milked, so once it's done for the day, it's done
+                // Animals can't become un-petted, un-sheared or un-milked, so once it's done for the day, it's done
+                // TODO: consider just purchased animals
+                return;
             }
 
-            // Have to wipe it out every time since animals move around.
+            // "Have to" wipe it out every time since animals move around.
+            // TODO: just update position using SetCharacterPosition ??
             this.ObjectInfoList.Clear();
 
             // Outside animals
             Farm farm = Game1.getFarm();
-            this.AddAnimalsFromLocation(farm, farm.animals.Values);
+            this.AddAnimalsFromLocation(farm.animals.Values);
 
             // Inside animals
             foreach (var animalHouse in ListHelper.GetFarmAnimalHouses())
             {
-                this.AddAnimalsFromLocation(animalHouse, animalHouse.animals.Values);
+                this.AddAnimalsFromLocation(animalHouse.animals.Values);
             }
         }
 
-        private void AddAnimalsFromLocation(GameLocation loc, IEnumerable<FarmAnimal> animals)
+        private void AddAnimalsFromLocation(IEnumerable<FarmAnimal> animals)
         {
             this.ObjectInfoList.AddRange(from animal in animals
-                                         where this.AnimalFilter(animal, loc)
-                                         select new StardewObjectInfo(animal));
+                                         where this.AnimalFilter(animal)
+                                         select new StardewObjectInfo(animal) { DrawOffset = StardewObjectInfo.CharacterOffset });
         }
 
-        private bool AnimalFilter(FarmAnimal animal, GameLocation loc)
+        private bool AnimalFilter(FarmAnimal animal)
         {
             bool needAction;
             switch (this.action)
