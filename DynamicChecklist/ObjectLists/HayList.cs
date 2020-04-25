@@ -38,7 +38,7 @@
 
         private void UpdateObjectInfoList(AnimalHouse animalHouse)
         {
-            this.ObjectInfoList.RemoveAll(soi => soi.Location == animalHouse);
+            this.ObjectInfoList.RemoveAll(soi => soi.Location.Equals(animalHouse));
 
             var houseWidth = animalHouse.map.Layers[0].LayerWidth;
             var houseHeight = animalHouse.map.Layers[0].LayerHeight;

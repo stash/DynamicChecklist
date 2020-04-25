@@ -27,13 +27,13 @@
             this.DrawOffset = CharacterOffset;
         }
 
-        public StardewObjectInfo(Vector2 tileCoord, GameLocation location, bool needAction = true)
+        public StardewObjectInfo(Vector2 tileCoord, LocationReference location, bool needAction = true)
         {
             this.SetTilePosition(tileCoord, location);
             this.NeedAction = needAction;
         }
 
-        public StardewObjectInfo(xTile.Dimensions.Location tile, GameLocation location, bool needAction = true)
+        public StardewObjectInfo(xTile.Dimensions.Location tile, LocationReference location, bool needAction = true)
             : this(new Vector2(tile.X, tile.Y), location, needAction)
         {
         }
@@ -44,7 +44,7 @@
             this.NeedAction = needAction;
         }
 
-        public GameLocation Location { get; set; }
+        public LocationReference Location { get; set; }
 
         /// <summary>
         /// Gets or sets the screen-space coordinates of this task. Use <see cref="TileCoordinate"/> for tile-space coordinates.
@@ -85,7 +85,7 @@
             this.Coordinate = c.getStandingPosition(); // already in screen-space coordinates
         }
 
-        public void SetTilePosition(Vector2 tileCoord, GameLocation location)
+        public void SetTilePosition(Vector2 tileCoord, LocationReference location)
         {
             this.Coordinate = tileCoord * Game1.tileSize;
             this.Location = location;

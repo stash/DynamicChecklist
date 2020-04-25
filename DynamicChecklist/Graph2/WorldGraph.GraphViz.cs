@@ -34,7 +34,7 @@
             public void Write(TextWriter io)
             {
                 var n = 0;
-                var locationPrefixes = new Dictionary<GameLocation, string>();
+                var locationPrefixes = new Dictionary<LocationReference, string>();
                 var gvs = new List<LocationGraph.GraphViz>();
                 foreach (var graph in this.world.locationGraphs.Values)
                 {

@@ -4,11 +4,8 @@
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
     using Microsoft.Xna.Framework;
     using StardewValley;
-    using StardewValley.Buildings;
     using StardewValley.Locations;
     using xTile.Dimensions;
     using xTile.Layers;
@@ -29,7 +26,7 @@
         private Dictionary<int, InteriorShortestPathTree> interiorTrees = new Dictionary<int, InteriorShortestPathTree>();
         private Dictionary<int, ExteriorShortestPathTree> exteriorTrees = new Dictionary<int, ExteriorShortestPathTree>();
 
-        public LocationGraph(GameLocation location, WorldGraph world)
+        public LocationGraph(LocationReference location, WorldGraph world)
         {
             this.World = world;
             this.Location = location;
@@ -53,7 +50,7 @@
 
         public WorldGraph World { get; private set; }
 
-        public GameLocation Location { get; private set; }
+        public LocationReference Location { get; private set; }
 
         public int Height { get; private set; }
 
@@ -67,7 +64,7 @@
 
         public int InDegree { get; private set; } = 0;
 
-        public string Name => this.Location.NameOrUniqueName;
+        public string Name => this.Location.Name;
 
         public bool IsDisconnected => this.OutDegree == 0 && this.InDegree == 0;
 
@@ -89,7 +86,7 @@
         public bool AddWarpOut(Warp warp)
         {
             if (WorldPoint.InRange(this.Location, warp.X, warp.Y) &&
-                WorldPoint.InRange(Game1.getLocationFromName(warp.TargetName), warp.TargetX, warp.TargetY))
+                WorldPoint.InRange(LocationReference.For(warp.TargetName), warp.TargetX, warp.TargetY))
             {
                 return this.AddWarpOut(new WarpNode(warp, this.Location));
             }
@@ -273,7 +270,7 @@
 
         private void BuildPlainWarps()
         {
-            foreach (var warp in this.Location.warps)
+            foreach (var warp in this.Location.Resolve.warps)
             {
                 this.AddWarpOut(warp);
             }
@@ -281,7 +278,7 @@
 
         private void BuildDoorWarps()
         {
-            var location = this.Location;
+            var location = this.Location.Resolve;
             foreach (var doorPoint in location.doors.Keys)
             {
                 this.AddWarpOut(location.getWarpFromDoor(doorPoint));
@@ -290,7 +287,7 @@
 
         private void BuildBuildingDoorWarps()
         {
-            if (this.Location is BuildableGameLocation bgl)
+            if (this.Location.Resolve is BuildableGameLocation bgl)
             {
                 foreach (var building in bgl.buildings.Where(building => building.indoors.Value != null))
                 {
@@ -303,7 +300,7 @@
 
         private void BuildTileActionWarps()
         {
-            var layer = this.Location.Map.GetLayer("Buildings");
+            var layer = this.Location.Resolve.Map.GetLayer("Buildings");
             var viewportSize = Game1.viewport.Size;
             for (int y = 0; y < this.Height; y++)
             {
@@ -317,7 +314,7 @@
                         var action = parts[0];
                         if (WarpActionStrings.Contains(action))
                         {
-                            WorldGraph.Monitor.Log($"Found warp action string at {x},{y}@{this.Location.NameOrUniqueName}: {value}");
+                            WorldGraph.Monitor.Log($"Found warp action string at {x},{y}@{this.Location.Name}: {value}");
                             if (action == "Warp" || parts.Length >= 4)
                             {
                                 var warp = new Warp(x, y, parts[3], int.Parse(parts[1]), int.Parse(parts[2]), false);
@@ -325,13 +322,14 @@
                             }
                             else if (action == "WarpGreenhouse")
                             {
-                                var warp = Game1.getLocationFromName("Greenhouse").warps[0];
-                                this.AddInverseWarpOut(Game1.getLocationFromName("Greenhouse"), warp, -1);
+                                var greenhouse = LocationReference.For("Greenhouse");
+                                var warp = greenhouse.Resolve.warps[0];
+                                this.AddInverseWarpOut(greenhouse, warp, -1);
                             }
                             else if (action == "WarpCommunityCenter")
                             {
-                                var center = Game1.getLocationFromName("CommunityCenter");
-                                foreach (var warp in center.warps)
+                                var center = LocationReference.For("CommunityCenter");
+                                foreach (var warp in center.Resolve.warps)
                                 {
                                     // search for horizontally aligned warp
                                     if (warp.TargetX == x)
@@ -349,10 +347,10 @@
             }
         }
 
-        private void AddInverseWarpOut(GameLocation location, Warp warp, int yOffset = 0)
+        private void AddInverseWarpOut(LocationReference location, Warp warp, int yOffset = 0)
         {
             var target = new WorldPoint(location, warp.X, warp.Y);
-            var source = new WorldPoint(Game1.getLocationFromName(warp.TargetName), warp.TargetX, warp.TargetY + yOffset);
+            var source = new WorldPoint(LocationReference.For(warp.TargetName), warp.TargetX, warp.TargetY + yOffset);
             this.AddWarpOut(new WarpNode(source, target));
         }
 
@@ -360,7 +358,7 @@
         {
             this.NumPassable = 0;
 
-            var backLayer = this.Location.Map.GetLayer("Back");
+            var backLayer = this.Location.Resolve.Map.GetLayer("Back");
             var tile = new xTile.Dimensions.Location { X = 0, Y = 0 };
             for (var y = 0; y < this.Height; y++)
             {
@@ -379,13 +377,15 @@
 
         private bool IsPassable(Layer backLayer, Location tile)
         {
+            var location = this.Location.Resolve;
+
             // Code essentially copied from Pathoschild.Stardew.DataLayers.Layers.AccessibleLayer.IsAccessible
-            if (this.Location.isTilePassable(tile, Game1.viewport))
+            if (location.isTilePassable(tile, Game1.viewport))
             {
                 return true;
             }
 
-            if (this.Location.doesTileHaveProperty(tile.X, tile.Y, "Passable", "Buildings") != null)
+            if (location.doesTileHaveProperty(tile.X, tile.Y, "Passable", "Buildings") != null)
             {
                 // allow bridges
                 var backTile = backLayer.Tiles[tile];

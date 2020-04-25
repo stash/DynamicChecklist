@@ -6,7 +6,7 @@
     using StardewValley;
 
     /// <summary>
-    /// Stores the undirected Single-Source Shortest Path tree from some root <see cref="WorldPoint"/> to all other passable coordinates in the same <see cref="GameLocation"/>, with shortest path directionality to allow reconstruction of the path.
+    /// Stores the undirected Single-Source Shortest Path tree from some root <see cref="WorldPoint"/> to all other passable coordinates in the same location, with shortest path directionality to allow reconstruction of the path.
     /// </summary>
     internal class InteriorShortestPathTree
     {

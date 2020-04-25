@@ -60,7 +60,7 @@
             // Scan barns/coops/etc. for collectables and autograbbers
             foreach (var animalHouse in animalHouses)
             {
-                this.ObjectInfoList.RemoveAll(soi => soi.Location == animalHouse);
+                this.ObjectInfoList.RemoveAll(soi => soi.Location.Equals(animalHouse));
                 var range = from pair in animalHouse.Objects.Pairs
                             where this.IsCollectable(pair.Value) || this.IsAutoGrabberReady(pair.Value)
                             let soi = new StardewObjectInfo(pair.Key, animalHouse, true)
@@ -73,7 +73,7 @@
         {
             // Scan farm to get things like Truffles
             var farm = Game1.getFarm();
-            this.ObjectInfoList.RemoveAll(soi => soi.Location == farm);
+            this.ObjectInfoList.RemoveAll(soi => soi.Location.Equals(farm));
             var farmCollectables = from pair in farm.Objects.Pairs
                                    where this.IsCollectable(pair.Value)
                                    let soi = new StardewObjectInfo(pair.Key, farm, true)

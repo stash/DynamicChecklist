@@ -10,16 +10,19 @@
 
     public partial class WorldGraph
     {
-        private static Dictionary<GameLocation, xTile.Dimensions.Size> locationSizes;
-        private Dictionary<GameLocation, LocationGraph> locationGraphs;
+        private Dictionary<LocationReference, LocationGraph> locationGraphs;
         private List<WarpNode> cachedAllWarpNodes;
         private List<WarpNode> cachedAllReachableWarpNodes;
 
         public WorldGraph(IEnumerable<GameLocation> initialLocations)
+            : this(initialLocations.Select(location => LocationReference.For(location)))
         {
-            locationSizes = new Dictionary<GameLocation, xTile.Dimensions.Size>();
-            this.locationGraphs = new Dictionary<GameLocation, LocationGraph>();
-            this.RebuildLocations(initialLocations);
+        }
+
+        public WorldGraph(IEnumerable<LocationReference> initialReferences)
+        {
+            this.locationGraphs = new Dictionary<LocationReference, LocationGraph>();
+            this.RebuildLocations(initialReferences);
         }
 
         public static IMonitor Monitor { get; set; }
@@ -67,9 +70,9 @@
             }
         }
 
-        public static IEnumerable<GameLocation> AllLocations()
+        public static IEnumerable<LocationReference> AllLocations()
         {
-            var seen = new HashSet<GameLocation>();
+            var seen = new HashSet<LocationReference>();
             foreach (var location in Game1.locations)
             {
                 // if successfully added, means we haven't seen it yet
@@ -99,13 +102,7 @@
         /// <returns>The tile-space dimensions</returns>
         public static xTile.Dimensions.Size LocationSize(GameLocation location)
         {
-            if (!locationSizes.TryGetValue(location, out var size))
-            {
-                size = location.Map.GetLayer("Back").LayerSize;
-                locationSizes.Add(location, size);
-            }
-
-            return size;
+            return location.Map.GetLayer("Back").LayerSize;
         }
 
         /// <summary>
@@ -271,7 +268,7 @@
             return true;
         }
 
-        internal LocationGraph GetLocationGraph(GameLocation location)
+        internal LocationGraph GetLocationGraph(LocationReference location)
         {
             LocationGraph graph;
             if (!this.locationGraphs.TryGetValue(location, out graph))
@@ -288,8 +285,9 @@
             this.cachedAllWarpNodes = null;
         }
 
-        private void RebuildLocations(IEnumerable<GameLocation> locations)
+        private void RebuildLocations(IEnumerable<LocationReference> locations)
         {
+            this.ClearCache();
             this.locationGraphs.Clear();
 
             foreach (var location in locations)

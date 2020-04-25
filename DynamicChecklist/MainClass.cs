@@ -25,6 +25,8 @@
 
         public override void Entry(IModHelper helper)
         {
+            LocationReference.Setup(helper);
+
             ObjectList.Monitor = this.Monitor;
             ObjectList.Helper = this.Helper;
             WorldGraph.Monitor = this.Monitor;

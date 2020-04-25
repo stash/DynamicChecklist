@@ -13,15 +13,15 @@
     [DebuggerDisplay("{ToString()}")]
     internal class WarpNode : FastPriorityQueueNode, IEquatable<WarpNode>
     {
-        public WarpNode(Warp warp, GameLocation location)
+        public WarpNode(Warp warp, LocationReference location)
             : base()
         {
             this.Priority = float.PositiveInfinity;
             this.Source = new WorldPoint(location, warp.X, warp.Y);
-            this.Target = new WorldPoint(Game1.getLocationFromName(warp.TargetName), warp.TargetX, warp.TargetY);
+            this.Target = new WorldPoint(LocationReference.For(warp.TargetName), warp.TargetX, warp.TargetY);
         }
 
-        public WarpNode(GameLocation sourceLocation, int sourceX, int sourceY, GameLocation targetLocation, int targetX, int targetY)
+        public WarpNode(LocationReference sourceLocation, int sourceX, int sourceY, LocationReference targetLocation, int targetX, int targetY)
             : base()
         {
             this.Priority = float.PositiveInfinity;

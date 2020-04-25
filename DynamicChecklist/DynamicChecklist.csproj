@@ -74,6 +74,7 @@
     <Compile Include="Graph2\InteriorShortestPathTree.cs" />
     <Compile Include="Graph2\WarpNode.cs" />
     <Compile Include="Graph2\WorldGraph.cs" />
+    <Compile Include="LocationReference.cs" />
     <Compile Include="MathX.cs" />
     <Compile Include="ModConfig.cs" />
     <Compile Include="ObjectLists\AnimalList.cs" />

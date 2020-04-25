@@ -10,10 +10,10 @@
         public class GraphViz
         {
             private LocationGraph graph;
-            private Dictionary<GameLocation, string> locationPrefixes;
+            private Dictionary<LocationReference, string> locationPrefixes;
             private string prefix;
 
-            public GraphViz(LocationGraph graph, Dictionary<GameLocation, string> locationPrefixes)
+            public GraphViz(LocationGraph graph, Dictionary<LocationReference, string> locationPrefixes)
             {
                 this.graph = graph;
                 this.locationPrefixes = locationPrefixes;
