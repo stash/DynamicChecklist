@@ -2,12 +2,17 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using Priority_Queue;
     using StardewValley;
 
     /// <summary>
     /// Stores the undirected Single-Source Shortest Path tree from some root <see cref="WorldPoint"/> to all other passable coordinates in the same location, with shortest path directionality to allow reconstruction of the path.
     /// </summary>
+    /// <remarks>
+    /// Makes the assumption that the grid origin is in the top left, i.e., Right is X+ and Down is Y+.
+    /// </remarks>
+    [DebuggerDisplay("IntTree Root={Root}")]
     internal class InteriorShortestPathTree
     {
         private static readonly float SQRT2 = (float)Math.Sqrt(2);
@@ -34,8 +39,14 @@
             this.directions = new Direction[this.Height, this.Width];
             this.distances = new float[this.Height, this.Width];
             this.parent = parent;
-
-            this.InitializeArrays();
+#if DEBUG
+            if (!this.parent.Passable[this.Root.Y, this.Root.X])
+            {
+                throw new InvalidOperationException("Root node is not passable");
+            }
+#endif
+            WorldGraph.Monitor.Log($"Generating interior for {root}", StardewModdingAPI.LogLevel.Trace);
+            this.InitializeDistances();
             this.Calculate();
         }
 
@@ -43,21 +54,21 @@
         public enum Direction : byte
         {
             None = 0,
-            East = 0x01,
-            NorthEast = 0x02,
-            North = 0x04,
-            NorthWest = 0x08,
-            West = 0x10,
-            SouthWest = 0x20,
-            South = 0x40,
-            SouthEast = 0x80,
+            Right = 0x01,
+            UpRight = 0x02,
+            Up = 0x04,
+            UpLeft = 0x08,
+            Left = 0x10,
+            DownLeft = 0x20,
+            Down = 0x40,
+            DownRight = 0x80,
 
-            Orthogonal = NorthEast | NorthWest | SouthEast | SouthWest,
-            Diagonal = East | North | West | South,
-            AnyNorth = North | NorthEast | NorthWest,
-            AnyEast = East | NorthEast | SouthEast,
-            AnySouth = South | SouthEast | SouthWest,
-            AnyWest = West | NorthWest | SouthWest,
+            Orthogonal = Right | Up | Left | Down,
+            Diagonal = UpRight | UpLeft | DownRight | DownLeft,
+            AnyUp = Up | UpRight | UpLeft,
+            AnyRight = Right | UpRight | DownRight,
+            AnyDown = Down | DownRight | DownLeft,
+            AnyLeft = Left | UpLeft | DownLeft,
         }
 
         /// <summary>
@@ -74,6 +85,27 @@
         /// Gets the root node for this tree.
         /// </summary>
         public WorldPoint Root { get; private set; }
+
+        public static void DirectionTransform(Direction dir, ref int x, ref int y)
+        {
+            if ((dir & Direction.AnyRight) != 0)
+            {
+                x++;
+            }
+            else if ((dir & Direction.AnyLeft) != 0)
+            {
+                x--;
+            }
+
+            if ((dir & Direction.AnyDown) != 0)
+            {
+                y++;
+            }
+            else if ((dir & Direction.AnyUp) != 0)
+            {
+                y--;
+            }
+        }
 
         /// <summary>
         /// Returns the walking distance between the <see cref="Root"/> to the specified point, if they are connected.
@@ -134,24 +166,7 @@
                     break;
                 }
 
-                if ((dir & Direction.AnyNorth) != 0)
-                {
-                    y++;
-                }
-                else if ((dir & Direction.AnySouth) != 0)
-                {
-                    y--;
-                }
-
-                if ((dir & Direction.AnyEast) != 0)
-                {
-                    x++;
-                }
-                else if ((dir & Direction.AnyWest) != 0)
-                {
-                    x--;
-                }
-
+                DirectionTransform(dir, ref x, ref y);
                 dir = this.directions[y, x];
             }
         }
@@ -168,7 +183,7 @@
             return path;
         }
 
-        private void InitializeArrays()
+        private void InitializeDistances()
         {
             for (var y = 0; y < this.Height; y++)
             {
@@ -187,43 +202,65 @@
         /// </remarks>
         private void Calculate()
         {
-            this.distances[this.Root.Y, this.Root.X] = 0f;
+            const int down = 1;
+            const int up = -1;
+            const int right = 1;
+            const int left = -1;
 
-            var q = new FastPriorityQueue<CoordNode>(this.parent.NumPassable);
-            var allNodes = new CoordNode[this.Height, this.Width];
-            var rootNode = allNodes[this.Root.Y, this.Root.X] = new CoordNode(this.Root.X, this.Root.Y);
-            q.Enqueue(rootNode, 0f);
+            this.SetupQueue(out var q, out var allNodes);
 
             while (q.Count > 0)
             {
-                var node = q.Dequeue();
+                var source = q.Dequeue();
+                this.distances[source.Y, source.X] = source.Priority;
 
-                // Directions here are where we're coming from, the relative coordinates are where we're going to.
-                // Group by Y coordinate for cache-line coherency.
-                // Diagonals first, since those are heuristically shorter.
-                this.VisitNode(q, node, allNodes, Direction.NorthEast, -1, -1);
-                this.VisitNode(q, node, allNodes, Direction.NorthWest, 1, -1);
-                this.VisitNode(q, node, allNodes, Direction.SouthEast, -1, 1);
-                this.VisitNode(q, node, allNodes, Direction.SouthWest, 1, 1);
+                // Directions here are where we're coming FROM, the relative coordinates are where we're going TO.
+                // That is, from the node we're going to visit, go this direction to get to `source`
+                // Group by Y coordinate then sort by X coordinate for cache-line coherency.
+                // Diagonals first, since those are heuristically shorter than taking two orthogonal steps.
+                this.VisitNode(q, allNodes, source, Direction.UpRight, left, down);
+                this.VisitNode(q, allNodes, source, Direction.UpLeft, right, down);
+                this.VisitNode(q, allNodes, source, Direction.DownRight, left, up);
+                this.VisitNode(q, allNodes, source, Direction.DownLeft, right, up);
 
                 // Orthogonals second
-                this.VisitNode(q, node, allNodes, Direction.North, 0, -1);
-                this.VisitNode(q, node, allNodes, Direction.East, -1, 0);
-                this.VisitNode(q, node, allNodes, Direction.West, 1, 0);
-                this.VisitNode(q, node, allNodes, Direction.South, 0, 1);
+                this.VisitNode(q, allNodes, source, Direction.Up, 0, down);
+                this.VisitNode(q, allNodes, source, Direction.Right, left, 0);
+                this.VisitNode(q, allNodes, source, Direction.Left, right, 0);
+                this.VisitNode(q, allNodes, source, Direction.Down, 0, up);
             }
+        }
+
+        private void SetupQueue(out FastPriorityQueue<CoordNode> q, out CoordNode[,] allNodes)
+        {
+            q = new FastPriorityQueue<CoordNode>(this.Height * this.Width);
+            allNodes = new CoordNode[this.Height, this.Width];
+            for (var y = 0; y < this.Height; y++)
+            {
+                for (var x = 0; x < this.Width; x++)
+                {
+                    if (this.parent.Passable[y, x])
+                    {
+                        allNodes[y, x] = new CoordNode(x, y);
+                        q.Enqueue(allNodes[y, x], float.PositiveInfinity);
+                    }
+                }
+            }
+
+            // Root node has to be first at distance zero
+            q.UpdatePriority(allNodes[this.Root.Y, this.Root.X], 0f);
         }
 
         /// <summary>
         /// Visit some place relative to the current node that was popped off the Dijkstra's Algorithm queue.
         /// </summary>
         /// <param name="q">The Dijkstra's algorithm queue</param>
-        /// <param name="source">The node we're visiting FROM</param>
         /// <param name="allNodes">The grid of all possible nodes</param>
+        /// <param name="source">The node we're visiting FROM</param>
         /// <param name="sourceDir">The direction we're visiting FROM</param>
         /// <param name="dx">The relative X coordinate of this node [-1,0,1]</param>
         /// <param name="dy">The relative Y coordinate of this node [-1,0,1]</param>
-        private void VisitNode(FastPriorityQueue<CoordNode> q, CoordNode source, CoordNode[,] allNodes, Direction sourceDir, int dx, int dy)
+        private void VisitNode(FastPriorityQueue<CoordNode> q, CoordNode[,] allNodes, CoordNode source, Direction sourceDir, int dx, int dy)
         {
             int x = source.X + dx;
             int y = source.Y + dy;
@@ -232,46 +269,34 @@
                 return;
             }
 
-            bool canPass = this.parent.Passable[y, x];
-            float distance = 1f;
-
-            if (canPass && (sourceDir == Direction.NorthEast || sourceDir == Direction.SouthEast || sourceDir == Direction.SouthWest || sourceDir == Direction.NorthWest))
+            var node = allNodes[y, x];
+            if (node == null /*not passable*/ || !q.Contains(node) /*already visited*/)
             {
-                // Diagonals must be passable via at least one corner. Two adjacent corners being impassable prevents movement
+                return;
+            }
+
+            float distance = 1f;
+            if ((sourceDir & Direction.Diagonal) != 0)
+            {
+                // Diagonal movement must be passable via at least one corner. Two adjacent corners being impassable prevents movement.
                 // Corners are simply the other two coordinates in the "square" defined by the source and destination.
-                // Since both the source and destination are valid coordinates, no need to re-check before turning into an index.
                 if (this.parent.Passable[source.Y, x] || this.parent.Passable[y, source.X])
                 {
                     distance = SQRT2;
                 }
                 else
                 {
-                    canPass = false;
+                    return; // Can't pass diagonally
                 }
             }
 
-            if (!canPass)
-            {
-                return;
-            }
-
-            var oldDistance = this.distances[y, x];
-            var newDistance = this.distances[source.Y, source.X] + distance;
+            var sourceDistance = source.Priority;
+            var oldDistance = node.Priority;
+            var newDistance = sourceDistance + distance;
             if (newDistance < oldDistance)
             {
-                this.distances[y, x] = newDistance;
                 this.directions[y, x] = sourceDir; // Change incoming direction
-
-                var destNode = allNodes[y, x];
-                if (destNode == null)
-                {
-                    destNode = allNodes[y, x] = new CoordNode(x, y);
-                    q.Enqueue(destNode, newDistance);
-                }
-                else
-                {
-                    q.UpdatePriority(destNode, newDistance);
-                }
+                q.UpdatePriority(node, newDistance);
             }
         }
 

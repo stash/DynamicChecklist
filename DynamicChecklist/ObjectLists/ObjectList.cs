@@ -224,12 +224,18 @@
             float limit = float.PositiveInfinity;
             foreach (var soi in externalSOIs)
             {
-                MainClass.WorldGraph.TryFindNextHopForPlayer(soi.WorldPoint, out var distance, out var nextHop, limit);
-                if (distance < limit)
+                if (MainClass.WorldGraph.TryFindNextHopForPlayer(soi.WorldPoint, out var distance, out var nextHop, limit))
                 {
-                    limit = distance;
-                    this.ClosestSOI = soi;
-                    this.ClosestHop = nextHop;
+                    if (distance < limit)
+                    {
+                        limit = distance;
+                        this.ClosestSOI = soi;
+                        this.ClosestHop = nextHop;
+                    }
+                }
+                else if (limit == float.PositiveInfinity)
+                {
+                    Monitor.Log($"{this.Name}: Can't find path to {soi.ToTileCoordString()}!", LogLevel.Warn);
                 }
             }
         }

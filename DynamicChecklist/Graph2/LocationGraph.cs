@@ -46,6 +46,8 @@
 #endif
 
             this.Passable = new bool[this.Height, this.Width];
+            this.BuildPassability();
+
         }
 
         public WorldGraph World { get; private set; }
@@ -55,10 +57,6 @@
         public int Height { get; private set; }
 
         public int Width { get; private set; }
-
-        public bool[,] Passable { get; private set; } // y, x
-
-        public int NumPassable { get; private set; } = 0;
 
         public int OutDegree => this.warpOutNodes.Count;
 
@@ -76,33 +74,38 @@
         /// <summary>Gets an enumeration of inbound <see cref="WarpNode"/>s</summary>
         public IEnumerable<WarpNode> WarpInNodes => this.warpInNodes.SelectMany(pair => pair.Value.AsEnumerable());
 
+        internal bool[,] Passable { get; private set; } // y, x
+
         /// <summary>
         /// Creates and adds new <see cref="WarpNode"/> for this location, corresponding to <paramref name="warp"/>.
         /// </summary>
         /// <remarks>Won't be added if out of tile coordinates range for the location (slightly out of range will be clamped).</remarks>
         /// <param name="warp">The warp to add</param>
-        /// <returns>True if the warp was added (can't be duplicated, must be in range), false otherwise</returns>
+        /// <param name="isDoorWarp">If the warp belongs to a door</param>
+        /// <returns>If the warp was added (can't be duplicated, must be in range)</returns>
         /// <seealso cref="AddWarpOut(WarpNode)"/>
         public bool AddWarpOut(Warp warp)
         {
-            if (WorldPoint.InRange(this.Location, warp.X, warp.Y) &&
-                WorldPoint.InRange(LocationReference.For(warp.TargetName), warp.TargetX, warp.TargetY))
+            if (!WorldPoint.InRange(LocationReference.For(warp.TargetName), warp.TargetX, warp.TargetY))
             {
-                return this.AddWarpOut(new WarpNode(warp, this.Location));
+                WorldGraph.Monitor.Log($"Warp target out of range {warp.X},{warp.Y}@{this.Name} -> {warp.TargetX},{warp.TargetY}@{warp.TargetName}", StardewModdingAPI.LogLevel.Trace);
+                return false;
+            }
+            else if (!WorldPoint.InRange(this.Location, warp.X, warp.Y))
+            {
+                WorldGraph.Monitor.Log($"Warp out of range {warp.X},{warp.Y}@{this.Name} -> {warp.TargetX},{warp.TargetY}@{warp.TargetName}", StardewModdingAPI.LogLevel.Trace);
+                return false;
             }
 
-            WorldGraph.Monitor.Log($"Warp out of range {warp.X},{warp.Y}@{this.Name} -> {warp.TargetX},{warp.TargetY}@{warp.TargetName}", StardewModdingAPI.LogLevel.Warn);
-            return false;
+            return this.AddWarpOut(new WarpNode(warp, this.Location));
         }
 
         /// <summary>
-        /// Add an outbound <see cref="WarpNode"> to this location.
-        /// Triggers the OnWarpOutAdded event if it was added.
-        /// Duplicate warps cannot be added.
+        /// Add an outbound <see cref="WarpNode"/> to this location. Duplicate warps cannot be added.
         /// </summary>
         /// <param name="node">A node with this location as the Source</param>
-        /// <returns>True if newly added, false otherwise</returns>
-        /// <seealso cref="AddWarpOut(Warp)"/>
+        /// <returns>If the warp was added (can't be duplicated, must be in range)</returns>
+        /// <seealso cref="AddWarpOut(Warp, bool)"/>
         public bool AddWarpOut(WarpNode node)
         {
 #if DEBUG
@@ -113,12 +116,23 @@
 #endif
 
             var index = this.GetWaypointIndex(node.Source);
+            if (!this.Passable[node.Source.Y, node.Source.X])
+            {
+                this.Passable[node.Source.Y, node.Source.X] = true; // Force source to be passable
+                WorldGraph.Monitor.Log($"Forcing Passable warp source: {node.Source}", StardewModdingAPI.LogLevel.Warn);
+            }
+
             if (!this.warpOutNodes.ContainsKey(index))
             {
                 this.warpOutNodes.Add(index, node);
-                this.World.GetLocationGraph(node.Target.Location).AddWarpIn(node);
                 return true;
             }
+#if DEBUG
+            else
+            {
+                WorldGraph.Monitor.Log($"Ignoring duplicate WarpOut: {node}");
+            }
+#endif
 
             return false;
         }
@@ -128,7 +142,7 @@
         /// </summary>
         /// <param name="node">A node with this location as the Target</param>
         /// <returns>True if the target point for the node was newly added, false otherwise</returns>
-        public bool AddWarpIn(WarpNode node)
+        private bool AddWarpIn(WarpNode node)
         {
 #if DEBUG
             if (node.Target.Location != this.Location)
@@ -149,6 +163,12 @@
                 this.InDegree++;
                 return true;
             }
+#if DEBUG
+            else
+            {
+                WorldGraph.Monitor.Log($"Ignoring duplicate WarpIn: {node}");
+            }
+#endif
 
             return false;
         }
@@ -172,7 +192,7 @@
             }
 #endif
 
-            return this.InteriorDistanceTo(outNode.Source, point);
+            return this.InteriorDistance(outNode.Source, point);
         }
 
         /// <summary>
@@ -194,28 +214,29 @@
             }
 #endif
 
-            return this.InteriorDistanceTo(inNode.Target, point);
+            return inNode.Target == point ? 0 : this.InteriorDistance(inNode.Target, point);
         }
 
         /// <summary>
-        /// Gets the distance between the incoming target position and the outgoing source position.
+        /// Gets the distance between a pair of inbound and outbound nodes using this location.
         /// </summary>
-        /// <param name="inNode">Inbound warp node, target is this location</param>
-        /// <param name="outNode">Outbound warp node, source is this location</param>
+        /// <param name="inbound">Inbound warp node, i.e., target is this location</param>
+        /// <param name="outbound">Outbound warp node, i.e., source is this location</param>
         /// <returns>Walking distance</returns>
-        public float GetInterWarpDistance(WarpNode inNode, WarpNode outNode)
+        public float GetInteriorDistance(WarpNode inbound, WarpNode outbound)
         {
 #if DEBUG
-            if (inNode.Target.Location != this.Location)
+            if (inbound.Target.Location != this.Location)
             {
-                throw new ArgumentException("Inbound target not for this location", nameof(inNode));
+                throw new ArgumentException("Inbound target not for this location", nameof(inbound));
             }
-            else if (outNode.Source.Location != this.Location)
+            else if (outbound.Source.Location != this.Location)
             {
-                throw new ArgumentException("Outbound source not for this location", nameof(outNode));
+                throw new ArgumentException("Outbound source not for this location", nameof(outbound));
             }
 #endif
-            return this.InteriorDistanceTo(outNode.Source, inNode.Target);
+
+            return this.InteriorDistance(outbound.Source, inbound.Target);
         }
 
         /// <summary>
@@ -227,7 +248,7 @@
         public float GetExteriorDistance(WarpNode outNodeHere, WarpNode inNodeThere)
         {
 #if DEBUG
-            if (outNodeHere.Source.Location != this.Location)
+            if (outNodeHere.Source.Location != this.Location || !this.waypointIndex.ContainsKey(outNodeHere.Source))
             {
                 throw new ArgumentException("Warp isn't for this location", nameof(outNodeHere));
             }
@@ -241,19 +262,49 @@
                 return 0;
             }
 
-            var index = this.waypointIndex[outNodeHere.Source];
-            var tree = this.GetExteriorTree(index);
+            var tree = this.GetOrCreateExteriorTree(this.waypointIndex[outNodeHere.Source]);
             return tree.DistanceTo(inNodeThere);
         }
 
-        public void Build()
+        internal void BuildWarpOuts()
         {
-            this.BuildPassability();
-
+            WorldGraph.Monitor.Log($"{this.Name} Build Warps", StardewModdingAPI.LogLevel.Trace);
             this.BuildPlainWarps();
             this.BuildDoorWarps();
             this.BuildBuildingDoorWarps();
             this.BuildTileActionWarps();
+
+            // TODO: collapse adjacent
+        }
+
+        internal void BuildWarpIns()
+        {
+            foreach (var index in this.warpOutNodes.Keys.ToList())
+            {
+                var warpNode = this.warpOutNodes[index];
+                var targetGraph = this.World.GetLocationGraph(warpNode.Target.Location);
+                if (targetGraph.FixupDoorWarp(ref warpNode))
+                {
+                    this.warpOutNodes[index] = warpNode;
+                }
+
+                targetGraph.AddWarpIn(warpNode);
+            }
+        }
+
+        private void BuildPassability()
+        {
+            var backLayer = this.Location.Resolve.Map.GetLayer("Back");
+            var tile = new xTile.Dimensions.Location { X = 0, Y = 0 };
+            for (var y = 0; y < this.Height; y++)
+            {
+                tile.Y = y;
+                for (var x = 0; x < this.Width; x++)
+                {
+                    tile.X = x;
+                    this.Passable[y, x] = this.IsPassable(backLayer, tile);
+                }
+            }
         }
 
         private int GetWaypointIndex(WorldPoint waypoint)
@@ -281,7 +332,8 @@
             var location = this.Location.Resolve;
             foreach (var doorPoint in location.doors.Keys)
             {
-                this.AddWarpOut(location.getWarpFromDoor(doorPoint));
+                var warp = location.getWarpFromDoor(doorPoint);
+                this.AddWarpOut(warp);
             }
         }
 
@@ -301,7 +353,6 @@
         private void BuildTileActionWarps()
         {
             var layer = this.Location.Resolve.Map.GetLayer("Buildings");
-            var viewportSize = Game1.viewport.Size;
             for (int y = 0; y < this.Height; y++)
             {
                 for (int x = 0; x < this.Width; x++)
@@ -354,28 +405,7 @@
             this.AddWarpOut(new WarpNode(source, target));
         }
 
-        private void BuildPassability()
-        {
-            this.NumPassable = 0;
-
-            var backLayer = this.Location.Resolve.Map.GetLayer("Back");
-            var tile = new xTile.Dimensions.Location { X = 0, Y = 0 };
-            for (var y = 0; y < this.Height; y++)
-            {
-                tile.Y = y;
-                for (var x = 0; x < this.Width; x++)
-                {
-                    tile.X = x;
-                    if (this.IsPassable(backLayer, tile))
-                    {
-                        this.Passable[y, x] = true;
-                        this.NumPassable++;
-                    }
-                }
-            }
-        }
-
-        private bool IsPassable(Layer backLayer, Location tile)
+        private bool IsPassable(Layer backLayer, xTile.Dimensions.Location tile)
         {
             var location = this.Location.Resolve;
 
@@ -395,7 +425,12 @@
             return false;
         }
 
-        private InteriorShortestPathTree GetInteriorTree(int index)
+        /// <summary>
+        /// Gets or creates an interior tree for some waypoint index.
+        /// </summary>
+        /// <param name="index">Waypoint index</param>
+        /// <returns>The tree</returns>
+        private InteriorShortestPathTree GetOrCreateInteriorTree(int index)
         {
             if (!this.interiorTrees.TryGetValue(index, out var tree))
             {
@@ -406,7 +441,12 @@
             return tree;
         }
 
-        private ExteriorShortestPathTree GetExteriorTree(int index)
+        /// <summary>
+        /// Gets or creates an exterior tree for some waypoint index corresponding to some warp out node.
+        /// </summary>
+        /// <param name="index">Waypoint index</param>
+        /// <returns>The tree</returns>
+        private ExteriorShortestPathTree GetOrCreateExteriorTree(int index)
         {
             if (!this.exteriorTrees.TryGetValue(index, out var tree))
             {
@@ -417,17 +457,89 @@
             return tree;
         }
 
-        private float InteriorDistanceTo(WorldPoint waypoint, WorldPoint point)
+        private float InteriorDistance(WorldPoint a, WorldPoint b)
         {
 #if DEBUG
-            if (waypoint.Location != this.Location)
+            if (a.Location != this.Location)
             {
-                throw new ArgumentException("Not for this location", nameof(waypoint));
+                throw new ArgumentException("Not a point for this location", nameof(a));
+            }
+            else if (b.Location != this.Location)
+            {
+                throw new ArgumentException("Not a point for this location", nameof(b));
             }
 #endif
-            var index = this.waypointIndex[waypoint]; // will intentionally throw in non-Debug
-            var tree = this.GetInteriorTree(index);
-            return tree.DistanceTo(point);
+            if (a == b)
+            {
+                return 0;
+            }
+
+            bool aIsWaypoint = this.waypointIndex.TryGetValue(a, out int aIndex);
+            bool bIsWaypoint = this.waypointIndex.TryGetValue(b, out int bIndex);
+
+#if DEBUG
+            if (!aIsWaypoint && !bIsWaypoint)
+            {
+                throw new InvalidOperationException("Must supply at least one waypoint (both arguments are arbitrary points)");
+            }
+#endif
+
+            // If b's tree already exists, use that
+            if (bIsWaypoint && this.interiorTrees.TryGetValue(bIndex, out var bTree))
+            {
+                return bTree.DistanceTo(a);
+            }
+
+            // Otherwise, just get or create the tree for A
+            var aTree = this.GetOrCreateInteriorTree(aIndex);
+            return aTree.DistanceTo(b);
+        }
+
+        /// <summary>
+        /// Attempt to fix up a potentially invalid door warp targetting this location.
+        /// </summary>
+        /// <param name="warpNode">Node to repair</param>
+        /// <returns>If the target was changed</returns>
+        private bool FixupDoorWarp(ref WarpNode warpNode)
+        {
+            var gameLocation = this.Location.Resolve;
+            if (this.Name != "FarmHouse" && this.Name.IndexOf("Cabin") != 0 && !gameLocation.isFarmBuildingInterior())
+            {
+                return false;
+            }
+
+            var source = new Vector2(warpNode.Source.X, warpNode.Source.Y);
+            float bestDistance = float.PositiveInfinity;
+            Warp bestInverseWarp = null;
+            foreach (var inverseWarp in gameLocation.warps)
+            {
+                // Distance squared is fine for comparisons. Discard if farther than 2^2 = 4 tile units.
+                float distance = Vector2.DistanceSquared(source, new Vector2(inverseWarp.TargetX, inverseWarp.TargetY));
+                if (distance < bestDistance && distance <= 4f)
+                {
+                    bestDistance = distance;
+                    bestInverseWarp = inverseWarp;
+                }
+            }
+
+            if (bestInverseWarp == null)
+            {
+                WorldGraph.Monitor.Log($"Unable to fixup door warp {warpNode}", StardewModdingAPI.LogLevel.Warn);
+                return false;
+            }
+
+            // Re-target the warp node at the best inverse warp source
+            var x = MathX.Clamp(bestInverseWarp.X, 0, this.Width - 1);
+            var y = MathX.Clamp(bestInverseWarp.Y, 0, this.Height - 1);
+            if (x == warpNode.Target.X && y == warpNode.Target.Y)
+            {
+                return false;
+            }
+
+            var oldTarget = warpNode.Target;
+            warpNode = new WarpNode(warpNode.Source, new WorldPoint(this.Location, x, y));
+            WorldGraph.Monitor.Log($"Fixed up door warp {warpNode} -- old target: {oldTarget}");
+            return true;
         }
     }
 }

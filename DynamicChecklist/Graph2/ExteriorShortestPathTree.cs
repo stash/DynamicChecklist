@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Linq;
     using Priority_Queue;
     using StardewValley;
@@ -9,6 +10,7 @@
     /// <summary>
     /// Stores the directed Single-Source Shortest Path tree from some "Root" <see cref="WarpNode"/> to all other <see cref="WarpNode"/>s in the world.
     /// </summary>
+    [DebuggerDisplay("ExtTree Root={Root}")]
     internal class ExteriorShortestPathTree
     {
         private LocationGraph parent;
@@ -29,6 +31,8 @@
 #endif
             this.parent = graph;
             this.Root = root;
+            WorldGraph.Monitor.Log($"Generating exterior for {root}", StardewModdingAPI.LogLevel.Trace);
+
             this.distances = new Dictionary<WarpNode, float>();
             this.Calculate();
         }
@@ -55,24 +59,28 @@
         /// </summary>
         private void Calculate()
         {
-            var q = this.SetupQueue();
+            var q = this.SetupQueue(); // Adds *all* nodes
             while (q.Count > 0)
             {
                 var inNode = q.Dequeue();
                 var distance = inNode.Priority;
                 this.distances.Add(inNode, distance);
-                q.ResetNode(inNode); // recycle!
+                q.ResetNode(inNode); // Sets QueueIndex to 0. Important for the q.Contains call below and re-use in other Calculate() calls
 
-                var targetLocation = inNode.Target.Location;
-                var targetGraph = this.parent.World.GetLocationGraph(targetLocation);
+                var targetGraph = this.parent.World.GetLocationGraph(inNode.Target.Location);
                 foreach (var outNode in targetGraph.WarpOutNodes)
                 {
-                    var between = targetGraph.GetInterWarpDistance(inNode, outNode); // may be +infinity ...
-                    var newDistance = distance + between; // ... which also makes this +infinity
-                    var oldDistance = outNode.Priority;
-                    if (newDistance < oldDistance)
+                    // If outNode is not in the queue, a shortest path has already been found.
+                    // Re-enqueueing it would result in a useless search cycle.
+                    if (outNode.QueueIndex > 0 && q.Contains(outNode))
                     {
-                        q.UpdatePriority(outNode, newDistance);
+                        var between = targetGraph.GetInteriorDistance(inNode, outNode); // may be +infinity ...
+                        var newDistance = distance + between; // ... which also makes this +infinity
+                        var oldDistance = outNode.Priority;
+                        if (newDistance < oldDistance)
+                        {
+                            q.UpdatePriority(outNode, newDistance);
+                        }
                     }
                 }
             }
@@ -80,12 +88,18 @@
 
         private FastPriorityQueue<WarpNode> SetupQueue()
         {
+            // MUST add all nodes for the queue for cycle detection
             var allNodes = this.parent.World.AllWarpNodes;
             var queue = new FastPriorityQueue<WarpNode>(allNodes.Count);
-            queue.Enqueue(this.Root, 0f);
-
-            foreach (var node in allNodes)
+            queue.Enqueue(this.Root, 0f); // insert it first to prevent priority queue churn
+            foreach (var node in allNodes.Where(node => node != this.Root))
             {
+#if DEBUG
+                if (node.QueueIndex != 0)
+                {
+                    throw new InvalidOperationException("Node is still present in some other queue; ExteriorShortestPathTree.Calculate is not re-entrant!");
+                }
+#endif
                 if (node != this.Root)
                 {
                     queue.Enqueue(node, float.PositiveInfinity);

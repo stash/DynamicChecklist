@@ -212,60 +212,40 @@
                 return false;
             }
 
-            var endGraphInNodes = new List<WarpNode>(endGraph.WarpInNodes);
-            WarpNode bestSourceNode = null;
-            foreach (var sourceNode in startGraph.WarpOutNodes)
+            var endNodes = endGraph.WarpInNodes.ToArray();
+
+            foreach (var startNode in startGraph.WarpOutNodes)
             {
-                float startDistance = startGraph.GetDistanceToWarp(start, sourceNode);
+                float startDistance = startGraph.GetDistanceToWarp(start, startNode);
                 if (startDistance >= limit || startDistance >= distance)
                 {
                     continue;
                 }
 
                 // TODO: sourceNode --> end distance can be cached!
-                // Simple storage for time optimization.
+                // Simple storage for time trade-off optimization.
                 // Something like Dictionary<Tuple<WarpNode,WorldPoint>> and Add(new Tuple(sourceNode,end), distance)
                 // or multi-layer it on end/WorldPoint, store it in the startGraph?
                 // Cache should invalidate on any world graph change
 
-                // Adjacent warp! No need to loop through all the end graph nodes; just check immediate distance!
-                if (sourceNode.Target.Location == end.Location)
+                foreach (var endNode in endNodes)
                 {
-                    float endDistance = startDistance + endGraph.GetDistanceFromWarp(sourceNode, end);
-                    if (endDistance < limit && endDistance < distance)
-                    {
-                        distance = endDistance;
-                        bestSourceNode = sourceNode;
-                    }
-
-                    continue;
-                }
-
-                // Otherwise, check the exterior and final leg
-                foreach (var targetNode in endGraphInNodes)
-                {
-                    float middleDistance = startDistance + startGraph.GetExteriorDistance(sourceNode, targetNode);
+                    float middleDistance = startDistance + this.GetDistanceBetweenWarps(startNode, endNode);
                     if (middleDistance >= limit || middleDistance >= distance)
                     {
                         continue;
                     }
 
-                    float endDistance = middleDistance + endGraph.GetDistanceFromWarp(targetNode, end);
-                    if (endDistance < limit && endDistance < distance)
+                    float totalDistance = middleDistance + endGraph.GetDistanceFromWarp(endNode, end);
+                    if (totalDistance < limit && totalDistance < distance)
                     {
-                        distance = endDistance;
-                        bestSourceNode = sourceNode;
+                        distance = totalDistance;
+                        next = startNode;
                     }
                 }
             }
 
-            if (bestSourceNode == null)
-            {
-                return false;
-            }
-
-            next = bestSourceNode;
-            return true;
+            return next != null;
         }
 
         internal LocationGraph GetLocationGraph(LocationReference location)
@@ -297,7 +277,30 @@
 
             foreach (var graph in this.locationGraphs.Values)
             {
-                graph.Build();
+                graph.BuildWarpOuts();
+            }
+
+            foreach (var graph in this.locationGraphs.Values)
+            {
+                graph.BuildWarpIns();
+            }
+        }
+
+        private float GetDistanceBetweenWarps(WarpNode from, WarpNode to)
+        {
+            if (from == to)
+            {
+                return 0f;
+            }
+            else if (from.Target.Location == to.Source.Location)
+            {
+                var graph = this.GetLocationGraph(from.Target.Location);
+                return graph.GetInteriorDistance(from, to);
+            }
+            else
+            {
+                var graph = this.GetLocationGraph(from.Source.Location);
+                return graph.GetExteriorDistance(from, to);
             }
         }
     }
