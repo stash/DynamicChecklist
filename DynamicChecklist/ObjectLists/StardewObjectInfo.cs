@@ -1,10 +1,12 @@
 ﻿namespace DynamicChecklist.ObjectLists
 {
     using System;
+    using System.Diagnostics;
     using DynamicChecklist.Graph2;
     using Microsoft.Xna.Framework;
     using StardewValley;
 
+    [DebuggerDisplay("C:{Coordinate} L:{Location.Name} A:{this.NeedAction}")]
     public class StardewObjectInfo
     {
         public static readonly Vector2 HalfTileOffset = new Vector2(Game1.tileSize / 2, Game1.tileSize / 2);
@@ -96,5 +98,9 @@
             this.Coordinate = (Vector2)worldPoint;
             this.Location = worldPoint.Location;
         }
+
+        public override string ToString() => $"{this.Coordinate.X},{this.Coordinate.Y}@{this.Location.Name} (NeedAction={this.NeedAction})";
+
+        public string ToTileCoordString() => $"{this.TileCoordinate.X},{this.TileCoordinate.Y}@{this.Location.Name} (NeedAction={this.NeedAction})";
     }
 }
