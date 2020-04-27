@@ -38,7 +38,7 @@
 
         protected override void UpdateObjectInfoList(uint ticks)
         {
-            if (this.TaskDone)
+            if (this.TaskDone || this.ObjectInfoList.Count == 0)
             {
                 return;
             }
@@ -57,7 +57,7 @@
 
         private void Display_MenuChanged(object sender, MenuChangedEventArgs e)
         {
-            if (this.TaskDone)
+            if (this.TaskDone || this.ObjectInfoList.Count == 0)
             {
                 return;
             }
