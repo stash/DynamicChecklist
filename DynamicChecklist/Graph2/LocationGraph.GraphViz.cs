@@ -26,28 +26,9 @@
                 io.WriteLine($"subgraph cluster{this.prefix} {{");
                 io.WriteLine($" label = \"{g.Name}\";");
 
-                WorldPoint prev = null;
-                WorldPoint first = null;
-                int n = 0;
                 foreach (var waypoint in g.waypoints.OrderBy(wp => wp.Y))
                 {
                     this.WriteNode(waypoint, io);
-                    if (n == 0)
-                    {
-                        first = waypoint;
-                    }
-                    else
-                    {
-                        io.WriteLine($"{this.prefix}_{prev.ToPortName()} -> {this.prefix}_{waypoint.ToPortName()} [weight=1000, style=invis];");
-                    }
-
-                    prev = waypoint;
-                    n++;
-                }
-
-                if (n >= 2)
-                {
-                    io.WriteLine($"{this.prefix}_{prev.ToPortName()} -> {this.prefix}_{first.ToPortName()} [weight=1000, style=invis];");
                 }
 
                 io.WriteLine('}');
@@ -58,7 +39,8 @@
                 foreach (var node in this.graph.warpOutNodes.Values)
                 {
                     var targetPrefix = this.locationPrefixes[node.Target.Location];
-                    io.WriteLine($"{this.prefix}_{node.Source.ToPortName()} -> {targetPrefix}_{node.Target.ToPortName()} [weight=1];");
+                    var label = node.ToString().Replace("\"", "\\\"");
+                    io.WriteLine($"{this.prefix}_{node.Source.ToPortName()} -> {targetPrefix}_{node.Target.ToPortName()} [weight=1, tooltip=\"{label}\"];");
                 }
             }
 

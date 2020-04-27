@@ -46,11 +46,15 @@
                 io.WriteLine("digraph world {");
 
                 // Display suggestions:
-                io.WriteLine("  ranksep = 1;");
-                io.WriteLine("  rankdir = LR;");
-                io.WriteLine("  nodesep = .1;");
-                io.WriteLine("  node[fontsize=10, shape=box, margin=\"0.01,0.01\", height=0, width=0];");
-                io.WriteLine("  edge[minlen=4];");
+                io.WriteLine("// display suggestions:");
+                io.WriteLine("ranksep = 1;");
+                io.WriteLine("rankdir = LR;");
+                io.WriteLine("nodesep = .01;");
+                io.WriteLine("concentrate = true;");
+                io.WriteLine("remincross = true;");
+                io.WriteLine("node[fontsize = 10, shape = box, margin = \"0.01,0.01\", height = 0, width = 0];");
+                io.WriteLine("edge[minlen = 4];");
+                io.WriteLine();
 
                 foreach (var gv in gvs)
                 {
