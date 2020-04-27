@@ -50,27 +50,6 @@
             this.Calculate();
         }
 
-        [Flags]
-        public enum Direction : byte
-        {
-            None = 0,
-            Right = 0x01,
-            UpRight = 0x02,
-            Up = 0x04,
-            UpLeft = 0x08,
-            Left = 0x10,
-            DownLeft = 0x20,
-            Down = 0x40,
-            DownRight = 0x80,
-
-            Orthogonal = Right | Up | Left | Down,
-            Diagonal = UpRight | UpLeft | DownRight | DownLeft,
-            AnyUp = Up | UpRight | UpLeft,
-            AnyRight = Right | UpRight | DownRight,
-            AnyDown = Down | DownRight | DownLeft,
-            AnyLeft = Left | UpLeft | DownLeft,
-        }
-
         /// <summary>
         /// Gets the height, in tile units, of the location
         /// </summary>
@@ -85,27 +64,6 @@
         /// Gets the root node for this tree.
         /// </summary>
         public WorldPoint Root { get; private set; }
-
-        public static void DirectionTransform(Direction dir, ref int x, ref int y)
-        {
-            if ((dir & Direction.AnyRight) != 0)
-            {
-                x++;
-            }
-            else if ((dir & Direction.AnyLeft) != 0)
-            {
-                x--;
-            }
-
-            if ((dir & Direction.AnyDown) != 0)
-            {
-                y++;
-            }
-            else if ((dir & Direction.AnyUp) != 0)
-            {
-                y--;
-            }
-        }
 
         /// <summary>
         /// Returns the walking distance between the <see cref="Root"/> to the specified point, if they are connected.
@@ -166,7 +124,7 @@
                     break;
                 }
 
-                DirectionTransform(dir, ref x, ref y);
+                WorldGraph.DirectionTransform(dir, ref x, ref y);
                 dir = this.directions[y, x];
             }
         }

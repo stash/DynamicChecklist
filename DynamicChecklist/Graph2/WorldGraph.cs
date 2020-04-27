@@ -10,6 +10,8 @@
 
     public partial class WorldGraph
     {
+        private static Direction[] nearbyDirectionSearch = { Direction.Up, Direction.Down, Direction.Left, Direction.Right, Direction.UpLeft, Direction.UpRight, Direction.DownLeft, Direction.DownRight };
+
         private Dictionary<LocationReference, LocationGraph> locationGraphs;
         private List<WarpNode> cachedAllWarpNodes;
         private List<WarpNode> cachedAllReachableWarpNodes;
@@ -106,6 +108,33 @@
         }
 
         /// <summary>
+        /// Transform an x and y coordinate using a <see cref="Direction"/>
+        /// </summary>
+        /// <param name="dir">The direction</param>
+        /// <param name="x">The x coordinate to alter</param>
+        /// <param name="y">The y coordinate to alter</param>
+        public static void DirectionTransform(Direction dir, ref int x, ref int y)
+        {
+            if ((dir & Direction.AnyRight) != 0)
+            {
+                x++;
+            }
+            else if ((dir & Direction.AnyLeft) != 0)
+            {
+                x--;
+            }
+
+            if ((dir & Direction.AnyDown) != 0)
+            {
+                y++;
+            }
+            else if ((dir & Direction.AnyUp) != 0)
+            {
+                y--;
+            }
+        }
+
+        /// <summary>
         /// React to the SMAPI LocationListChanged event by recomputing the world graph.
         /// </summary>
         /// <param name="added">Added locations</param>
@@ -165,6 +194,12 @@
         public bool TryFindNextHopForPlayer(WorldPoint end, out float distance, out Vector2 nextHop, float limit = float.PositiveInfinity)
         {
             var start = new WorldPoint(Game1.player.currentLocation, Game1.player.position.Value);
+            var startGraph = this.GetLocationGraph(start.Location);
+            if (!startGraph.Passable[start.Y, start.X])
+            {
+                this.FindClosestPassablePoint(ref start);
+            }
+
             return this.TryFindNextHop(start, end, out distance, out nextHop, limit);
         }
 
@@ -257,6 +292,22 @@
             }
 
             return graph;
+        }
+
+        private void FindClosestPassablePoint(ref WorldPoint start)
+        {
+            var graph = this.GetLocationGraph(start.Location);
+            foreach (var dir in nearbyDirectionSearch)
+            {
+                var x = start.X;
+                var y = start.Y;
+                DirectionTransform(dir, ref x, ref y);
+                if (y >= 0 && y < graph.Height && x >= 0 && x < graph.Width && graph.Passable[y, x])
+                {
+                    start = new WorldPoint(start.Location, x, y);
+                    return;
+                }
+            }
         }
 
         private void ClearCache()

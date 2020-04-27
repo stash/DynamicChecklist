@@ -47,7 +47,6 @@
 
             this.Passable = new bool[this.Height, this.Width];
             this.BuildPassability();
-
         }
 
         public WorldGraph World { get; private set; }
@@ -131,42 +130,6 @@
             else
             {
                 WorldGraph.Monitor.Log($"Ignoring duplicate WarpOut: {node}");
-            }
-#endif
-
-            return false;
-        }
-
-        /// <summary>
-        /// Registers an inbound node to this location.
-        /// </summary>
-        /// <param name="node">A node with this location as the Target</param>
-        /// <returns>True if the target point for the node was newly added, false otherwise</returns>
-        private bool AddWarpIn(WarpNode node)
-        {
-#if DEBUG
-            if (node.Target.Location != this.Location)
-            {
-                throw new ArgumentException(nameof(WarpNode) + " does not point to this location", nameof(node));
-            }
-#endif
-
-            var index = this.GetWaypointIndex(node.Target);
-            if (!this.warpInNodes.TryGetValue(index, out var nodeSet))
-            {
-                nodeSet = new HashSet<WarpNode>();
-                this.warpInNodes.Add(index, nodeSet);
-            }
-
-            if (nodeSet.Add(node))
-            {
-                this.InDegree++;
-                return true;
-            }
-#if DEBUG
-            else
-            {
-                WorldGraph.Monitor.Log($"Ignoring duplicate WarpIn: {node}");
             }
 #endif
 
@@ -290,6 +253,42 @@
 
                 targetGraph.AddWarpIn(warpNode);
             }
+        }
+
+        /// <summary>
+        /// Registers an inbound node to this location.
+        /// </summary>
+        /// <param name="node">A node with this location as the Target</param>
+        /// <returns>True if the target point for the node was newly added, false otherwise</returns>
+        private bool AddWarpIn(WarpNode node)
+        {
+#if DEBUG
+            if (node.Target.Location != this.Location)
+            {
+                throw new ArgumentException(nameof(WarpNode) + " does not point to this location", nameof(node));
+            }
+#endif
+
+            var index = this.GetWaypointIndex(node.Target);
+            if (!this.warpInNodes.TryGetValue(index, out var nodeSet))
+            {
+                nodeSet = new HashSet<WarpNode>();
+                this.warpInNodes.Add(index, nodeSet);
+            }
+
+            if (nodeSet.Add(node))
+            {
+                this.InDegree++;
+                return true;
+            }
+#if DEBUG
+            else
+            {
+                WorldGraph.Monitor.Log($"Ignoring duplicate WarpIn: {node}");
+            }
+#endif
+
+            return false;
         }
 
         private void BuildPassability()

@@ -66,6 +66,7 @@
   <ItemGroup>
     <Compile Include="ChecklistMenu.cs" />
     <Compile Include="GameTexture.cs" />
+    <Compile Include="Graph2\Direction.cs" />
     <Compile Include="Graph2\LocationGraph.GraphViz.cs" />
     <Compile Include="Graph2\WorldGraph.GraphViz.cs" />
     <Compile Include="Graph2\WorldPoint.cs" />
