@@ -127,8 +127,12 @@
 
         private void InitializeGraph()
         {
-            this.Monitor.Log("Starting world graph generation");
+            this.Monitor.Log("Starting world graph generation...");
             WorldGraph = new WorldGraph(WorldGraph.AllLocations());
+            this.Monitor.Log("Calculating interiors...");
+            WorldGraph.BuildAllInteriors();
+            this.Monitor.Log("Calculating exteriors...");
+            WorldGraph.BuildAllExteriors();
             this.Monitor.Log("World graph generation done!");
 
 #if DEBUG

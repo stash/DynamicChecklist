@@ -255,6 +255,22 @@
             }
         }
 
+        internal void BuildAllInteriors()
+        {
+            for (var index = 0; index < this.waypoints.Count; index++)
+            {
+                this.GetOrCreateInteriorTree(index);
+            }
+        }
+
+        internal void BuildAllExteriors()
+        {
+            foreach (var index in this.warpOutNodes.Keys)
+            {
+                this.GetOrCreateExteriorTree(index);
+            }
+        }
+
         /// <summary>
         /// Registers an inbound node to this location.
         /// </summary>

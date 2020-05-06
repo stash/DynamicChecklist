@@ -135,6 +135,17 @@
         }
 
         /// <summary>
+        /// Is the given location a procedurally-generated one? (e.g., UndergroundMine levels)
+        /// </summary>
+        /// <param name="location">The game location</param>
+        /// <returns>If it is a procedurally-generated location</returns>
+        public static bool IsProceduralLocation(GameLocation location)
+        {
+            return (location.Name.IndexOf("UndergroundMine") == 0) || 
+                (location.Name.IndexOf("DesertMine") == 0); // TODO: this is a guess!
+        }
+
+        /// <summary>
         /// React to the SMAPI LocationListChanged event by recomputing the world graph.
         /// </summary>
         /// <param name="added">Added locations</param>
@@ -145,19 +156,33 @@
 
             // TODO: make this whole method more efficient. Can make some optimizations for "Leaf" (a.k.a., Dead-End) locations.
             // Until then, yes, have to recompute the entire world graph :(
+            // Doing a minor optimization by ignoring procedurally-generated locations (e.g., mines)
             var locations = this.locationGraphs.Keys.ToList();
+            int changes = 0;
 
             foreach (var location in removed)
             {
-                locations.Remove(location);
+                if (!IsProceduralLocation(location) && locations.Remove(location))
+                {
+                    Monitor.Log($"Location removed: {location.NameOrUniqueName}");
+                    changes++;
+                }
             }
 
             foreach (var location in added)
             {
-                locations.Add(location);
+                if (!IsProceduralLocation(location))
+                {
+                    Monitor.Log($"Location added: {location.NameOrUniqueName}");
+                    locations.Add(location);
+                    changes++;
+                }
             }
 
-            this.RebuildLocations(locations);
+            if (changes > 0)
+            {
+                this.RebuildLocations(locations);
+            }
         }
 
         /// <summary>
@@ -292,6 +317,22 @@
             }
 
             return graph;
+        }
+
+        internal void BuildAllInteriors()
+        {
+            foreach (var graph in this.locationGraphs.Values)
+            {
+                graph.BuildAllInteriors();
+            }
+        }
+
+        internal void BuildAllExteriors()
+        {
+            foreach (var graph in this.locationGraphs.Values)
+            {
+                graph.BuildAllExteriors();
+            }
         }
 
         private void FindClosestPassablePoint(ref WorldPoint start)

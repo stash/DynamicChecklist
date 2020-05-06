@@ -207,6 +207,11 @@
             }
 
             var currentLocation = Game1.player.currentLocation;
+            if (WorldGraph.IsProceduralLocation(currentLocation))
+            {
+                return; // can't pathfind out of the mines yet
+            }
+
             var externalSOIs = this.ObjectInfoList.Where(soi => soi.NeedAction && soi.Location != currentLocation);
             if (MainClass.WorldGraph.PlayerHasOnlyOneWayOut(out var onlyHop))
             {
