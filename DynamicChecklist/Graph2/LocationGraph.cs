@@ -75,6 +75,8 @@
 
         internal bool[,] Passable { get; private set; } // y, x
 
+        public bool IsPassable(WorldPoint point) => point.Location == this.Location && this.Passable[point.Y, point.X];
+
         /// <summary>
         /// Creates and adds new <see cref="WarpNode"/> for this location, corresponding to <paramref name="warp"/>.
         /// </summary>

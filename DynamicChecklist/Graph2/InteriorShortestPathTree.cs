@@ -4,7 +4,7 @@
     using System.Collections.Generic;
     using System.Diagnostics;
     using Priority_Queue;
-    using StardewValley;
+    using StardewModdingAPI;
 
     /// <summary>
     /// Stores the undirected Single-Source Shortest Path tree from some root <see cref="WorldPoint"/> to all other passable coordinates in the same location, with shortest path directionality to allow reconstruction of the path.
@@ -36,16 +36,16 @@
         {
             this.parent = parent;
             this.Root = root;
+            this.RootIsPassable = this.parent.IsPassable(this.Root);
+            if (!this.RootIsPassable)
+            {
+                WorldGraph.Monitor.Log($"Root node {this.Root} is not passable", LogLevel.Warn);
+                return;
+            }
+
             this.directions = new Direction[this.Height, this.Width];
             this.distances = new float[this.Height, this.Width];
-            this.parent = parent;
-#if DEBUG
-            if (!this.parent.Passable[this.Root.Y, this.Root.X])
-            {
-                throw new InvalidOperationException("Root node is not passable");
-            }
-#endif
-            WorldGraph.Monitor.Log($"Generating interior for {root}", StardewModdingAPI.LogLevel.Trace);
+            WorldGraph.Monitor.Log($"Generating interior for {root}", LogLevel.Trace);
             this.InitializeDistances();
             this.Calculate();
         }
@@ -66,12 +66,22 @@
         public WorldPoint Root { get; private set; }
 
         /// <summary>
+        /// Gets a value indicating whether the root node is passable.
+        /// </summary>
+        public bool RootIsPassable { get; private set; }
+
+        /// <summary>
         /// Returns the walking distance between the <see cref="Root"/> to the specified point, if they are connected.
         /// </summary>
         /// <param name="point">The point to calculate the distance between</param>
         /// <returns>Walking distance, or <c>float.PositiveInfinity</c> if disconnected</returns>
         public float DistanceTo(WorldPoint point)
         {
+            if (!this.RootIsPassable)
+            {
+                return float.PositiveInfinity;
+            }
+
 #if DEBUG
             if (point.Location != this.parent.Location)
             {
@@ -102,6 +112,11 @@
         /// <returns>The path</returns>
         public IEnumerable<WorldPoint> PathToPoint(WorldPoint point)
         {
+            if (!this.RootIsPassable)
+            {
+                yield break;
+            }
+
 #if DEBUG
             if (point.Location != this.parent.Location)
             {
