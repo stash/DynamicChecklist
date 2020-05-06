@@ -204,31 +204,6 @@
         }
 
         /// <summary>
-        /// Try to find the "Next Hop" for the player trying to reach an arbitrary point in the world.
-        /// </summary>
-        /// <remarks>
-        /// When a path to the end point is not found, <paramref name="distance"/> is set to <see cref="float.PositiveInfinity"/> and <paramref name="nextHop"/> is set to <c>default</c>.
-        /// If there is only one warp going out of the current location, the distance calculation is skipped and <paramref name="distance"/> is set to <see cref="float.MaxValue"/> and <paramref name="nextHop"/> is set to the position of the only available warp.
-        /// When searching through a list of end points to find the closest one, be sure to set <paramref name="limit"/> to speed up the search.
-        /// </remarks>
-        /// <param name="end">The end point the player is trying to reach</param>
-        /// <param name="distance">The total walking distance to the end point, or <see cref="float.PositiveInfinity"/> if no path possible</param>
-        /// <param name="nextHop">The screen-space coordinates of the best warp going out of the player's location (<c>default</c> if no path possible)</param>
-        /// <param name="limit">Limits the maximum walking distance of the path (paths equal to or longer than this limit will be skipped)</param>
-        /// <returns>If a path to the end point could be found (if a <paramref name="limit"/> was supplied</returns>
-        public bool TryFindNextHopForPlayer(WorldPoint end, out float distance, out Vector2 nextHop, float limit = float.PositiveInfinity)
-        {
-            var start = new WorldPoint(Game1.player.currentLocation, Game1.player.position.Value);
-            var startGraph = this.GetLocationGraph(start.Location);
-            if (!startGraph.Passable[start.Y, start.X])
-            {
-                this.FindClosestPassablePoint(ref start);
-            }
-
-            return this.TryFindNextHop(start, end, out distance, out nextHop, limit);
-        }
-
-        /// <summary>
         /// Try to find the "Next Hop" leading away from some start point to reach an arbitrary point in the world.
         /// </summary>
         /// <remarks>
@@ -243,6 +218,12 @@
         /// <returns>If a path to the end point could be found (if a <paramref name="limit"/> was supplied</returns>
         public bool TryFindNextHop(WorldPoint start, WorldPoint end, out float distance, out Vector2 nextHop, float limit = float.PositiveInfinity)
         {
+            var startGraph = this.GetLocationGraph(start.Location);
+            if (!startGraph.IsPassable(start))
+            {
+                this.FindClosestPassablePoint(ref start);
+            }
+
             if (this.TryFindNextWarpNode(start, end, out distance, out var next, limit))
             {
                 nextHop = next.Source;

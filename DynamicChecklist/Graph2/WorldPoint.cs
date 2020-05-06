@@ -156,6 +156,13 @@
         }
 
         /// <summary>
+        /// Get the point corresponding to the Player's current location & position.
+        /// </summary>
+        /// <returns>The point corresponding to the Player</returns>
+        /// <throws><see cref="ArgumentOutOfRangeException"/> if the player position is outside of the current bounds (happens on Bus & other situations)</throws>
+        public static WorldPoint ForPlayer() => new WorldPoint(Game1.player.currentLocation, Game1.player.position.Value);
+
+        /// <summary>
         /// Adds coordinates in tile space, producing a new <see cref="WorldPoint"/> in the same location.
         /// </summary>
         /// <param name="x">X coordinate in tile-space</param>
