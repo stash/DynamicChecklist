@@ -199,6 +199,8 @@
 
         public void UpdatePath()
         {
+            var oldClosestSOI = this.ClosestSOI;
+            var oldClosestHop = this.ClosestHop;
             this.ClearPath();
 
             if (!this.OverlayActive || !this.config.ShowArrow || this.anyOnScreen || !this.AnyTasksNeedAction)
@@ -227,21 +229,33 @@
 
             // find closest SOI that's outside of the current location
             float limit = float.PositiveInfinity;
+            bool found = false;
             foreach (var soi in externalSOIs)
             {
-                if (MainClass.WorldGraph.TryFindNextHopForPlayer(soi.WorldPoint, out var distance, out var nextHop, limit))
+                try
                 {
-                    if (distance < limit)
+                    if (MainClass.WorldGraph.TryFindNextHopForPlayer(soi.WorldPoint, out var distance, out var nextHop, limit))
                     {
-                        limit = distance;
-                        this.ClosestSOI = soi;
-                        this.ClosestHop = nextHop;
+                        if (distance < limit)
+                        {
+                            limit = distance;
+                            this.ClosestSOI = soi;
+                            this.ClosestHop = nextHop;
+                            found = true;
+                        }
                     }
                 }
-                else if (limit == float.PositiveInfinity)
+                catch (Exception e)
                 {
-                    Monitor.Log($"{this.Name}: Can't find path to {soi.ToTileCoordString()}!", LogLevel.Warn);
+                    Monitor.Log($"Error finding next hop for player for {soi.ToTileCoordString()}: {e.Message}", LogLevel.Error);
+                    Monitor.Log(e.StackTrace, LogLevel.Trace);
                 }
+            }
+
+            if (!found && oldClosestSOI.NeedAction)
+            {
+                this.ClosestSOI = oldClosestSOI;
+                this.ClosestHop = oldClosestHop;
             }
         }
 
