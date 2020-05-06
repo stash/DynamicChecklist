@@ -227,32 +227,18 @@
                 return;
             }
 
-            // find closest SOI that's outside of the current location
-            float limit = float.PositiveInfinity;
-            bool found = false;
-            foreach (var soi in externalSOIs)
+            bool found;
+            try
             {
-                try
-                {
-                    if (MainClass.WorldGraph.TryFindNextHopForPlayer(soi.WorldPoint, out var distance, out var nextHop, limit))
-                    {
-                        if (distance < limit)
-                        {
-                            limit = distance;
-                            this.ClosestSOI = soi;
-                            this.ClosestHop = nextHop;
-                            found = true;
-                        }
-                    }
-                }
-                catch (Exception e)
-                {
-                    Monitor.Log($"Error finding next hop for player for {soi.ToTileCoordString()}: {e.Message}", LogLevel.Error);
-                    Monitor.Log(e.StackTrace, LogLevel.Trace);
-                }
+                var start = WorldPoint.ForPlayer(); // can throw if out of range
+                found = this.FindClosestExternalSOI(externalSOIs, start);
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                found = false;
             }
 
-            if (!found && oldClosestSOI.NeedAction)
+            if (!found && oldClosestSOI != null && oldClosestSOI.NeedAction)
             {
                 this.ClosestSOI = oldClosestSOI;
                 this.ClosestHop = oldClosestHop;
@@ -372,6 +358,35 @@
 
             b.Draw(bubble.Tex, dstBubble, bubble.Src, BubbleTint);
             b.Draw(image.Tex, dstImage, image.Src, BubbleTint);
+        }
+
+        private bool FindClosestExternalSOI(IEnumerable<StardewObjectInfo> externalSOIs, WorldPoint player)
+        {
+            bool found = false;
+            float limit = float.PositiveInfinity;
+            foreach (var soi in externalSOIs)
+            {
+                try
+                {
+                    if (MainClass.WorldGraph.TryFindNextHop(player, soi.WorldPoint, out var distance, out var nextHop, limit))
+                    {
+                        if (distance < limit)
+                        {
+                            limit = distance;
+                            this.ClosestSOI = soi;
+                            this.ClosestHop = nextHop;
+                            found = true;
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    Monitor.Log($"Error finding next hop for player for {soi.ToTileCoordString()}: {e.Message}", LogLevel.Error);
+                    Monitor.Log(e.StackTrace, LogLevel.Trace);
+                }
+            }
+
+            return found;
         }
     }
 }
