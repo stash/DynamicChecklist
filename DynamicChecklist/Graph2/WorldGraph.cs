@@ -141,8 +141,8 @@
         /// <returns>If it is a procedurally-generated location</returns>
         public static bool IsProceduralLocation(GameLocation location)
         {
-            return (location.Name.IndexOf("UndergroundMine") == 0) || 
-                (location.Name.IndexOf("DesertMine") == 0); // TODO: this is a guess!
+            // Both the regular and desert/skull mine levels are prefixed with this
+            return location.Name.IndexOf("UndergroundMine") == 0;
         }
 
         /// <summary>
