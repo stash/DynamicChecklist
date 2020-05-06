@@ -93,6 +93,7 @@
 
             foreach (ObjectList ol in this.objectLists)
             {
+                ol.ClearPath();
                 if (ol.OverlayActive)
                 {
                     ol.UpdatePath();
