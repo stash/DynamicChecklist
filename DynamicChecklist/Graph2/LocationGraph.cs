@@ -19,12 +19,7 @@
         // Copied from Pathoschild/Datalayers
         private static readonly HashSet<string> TouchWarpActionStrings = new HashSet<string> { "Door", "MagicWarp" };
 
-        private Dictionary<WorldPoint, int> waypointIndex = new Dictionary<WorldPoint, int>();
-        private List<WorldPoint> waypoints = new List<WorldPoint>();
-        private Dictionary<int, WarpNode> warpOutNodes = new Dictionary<int, WarpNode>();
-        private Dictionary<int, HashSet<WarpNode>> warpInNodes = new Dictionary<int, HashSet<WarpNode>>();
-        private Dictionary<int, InteriorShortestPathTree> interiorTrees = new Dictionary<int, InteriorShortestPathTree>();
-        private Dictionary<int, ExteriorShortestPathTree> exteriorTrees = new Dictionary<int, ExteriorShortestPathTree>();
+        private Dictionary<WorldPoint, Waypoint> waypoints = new Dictionary<WorldPoint, Waypoint>();
 
         public LocationGraph(LocationReference location, WorldGraph world)
         {
@@ -57,23 +52,25 @@
 
         public int Width { get; private set; }
 
-        public int OutDegree => this.warpOutNodes.Count;
+        public int OutDegree => this.waypoints.Values.Count(wp => wp.IsOutbound);
 
-        public int InDegree { get; private set; } = 0;
+        public int InDegree => this.waypoints.Values.Sum(wp => wp.InboundWarps.Count);
 
         public string Name => this.Location.Name;
 
         public bool IsDisconnected => this.OutDegree == 0 && this.InDegree == 0;
 
         /// <summary>Gets a collection of outbound <see cref="WarpNode"/>s</summary>
-        public ICollection<WarpNode> WarpOutNodes => this.warpOutNodes.Values;
+        public ICollection<WarpNode> WarpOutNodes => this.OutboundWaypoints.Select(wp => wp.OutboundWarp).ToList();
 
-        public WarpNode FirstWarpOutNode => this.warpOutNodes.Values.FirstOrDefault();
+        public WarpNode FirstWarpOutNode => this.OutboundWaypoints.Select(wp => wp.OutboundWarp).FirstOrDefault();
 
         /// <summary>Gets an enumeration of inbound <see cref="WarpNode"/>s</summary>
-        public IEnumerable<WarpNode> WarpInNodes => this.warpInNodes.SelectMany(pair => pair.Value.AsEnumerable());
+        public IEnumerable<WarpNode> WarpInNodes => this.waypoints.Values.SelectMany(wp => wp.InboundWarps);
 
         internal bool[,] Passable { get; private set; } // y, x
+
+        internal IEnumerable<Waypoint> OutboundWaypoints => this.waypoints.Values.Where(wp => wp.IsOutbound);
 
         public bool IsPassable(WorldPoint point) => point.Location == this.Location && this.Passable[point.Y, point.X];
 
@@ -82,7 +79,6 @@
         /// </summary>
         /// <remarks>Won't be added if out of tile coordinates range for the location (slightly out of range will be clamped).</remarks>
         /// <param name="warp">The warp to add</param>
-        /// <param name="isDoorWarp">If the warp belongs to a door</param>
         /// <returns>If the warp was added (can't be duplicated, must be in range)</returns>
         /// <seealso cref="AddWarpOut(WarpNode)"/>
         public bool AddWarpOut(Warp warp)
@@ -116,17 +112,16 @@
             }
 #endif
 
-            var index = this.GetWaypointIndex(node.Source);
             if (!this.Passable[node.Source.Y, node.Source.X])
             {
                 this.Passable[node.Source.Y, node.Source.X] = true; // Force source to be passable
                 WorldGraph.Monitor.Log($"Forcing Passable warp source: {node.Source}", StardewModdingAPI.LogLevel.Warn);
             }
 
-            if (!this.warpOutNodes.ContainsKey(index))
+            var waypoint = this.GetWaypoint(node.Source);
+            if (waypoint.OutboundWarp == null)
             {
-                this.warpOutNodes.Add(index, node);
-                return true;
+                waypoint.OutboundWarp = node;
             }
 #if DEBUG
             else
@@ -213,7 +208,7 @@
         public float GetExteriorDistance(WarpNode outNodeHere, WarpNode inNodeThere)
         {
 #if DEBUG
-            if (outNodeHere.Source.Location != this.Location || !this.waypointIndex.ContainsKey(outNodeHere.Source))
+            if (outNodeHere.Source.Location != this.Location || !this.waypoints.ContainsKey(outNodeHere.Source))
             {
                 throw new ArgumentException("Warp isn't for this location", nameof(outNodeHere));
             }
@@ -227,8 +222,7 @@
                 return 0;
             }
 
-            var tree = this.GetOrCreateExteriorTree(this.waypointIndex[outNodeHere.Source]);
-            return tree.DistanceTo(inNodeThere);
+            return this.GetWaypoint(outNodeHere.Source).ExteriorTree.DistanceTo(inNodeThere);
         }
 
         internal void BuildWarpOuts()
@@ -244,13 +238,13 @@
 
         internal void BuildWarpIns()
         {
-            foreach (var index in this.warpOutNodes.Keys.ToList())
+            foreach (var waypoint in this.OutboundWaypoints)
             {
-                var warpNode = this.warpOutNodes[index];
+                var warpNode = waypoint.OutboundWarp;
                 var targetGraph = this.World.GetLocationGraph(warpNode.Target.Location);
                 if (targetGraph.FixupDoorWarp(ref warpNode))
-                {
-                    this.warpOutNodes[index] = warpNode;
+                { // target is adjusted, not source, so no need to re-index
+                    waypoint.OutboundWarp = warpNode;
                 }
 
                 targetGraph.AddWarpIn(warpNode);
@@ -259,17 +253,17 @@
 
         internal void BuildAllInteriors()
         {
-            for (var index = 0; index < this.waypoints.Count; index++)
+            foreach (var waypoint in this.waypoints.Values)
             {
-                this.GetOrCreateInteriorTree(index);
+                waypoint.BuildInteriorTree();
             }
         }
 
         internal void BuildAllExteriors()
         {
-            foreach (var index in this.warpOutNodes.Keys)
+            foreach (var waypoint in this.waypoints.Values.Where(wp => wp.IsOutbound))
             {
-                this.GetOrCreateExteriorTree(index);
+                waypoint.BuildExteriorTree();
             }
         }
 
@@ -286,17 +280,10 @@
                 throw new ArgumentException(nameof(WarpNode) + " does not point to this location", nameof(node));
             }
 #endif
+            var waypoint = this.GetWaypoint(node.Target);
 
-            var index = this.GetWaypointIndex(node.Target);
-            if (!this.warpInNodes.TryGetValue(index, out var nodeSet))
+            if (waypoint.InboundWarps.Add(node))
             {
-                nodeSet = new HashSet<WarpNode>();
-                this.warpInNodes.Add(index, nodeSet);
-            }
-
-            if (nodeSet.Add(node))
-            {
-                this.InDegree++;
                 return true;
             }
 #if DEBUG
@@ -324,16 +311,16 @@
             }
         }
 
-        private int GetWaypointIndex(WorldPoint waypoint)
+        private Waypoint GetWaypoint(WorldPoint point)
         {
-            if (!this.waypointIndex.TryGetValue(waypoint, out int index))
+            Waypoint value;
+            if (!this.waypoints.TryGetValue(point, out value))
             {
-                index = this.waypoints.Count;
-                this.waypoints.Add(waypoint);
-                this.waypointIndex.Add(waypoint, index);
+                value = new Waypoint(this, point);
+                this.waypoints.Add(point, value);
             }
 
-            return index;
+            return value;
         }
 
         private void BuildPlainWarps()
@@ -442,38 +429,6 @@
             return false;
         }
 
-        /// <summary>
-        /// Gets or creates an interior tree for some waypoint index.
-        /// </summary>
-        /// <param name="index">Waypoint index</param>
-        /// <returns>The tree</returns>
-        private InteriorShortestPathTree GetOrCreateInteriorTree(int index)
-        {
-            if (!this.interiorTrees.TryGetValue(index, out var tree))
-            {
-                tree = new InteriorShortestPathTree(this, this.waypoints[index]);
-                this.interiorTrees.Add(index, tree);
-            }
-
-            return tree;
-        }
-
-        /// <summary>
-        /// Gets or creates an exterior tree for some waypoint index corresponding to some warp out node.
-        /// </summary>
-        /// <param name="index">Waypoint index</param>
-        /// <returns>The tree</returns>
-        private ExteriorShortestPathTree GetOrCreateExteriorTree(int index)
-        {
-            if (!this.exteriorTrees.TryGetValue(index, out var tree))
-            {
-                tree = new ExteriorShortestPathTree(this, this.warpOutNodes[index]);
-                this.exteriorTrees.Add(index, tree);
-            }
-
-            return tree;
-        }
-
         private float InteriorDistance(WorldPoint a, WorldPoint b)
         {
 #if DEBUG
@@ -491,8 +446,8 @@
                 return 0;
             }
 
-            bool aIsWaypoint = this.waypointIndex.TryGetValue(a, out int aIndex);
-            bool bIsWaypoint = this.waypointIndex.TryGetValue(b, out int bIndex);
+            bool aIsWaypoint = this.waypoints.TryGetValue(a, out var aWaypoint);
+            bool bIsWaypoint = this.waypoints.TryGetValue(b, out var bWaypoint);
 
 #if DEBUG
             if (!aIsWaypoint && !bIsWaypoint)
@@ -501,15 +456,13 @@
             }
 #endif
 
-            // If b's tree already exists, use that
-            if (bIsWaypoint && this.interiorTrees.TryGetValue(bIndex, out var bTree))
+            if (!aIsWaypoint || (bIsWaypoint && bWaypoint.HasCalculatedInteriorTree))
             {
-                return bTree.DistanceTo(a);
+                return bWaypoint.InteriorTree.DistanceTo(a);
             }
 
             // Otherwise, just get or create the tree for A
-            var aTree = this.GetOrCreateInteriorTree(aIndex);
-            return aTree.DistanceTo(b);
+            return aWaypoint.InteriorTree.DistanceTo(b);
         }
 
         /// <summary>

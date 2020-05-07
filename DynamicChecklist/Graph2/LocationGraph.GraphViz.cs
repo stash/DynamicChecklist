@@ -26,9 +26,9 @@
                 io.WriteLine($"subgraph cluster{this.prefix} {{");
                 io.WriteLine($" label = \"{g.Name}\";");
 
-                foreach (var waypoint in g.waypoints.OrderBy(wp => wp.Y))
+                foreach (var point in g.waypoints.Keys.OrderBy(wp => wp.Y))
                 {
-                    this.WriteNode(waypoint, io);
+                    this.WriteNode(point, io);
                 }
 
                 io.WriteLine('}');
@@ -36,7 +36,7 @@
 
             public void WriteEdges(TextWriter io)
             {
-                foreach (var node in this.graph.warpOutNodes.Values)
+                foreach (var node in this.graph.WarpOutNodes)
                 {
                     var targetPrefix = this.locationPrefixes[node.Target.Location];
                     var label = node.ToString().Replace("\"", "\\\"");
@@ -44,21 +44,21 @@
                 }
             }
 
-            private void WriteNode(WorldPoint waypoint, TextWriter io)
+            private void WriteNode(WorldPoint point, TextWriter io)
             {
-                var i = this.graph.waypointIndex[waypoint];
-                string attrs = $"label=\"{waypoint.ToCoordString()}\"";
-                var hasWarpIn = this.graph.warpInNodes.ContainsKey(i);
-                var hasWarpOut = this.graph.warpOutNodes.ContainsKey(i);
-                if (hasWarpIn && hasWarpOut)
+                var waypoint = this.graph.GetWaypoint(point);
+                string attrs = $"label=\"{point.ToCoordString()}\"";
+                var hasInbound = waypoint.HasInbound;
+                var isOutbound = waypoint.IsOutbound;
+                if (hasInbound && isOutbound)
                 {
                     attrs += ", color=\"#88FFFF\"";
                 }
-                else if (hasWarpIn)
+                else if (hasInbound)
                 {
                     attrs += ", color=\"#8888FF\"";
                 }
-                else if (hasWarpOut)
+                else if (isOutbound)
                 {
                     attrs += ", color=\"#88FF88\"";
                 }
@@ -67,7 +67,7 @@
                     attrs += ", color=\"#888888\"";
                 }
 
-                io.WriteLine($" {this.prefix}_{waypoint.ToPortName()} [{attrs}];");
+                io.WriteLine($" {this.prefix}_{point.ToPortName()} [{attrs}];");
             }
         }
     }

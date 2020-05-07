@@ -68,6 +68,7 @@
     <Compile Include="GameTexture.cs" />
     <Compile Include="Graph2\Direction.cs" />
     <Compile Include="Graph2\LocationGraph.GraphViz.cs" />
+    <Compile Include="Graph2\LocationGraph.Waypoint.cs" />
     <Compile Include="Graph2\WorldGraph.GraphViz.cs" />
     <Compile Include="Graph2\WorldPoint.cs" />
     <Compile Include="Graph2\ExteriorShortestPathTree.cs" />
