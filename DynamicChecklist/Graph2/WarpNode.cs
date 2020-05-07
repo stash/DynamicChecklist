@@ -3,7 +3,9 @@
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
+    using System.Linq;
     using System.Text;
+    using Microsoft.Xna.Framework;
     using Priority_Queue;
     using StardewValley;
 
@@ -44,6 +46,28 @@
         public static bool operator ==(WarpNode left, WarpNode right) => object.ReferenceEquals(left, right) || ((left is object) && left.Equals(right));
 
         public static bool operator !=(WarpNode left, WarpNode right) => !(left == right);
+
+        public static WarpNode ExtractSourceCentroid(LinkedList<WarpNode> cluster)
+        {
+            float sumX = cluster.Sum(warp => warp.Source.X);
+            float sumY = cluster.Sum(warp => warp.Source.Y);
+            float factor = Game1.tileSize / (float)cluster.Count;
+            var centroid = new Vector2(factor * sumX, factor * sumY);
+            float nearestSqrDist = float.PositiveInfinity;
+            WarpNode nearest = null;
+            foreach (var warp in cluster)
+            {
+                var sqrDist = Vector2.DistanceSquared(centroid, warp.Source);
+                if (sqrDist < nearestSqrDist)
+                {
+                    nearest = warp;
+                    nearestSqrDist = sqrDist;
+                }
+            }
+
+            cluster.Remove(nearest);
+            return nearest;
+        }
 
         public override bool Equals(object obj) => this.Equals(obj as WarpNode);
 

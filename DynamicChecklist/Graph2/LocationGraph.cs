@@ -251,6 +251,27 @@
             }
         }
 
+        internal void ConcentrateWarps()
+        {
+            var complexWaypoints = this.waypoints.Values.Where(wp => wp.InboundWarps.Count > 1).ToList();
+            foreach (var waypoint in complexWaypoints)
+            {
+                // Get clusters of inbound warp sources (guaranteed to be sourced from the same Location)
+                foreach (var cluster in waypoint.IdentifyWarpSourceClusters())
+                {
+                    // Find the WarpNode nearest to the centroid
+                    var centroid = WarpNode.ExtractSourceCentroid(cluster);
+                    var sourceGraph = this.World.GetLocationGraph(centroid.Source.Location);
+                    foreach (var toRemove in cluster)
+                    {
+                        WorldGraph.Monitor.Log($"Concentrated {toRemove} to {centroid}", StardewModdingAPI.LogLevel.Trace);
+                        waypoint.InboundWarps.Remove(toRemove);
+                        sourceGraph.WarpOutIsRedundant(toRemove);
+                    }
+                }
+            }
+        }
+
         internal void BuildAllInteriors()
         {
             foreach (var waypoint in this.waypoints.Values)
@@ -510,6 +531,24 @@
             warpNode = new WarpNode(warpNode.Source, new WorldPoint(this.Location, x, y));
             WorldGraph.Monitor.Log($"Fixed up door warp {warpNode} -- old target: {oldTarget}");
             return true;
+        }
+
+        /// <summary>
+        /// Updates waypoints to remove the supplied outbound warp
+        /// </summary>
+        /// <param name="nowRedundant">The outbound node</param>
+        private void WarpOutIsRedundant(WarpNode nowRedundant)
+        {
+            if (this.waypoints.TryGetValue(nowRedundant.Source, out var waypoint))
+            {
+                waypoint.OutboundWarp = null;
+                if (!waypoint.HasInbound)
+                {
+                    // if it has no outbound, and no inbound, remove it
+                    this.waypoints.Remove(nowRedundant.Source);
+                    WorldGraph.Monitor.Log($"Waypoint fully redundant {nowRedundant.Source}", StardewModdingAPI.LogLevel.Trace);
+                }
+            }
         }
     }
 }

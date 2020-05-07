@@ -263,12 +263,6 @@
                     continue;
                 }
 
-                // TODO: sourceNode --> end distance can be cached!
-                // Simple storage for time trade-off optimization.
-                // Something like Dictionary<Tuple<WarpNode,WorldPoint>> and Add(new Tuple(sourceNode,end), distance)
-                // or multi-layer it on end/WorldPoint, store it in the startGraph?
-                // Cache should invalidate on any world graph change
-
                 foreach (var endNode in endNodes)
                 {
                     float middleDistance = startDistance + this.GetDistanceBetweenWarps(startNode, endNode);
@@ -356,6 +350,11 @@
             foreach (var graph in this.locationGraphs.Values)
             {
                 graph.BuildWarpIns();
+            }
+
+            foreach (var graph in this.locationGraphs.Values)
+            {
+                graph.ConcentrateWarps();
             }
         }
 
