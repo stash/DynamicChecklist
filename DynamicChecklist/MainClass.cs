@@ -225,6 +225,9 @@
                     case TaskName.Child:
                         this.objectLists.Add(new NPCList(this.config, name, NPCList.Action.Child));
                         break;
+                    case TaskName.CareForPet:
+                        this.objectLists.Add(new NPCList(this.config, name, NPCList.Action.Pet));
+                        break;
                     case TaskName.TravellingMerchant:
                         this.objectLists.Add(new TravellingMerchantList(this.config, name));
                         break;
