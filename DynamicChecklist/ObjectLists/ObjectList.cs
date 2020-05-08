@@ -12,22 +12,23 @@
     public abstract class ObjectList
     {
         private static readonly Color BubbleTint = Color.White * 0.75f;
-        private ModConfig config;
-        private bool overlayActive;
+        private bool enabled;
         private bool taskDone;
         private bool anyOnScreen;
 
-        public ObjectList(ModConfig config)
+        public ObjectList(ModConfig config, TaskName name)
         {
-            this.config = config;
+            this.Config = config;
+            this.Name = name;
             this.ObjectInfoList = new List<StardewObjectInfo>();
+            this.enabled = this.Config.IncludeTask[this.Name];
         }
 
         public event EventHandler TaskFinished;
 
-        public event EventHandler OverlayActivated;
+        public event EventHandler WasEnabled;
 
-        public event EventHandler OverlayActiveChanged;
+        public TaskName Name { get; private set; }
 
         public string OptionMenuLabel { get; protected set; }
 
@@ -39,46 +40,39 @@
         {
             get
             {
-                return (!this.taskDone || this.config.ShowAllTasks) && this.config.IncludeTask[this.Name];
+                return this.Config.ShowAllTasks || (this.Enabled && !this.TaskDone);
             }
         }
 
-        public bool TaskLeft
+        /// <summary>
+        /// Gets or sets a value indicating whether this Task is enabled.
+        /// </summary>
+        /// <remarks>
+        /// Passes through the set value to the <see cref="ModConfig"/>, which is written whenever the game is saved.
+        /// </remarks>
+        public bool Enabled
         {
             get
             {
-                return !this.taskDone && this.config.IncludeTask[this.Name];
-            }
-        }
-
-        public bool OverlayActive
-        {
-            get
-            {
-                return this.overlayActive;
+                return this.enabled;
             }
 
             set
             {
-                if (!this.overlayActive && value)
+                if (!this.enabled && value)
                 {
-                    this.OnOverlayActivated(new EventArgs());
+                    this.WasEnabled?.Invoke(this, new EventArgs());
                 }
 
-                if (this.overlayActive != value)
-                {
-                    this.OnOverlayActivateChanged(new EventArgs());
-                }
-
-                this.overlayActive = value;
+                this.Config.IncludeTask[this.Name] = value;
+                this.enabled = value;
             }
         }
 
         /// <summary>
         /// Gets or sets a value indicating whether this list of tasks is complete.
-        /// Triggers <c>OnTaskFinished</c> when changed from false to true.
+        /// Triggers <see cref="TaskFinished"/> when changed from false to true.
         /// </summary>
-        /// <see cref="OnTaskFinished(EventArgs)"/>
         public bool TaskDone
         {
             get
@@ -92,7 +86,7 @@
                 this.taskDone = value;
                 if (this.taskDone && !oldTaskDone && Game1.timeOfDay > 600)
                 {
-                    this.OnTaskFinished(new EventArgs());
+                    this.TaskFinished?.Invoke(this, new EventArgs());
                 }
             }
         }
@@ -101,9 +95,9 @@
 
         internal static IModHelper Helper { get; set; }
 
-        protected bool TaskExistedAtStartOfDay { get; private set; }
+        protected ModConfig Config { get; private set; }
 
-        protected TaskName Name { get; set; }
+        protected bool TaskExistedAtStartOfDay { get; private set; }
 
         protected GameTexture ImageTexture { get; set; } = GameTexture.Empty;
 
@@ -146,12 +140,12 @@
         public void Draw(SpriteBatch b)
         {
             this.anyOnScreen = false;
-            if (!this.OverlayActive || this.TaskDone)
+            if (!this.Enabled || this.TaskDone)
             {
                 return;
             }
 
-            if (!this.config.ShowOverlay && !this.config.ShowArrow)
+            if (!this.Config.ShowOverlay && !this.Config.ShowArrow)
             {
                 return; // nothing to draw or calculate
             }
@@ -166,13 +160,13 @@
                 var onScreen = soi.IsOnScreen();
                 this.anyOnScreen |= onScreen;
 
-                if (soi.IsOnScreen() && this.NeedsPerItemOverlay && this.config.ShowOverlay)
+                if (soi.IsOnScreen() && this.NeedsPerItemOverlay && this.Config.ShowOverlay)
                 {
                     this.DrawObjectInfo(b, soi);
                     continue;
                 }
 
-                if (this.config.ShowArrow)
+                if (this.Config.ShowArrow)
                 {
                     var distance = soi.GetDistance(Game1.player);
                     if (distance < nearestDistance)
@@ -183,7 +177,7 @@
                 }
             }
 
-            if (this.config.ShowArrow && !this.anyOnScreen)
+            if (this.Config.ShowArrow && !this.anyOnScreen)
             {
                 if (nearestLocal != null)
                 {
@@ -203,7 +197,7 @@
             var oldClosestHop = this.ClosestHop;
             this.ClearPath();
 
-            if (!this.OverlayActive || !this.config.ShowArrow || this.anyOnScreen || !this.AnyTasksNeedAction)
+            if (!this.Enabled || !this.Config.ShowArrow || this.anyOnScreen || !this.AnyTasksNeedAction)
             {
                 return; // don't pathfind if we don't need to
             }
@@ -261,21 +255,6 @@
             {
                 soi.NeedAction = false;
             }
-        }
-
-        protected void OnTaskFinished(EventArgs e)
-        {
-            this.TaskFinished?.Invoke(this, e);
-        }
-
-        protected void OnOverlayActivated(EventArgs e)
-        {
-            this.OverlayActivated?.Invoke(this, e);
-        }
-
-        protected void OnOverlayActivateChanged(EventArgs e)
-        {
-            this.OverlayActiveChanged?.Invoke(this, e);
         }
 
         /// <summary>

@@ -25,7 +25,7 @@
 
         public override void draw(SpriteBatch b, int slotX, int slotY)
         {
-            this.isChecked = this.objectList.OverlayActive;
+            this.isChecked = this.objectList.Enabled;
             base.draw(b, slotX, slotY);
             if (this.isDone)
             {
@@ -38,7 +38,7 @@
             base.receiveLeftClick(x, y);
             if (this.objectList != null)
             {
-                this.objectList.OverlayActive = this.isChecked;
+                this.objectList.Enabled = this.isChecked;
             }
         }
 

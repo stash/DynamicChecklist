@@ -12,8 +12,8 @@
         private Action action;
         private Func<TerrainFeature, bool> filter;
 
-        public CropList(ModConfig config, Action action)
-            : base(config)
+        public CropList(ModConfig config, TaskName name, Action action)
+            : base(config, name)
         {
             this.action = action;
             switch (action)
@@ -22,14 +22,12 @@
                     this.ImageTexture = GameTexture.WateringCan;
                     this.OptionMenuLabel = "Water Crops";
                     this.TaskDoneMessage = "All crops have been watered";
-                    this.Name = TaskName.Water;
                     this.filter = this.WaterFilter;
                     break;
                 case Action.Harvest:
                     this.ImageTexture = GameTexture.Plus;
                     this.OptionMenuLabel = "Harvest Crops";
                     this.TaskDoneMessage = "All crops have been harvested";
-                    this.Name = TaskName.Harvest;
                     this.filter = this.HarvestFilter;
                     break;
                 case Action.PickTree:
@@ -37,7 +35,6 @@
                     this.OptionMenuLabel = "Pick Trees";
                     var number = "three fruits"; // TODO: "two or more fruits", "fruit"
                     this.TaskDoneMessage = $"All trees with {number} have been picked";
-                    this.Name = TaskName.PickTree;
                     this.filter = this.PickTreeFilter;
                     break;
                 default:

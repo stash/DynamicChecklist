@@ -15,8 +15,8 @@
         private readonly Func<StardewValley.Object, bool> objectFilter = (obj) => true;
         private readonly bool machinesCanUpdate = true;
 
-        public MachineList(ModConfig config, Action action)
-            : base(config)
+        public MachineList(ModConfig config, TaskName name, Action action)
+            : base(config, name)
         {
             this.action = action;
             this.ImageTexture = GameTexture.Empty; // always hidden
@@ -29,20 +29,17 @@
                     this.objectFilter = this.CrabPotTaskFilter;
                     this.OptionMenuLabel = "Collect From And Bait Crab Pots";
                     this.TaskDoneMessage = "All crab pots have been collected from and baited";
-                    this.Name = TaskName.CrabPot;
                     break;
                 case Action.EmptyRefiner:
                     this.objectFilter = this.GeneralTaskFilter;
                     this.OptionMenuLabel = "Empty Refining Machines";
                     this.TaskDoneMessage = "All refining machines have been emptied";
-                    this.Name = TaskName.EmptyRefiner;
                     break;
                 case Action.EmptyCask:
                     this.objectFilter = this.CaskTaskFilter;
                     this.OptionMenuLabel = "Empty Casks";
                     var quality = "Iridium"; // TODO: "Gold or higher", "Silver or higher"
                     this.TaskDoneMessage = $"All {quality} quality casks have been emptied";
-                    this.Name = TaskName.EmptyCask;
                     break;
                 default:
                     throw new NotImplementedException();

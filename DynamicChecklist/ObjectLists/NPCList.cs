@@ -16,8 +16,8 @@
         private List<NPC> trackedNPCs;
         private Func<NPC, bool> taskCheck;
 
-        public NPCList(ModConfig config, Action action)
-            : base(config)
+        public NPCList(ModConfig config, TaskName name, Action action)
+            : base(config, name)
         {
             this.action = action;
             this.trackedNPCs = new List<NPC>();
@@ -27,21 +27,18 @@
                     this.ImageTexture = GameTexture.Present;
                     this.OptionMenuLabel = BirthdayMenuGeneric;
                     this.TaskDoneMessage = BirthdayDoneGeneric;
-                    this.Name = TaskName.Birthday;
                     this.taskCheck = this.CheckBirthday;
                     break;
                 case Action.Spouse:
                     this.ImageTexture = GameTexture.HeartSmol;
                     this.OptionMenuLabel = "Kiss Spouse";
                     this.TaskDoneMessage = "Happy spouse, happy house!";
-                    this.Name = TaskName.Spouse;
                     this.taskCheck = this.CheckSpouse;
                     break;
                 case Action.Child:
                     this.ImageTexture = GameTexture.HeartSmol;
                     this.OptionMenuLabel = "Hug Children";
                     this.TaskDoneMessage = "All children hugged!";
-                    this.Name = TaskName.Child;
                     this.taskCheck = this.CheckChild;
                     break;
                 default:

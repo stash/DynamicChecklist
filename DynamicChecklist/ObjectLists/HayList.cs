@@ -7,13 +7,12 @@
     {
         private const int TickOffset = 40;
 
-        public HayList(ModConfig config)
-            : base(config)
+        public HayList(ModConfig config, TaskName name)
+            : base(config, name)
         {
             this.ImageTexture = GameTexture.Hay;
             this.OptionMenuLabel = "Filled Troughs";
             this.TaskDoneMessage = "All troughs have been filled";
-            this.Name = TaskName.Hay;
         }
 
         protected override void InitializeObjectInfoList()

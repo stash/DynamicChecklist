@@ -15,8 +15,8 @@
         private bool visited = false;
         private bool isOpen = false;
 
-        public TravellingMerchantList(ModConfig config)
-            : base(config)
+        public TravellingMerchantList(ModConfig config, TaskName name)
+            : base(config, name)
         {
             this.ImageTexture = GameTexture.TravellingMerchant;
             this.OptionMenuLabel = "Visit Travelling Merchant";

@@ -9,8 +9,8 @@
     {
         private Action action;
 
-        public AnimalList(ModConfig config, Action action)
-            : base(config)
+        public AnimalList(ModConfig config, TaskName name, Action action)
+            : base(config, name)
         {
             this.action = action;
             switch (action)
@@ -19,19 +19,16 @@
                     this.ImageTexture = GameTexture.HeartSmol;
                     this.OptionMenuLabel = "Pet Animals";
                     this.TaskDoneMessage = "All animals have been petted";
-                    this.Name = TaskName.Pet;
                     break;
                 case Action.Milk:
                     this.ImageTexture = GameTexture.MilkPail;
                     this.OptionMenuLabel = "Milk Cows/Goats";
                     this.TaskDoneMessage = "All Cows and Goats have been milked";
-                    this.Name = TaskName.Milk;
                     break;
                 case Action.Shear:
                     this.ImageTexture = GameTexture.Shears;
                     this.OptionMenuLabel = "Shear Sheep";
                     this.TaskDoneMessage = "All sheep have been sheared";
-                    this.Name = TaskName.Shear;
                     break;
                 default:
                     throw new NotImplementedException();

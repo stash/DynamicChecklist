@@ -10,14 +10,13 @@
     {
         private List<Subject> tracked;
 
-        public FishPondList(ModConfig config)
-            : base(config)
+        public FishPondList(ModConfig config, TaskName name)
+            : base(config, name)
         {
             this.tracked = new List<Subject>();
             this.ImageTexture = GameTexture.GenericFish;
             this.OptionMenuLabel = "Check Fish Ponds";
             this.TaskDoneMessage = "All fish ponds checked!";
-            this.Name = TaskName.FishPond;
         }
 
         protected override void InitializeObjectInfoList()
