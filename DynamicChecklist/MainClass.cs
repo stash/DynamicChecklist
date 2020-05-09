@@ -216,6 +216,9 @@
                     case TaskName.FishPond:
                         this.objectLists.Add(new FishPondList(this.config, name));
                         break;
+                    case TaskName.JunimoHut:
+                        this.objectLists.Add(new JunimoHutList(this.config, name));
+                        break;
                     default:
                         throw new NotImplementedException();
                 }

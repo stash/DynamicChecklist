@@ -32,6 +32,7 @@
         public static readonly GameTexture Hay = new GameTexture(160, 112, 16, 16);
         public static readonly GameTexture Heart = new GameTexture(170, 512, 13, 14);
         public static readonly GameTexture HeartSmol = new GameTexture(211, 428, 7, 6);
+        public static readonly GameTexture JunimoHutBag = new GameTexture(208, 51, 16, 13, JunimoHut);
         public static readonly GameTexture MilkPail = new GameTexture(96, 0, 16, 16, ToolSpriteSheet);
         public static readonly GameTexture Plus = new GameTexture(0, 411, 16, 16);
         public static readonly GameTexture PointingHandCursor = new GameTexture(0, 16, 16, 16);
@@ -163,5 +164,7 @@
         private static Texture2D ToolSpriteSheet() => Game1.toolSpriteSheet;
 
         private static Texture2D ObjectSpriteSheet() => Game1.objectSpriteSheet;
+
+        private static Texture2D JunimoHut() => Game1.content.Load<Texture2D>("Buildings\\Junimo Hut");
     }
 }
