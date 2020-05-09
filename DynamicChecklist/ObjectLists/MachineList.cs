@@ -8,6 +8,7 @@
 
     public class MachineList : ObjectList
     {
+        private const int TickOffset = 50;
         private readonly System.Action newDayAction;
         private readonly Func<GameLocation, bool> locationFilter = (loc) => true;
         private readonly Func<StardewValley.Object, bool> objectFilter = (obj) => true;
@@ -22,7 +23,7 @@
                 case TaskName.CrabPot:
                     this.machinesCanUpdate = false; // only updates at start of day
                     this.newDayAction = () => this.IsPlayerLuremaster = Game1.player.professions.Contains(11);
-                    this.locationFilter = (loc) => ListHelper.LocationHasWater(loc);
+                    this.locationFilter = ListHelper.LocationHasWater;
                     this.objectFilter = this.CrabPotTaskFilter;
                     this.OptionMenuLabel = "Collect From And Bait Crab Pots";
                     this.TaskDoneMessage = "All crab pots have been collected from and baited";
@@ -45,7 +46,7 @@
 
         protected override bool NeedsPerItemOverlay => false; // all harvestable machines have their own overlay already
 
-        private int OneSecondTick => (int)this.TaskName;
+        private int UpdateTick => TickOffset + (int)this.TaskName;
 
         private bool IsPlayerLuremaster { get; set; } = false;
 
@@ -63,7 +64,7 @@
             {
                 // Both farmers and machines can change task list, so update Active ones fast, everything else slow
                 // Offset by action ID to distribute a bit more evenly.
-                locations = ticks % 60 == this.OneSecondTick ? Game1.locations : ListHelper.GetActiveLocations();
+                locations = ticks % 60 == this.UpdateTick ? Game1.locations : ListHelper.GetActiveLocations();
             }
             else
             {
