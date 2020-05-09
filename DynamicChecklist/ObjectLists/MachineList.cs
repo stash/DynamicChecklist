@@ -8,21 +8,18 @@
 
     public class MachineList : ObjectList
     {
-        private const int TickOffset = 50;
-        private readonly Action action;
         private readonly System.Action newDayAction;
         private readonly Func<GameLocation, bool> locationFilter = (loc) => true;
         private readonly Func<StardewValley.Object, bool> objectFilter = (obj) => true;
         private readonly bool machinesCanUpdate = true;
 
-        public MachineList(ModConfig config, TaskName name, Action action)
+        public MachineList(ModConfig config, TaskName name)
             : base(config, name)
         {
-            this.action = action;
             this.ImageTexture = GameTexture.Empty; // always hidden
-            switch (action)
+            switch (name)
             {
-                case Action.CrabPot:
+                case TaskName.CrabPot:
                     this.machinesCanUpdate = false; // only updates at start of day
                     this.newDayAction = () => this.IsPlayerLuremaster = Game1.player.professions.Contains(11);
                     this.locationFilter = (loc) => ListHelper.LocationHasWater(loc);
@@ -30,12 +27,12 @@
                     this.OptionMenuLabel = "Collect From And Bait Crab Pots";
                     this.TaskDoneMessage = "All crab pots have been collected from and baited";
                     break;
-                case Action.EmptyRefiner:
+                case TaskName.EmptyRefiner:
                     this.objectFilter = this.GeneralTaskFilter;
                     this.OptionMenuLabel = "Empty Refining Machines";
                     this.TaskDoneMessage = "All refining machines have been emptied";
                     break;
-                case Action.EmptyCask:
+                case TaskName.EmptyCask:
                     this.objectFilter = this.CaskTaskFilter;
                     this.OptionMenuLabel = "Empty Casks";
                     var quality = "Iridium"; // TODO: "Gold or higher", "Silver or higher"
@@ -46,12 +43,9 @@
             }
         }
 
-        public enum Action
-        {
-            CrabPot, EmptyRefiner, EmptyCask
-        }
-
         protected override bool NeedsPerItemOverlay => false; // all harvestable machines have their own overlay already
+
+        private int OneSecondTick => (int)this.TaskName;
 
         private bool IsPlayerLuremaster { get; set; } = false;
 
@@ -69,7 +63,7 @@
             {
                 // Both farmers and machines can change task list, so update Active ones fast, everything else slow
                 // Offset by action ID to distribute a bit more evenly.
-                locations = (ticks % 60 == TickOffset + (int)this.action) ? Game1.locations : ListHelper.GetActiveLocations();
+                locations = ticks % 60 == this.OneSecondTick ? Game1.locations : ListHelper.GetActiveLocations();
             }
             else
             {

@@ -178,22 +178,15 @@
         private void InitializeObjectLists()
         {
             this.objectLists.Clear();
-            var names = (TaskName[])Enum.GetValues(typeof(TaskName));
-            foreach (var name in names)
+            var taskNames = (TaskName[])Enum.GetValues(typeof(TaskName));
+            foreach (var name in taskNames)
             {
                 switch (name)
                 {
                     case TaskName.Milk:
-                        this.objectLists.Add(new AnimalList(this.config, name, AnimalList.Action.Milk));
-                        break;
                     case TaskName.Pet:
-                        this.objectLists.Add(new AnimalList(this.config, name, AnimalList.Action.Pet));
-                        break;
                     case TaskName.Shear:
-                        this.objectLists.Add(new AnimalList(this.config, name, AnimalList.Action.Shear));
-                        break;
-                    case TaskName.CrabPot:
-                        this.objectLists.Add(new MachineList(this.config, name, MachineList.Action.CrabPot));
+                        this.objectLists.Add(new AnimalList(this.config, name));
                         break;
                     case TaskName.Hay:
                         this.objectLists.Add(new HayList(this.config, name));
@@ -202,31 +195,20 @@
                         this.objectLists.Add(new EggList(this.config, name));
                         break;
                     case TaskName.Water:
-                        this.objectLists.Add(new CropList(this.config, name, CropList.Action.Water));
-                        break;
                     case TaskName.Harvest:
-                        this.objectLists.Add(new CropList(this.config, name, CropList.Action.Harvest));
-                        break;
                     case TaskName.PickTree:
-                        this.objectLists.Add(new CropList(this.config, name, CropList.Action.PickTree));
+                        this.objectLists.Add(new CropList(this.config, name));
                         break;
+                    case TaskName.CrabPot:
                     case TaskName.EmptyRefiner:
-                        this.objectLists.Add(new MachineList(this.config, name, MachineList.Action.EmptyRefiner));
-                        break;
                     case TaskName.EmptyCask:
-                        this.objectLists.Add(new MachineList(this.config, name, MachineList.Action.EmptyCask));
+                        this.objectLists.Add(new MachineList(this.config, name));
                         break;
                     case TaskName.Birthday:
-                        this.objectLists.Add(new NPCList(this.config, name, NPCList.Action.Birthday));
-                        break;
                     case TaskName.Spouse:
-                        this.objectLists.Add(new NPCList(this.config, name, NPCList.Action.Spouse));
-                        break;
                     case TaskName.Child:
-                        this.objectLists.Add(new NPCList(this.config, name, NPCList.Action.Child));
-                        break;
                     case TaskName.CareForPet:
-                        this.objectLists.Add(new NPCList(this.config, name, NPCList.Action.Pet));
+                        this.objectLists.Add(new NPCList(this.config, name));
                         break;
                     case TaskName.TravellingMerchant:
                         this.objectLists.Add(new TravellingMerchantList(this.config, name));

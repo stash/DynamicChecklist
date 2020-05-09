@@ -19,16 +19,16 @@
         public ObjectList(ModConfig config, TaskName name)
         {
             this.Config = config;
-            this.Name = name;
+            this.TaskName = name;
             this.ObjectInfoList = new List<StardewObjectInfo>();
-            this.enabled = this.Config.IncludeTask[this.Name];
+            this.enabled = this.Config.IncludeTask[this.TaskName];
         }
 
         public event EventHandler TaskFinished;
 
         public event EventHandler WasEnabled;
 
-        public TaskName Name { get; private set; }
+        public TaskName TaskName { get; private set; }
 
         public string OptionMenuLabel { get; protected set; }
 
@@ -64,7 +64,7 @@
                     this.WasEnabled?.Invoke(this, new EventArgs());
                 }
 
-                this.Config.IncludeTask[this.Name] = value;
+                this.Config.IncludeTask[this.TaskName] = value;
                 this.enabled = value;
             }
         }

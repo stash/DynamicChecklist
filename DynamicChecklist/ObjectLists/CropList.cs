@@ -9,28 +9,26 @@
     public class CropList : ObjectList
     {
         private const int TickOffset = 20;
-        private Action action;
         private Func<TerrainFeature, bool> filter;
 
-        public CropList(ModConfig config, TaskName name, Action action)
+        public CropList(ModConfig config, TaskName name)
             : base(config, name)
         {
-            this.action = action;
-            switch (action)
+            switch (name)
             {
-                case Action.Water:
+                case TaskName.Water:
                     this.ImageTexture = GameTexture.WateringCan;
                     this.OptionMenuLabel = "Water Crops";
                     this.TaskDoneMessage = "All crops have been watered";
                     this.filter = this.WaterFilter;
                     break;
-                case Action.Harvest:
+                case TaskName.Harvest:
                     this.ImageTexture = GameTexture.Plus;
                     this.OptionMenuLabel = "Harvest Crops";
                     this.TaskDoneMessage = "All crops have been harvested";
                     this.filter = this.HarvestFilter;
                     break;
-                case Action.PickTree:
+                case TaskName.PickTree:
                     this.ImageTexture = GameTexture.BerryBush;
                     this.OptionMenuLabel = "Pick Trees";
                     var number = "three fruits"; // TODO: "two or more fruits", "fruit"
@@ -133,7 +131,7 @@
                         select new StardewObjectInfo(coordinate, loc, true);
             this.ObjectInfoList.AddRange(range);
 
-            if (this.action == Action.Water || this.action == Action.Harvest)
+            if (this.TaskName == TaskName.Water || this.TaskName == TaskName.Harvest)
             {
                 var potRange = from pair in loc.Objects.Pairs
                                where pair.Value is IndoorPot pot && this.filter(pot.hoeDirt.Value)

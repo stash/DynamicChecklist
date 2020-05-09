@@ -7,25 +7,22 @@
 
     public class AnimalList : ObjectList
     {
-        private Action action;
-
-        public AnimalList(ModConfig config, TaskName name, Action action)
+        public AnimalList(ModConfig config, TaskName name)
             : base(config, name)
         {
-            this.action = action;
-            switch (action)
+            switch (name)
             {
-                case Action.Pet:
+                case TaskName.Pet:
                     this.ImageTexture = GameTexture.HeartSmol;
                     this.OptionMenuLabel = "Pet Animals";
                     this.TaskDoneMessage = "All animals have been petted";
                     break;
-                case Action.Milk:
+                case TaskName.Milk:
                     this.ImageTexture = GameTexture.MilkPail;
                     this.OptionMenuLabel = "Milk Cows/Goats";
                     this.TaskDoneMessage = "All Cows and Goats have been milked";
                     break;
-                case Action.Shear:
+                case TaskName.Shear:
                     this.ImageTexture = GameTexture.Shears;
                     this.OptionMenuLabel = "Shear Sheep";
                     this.TaskDoneMessage = "All sheep have been sheared";
@@ -35,11 +32,6 @@
             }
         }
 
-        public enum Action
-        {
-            Pet, Milk, Shear
-        }
-
         protected override void InitializeObjectInfoList()
         {
             this.UpdateObjectInfoList(0);
@@ -47,15 +39,15 @@
 
         protected override void UpdateObjectInfoList(uint ticks)
         {
-            if (this.TaskDone && this.action != Action.Pet)
+            if (this.TaskDone && this.TaskName != TaskName.Pet)
             {
                 // Animals can't become un-petted, un-sheared or un-milked, so once it's done for the day, it's done
-                // TODO: consider just purchased animals
+                // HOWEVER, what about just purchased animals? They can still be petted
                 return;
             }
 
-            // "Have to" wipe it out every time since animals move around.
             // TODO: just update position using SetCharacterPosition ??
+            // TODO: Scan for new animals once per second (ticks % 60 == 0)
             this.ObjectInfoList.Clear();
 
             // Outside animals
@@ -79,15 +71,15 @@
         private bool AnimalFilter(FarmAnimal animal)
         {
             bool needAction;
-            switch (this.action)
+            switch (this.TaskName)
             {
-                case Action.Pet:
+                case TaskName.Pet:
                     needAction = !animal.wasPet.Value;
                     break;
-                case Action.Milk:
+                case TaskName.Milk:
                     needAction = animal.currentProduce.Value > 0 && animal.toolUsedForHarvest.Value == "Milk Pail";
                     break;
-                case Action.Shear:
+                case TaskName.Shear:
                     needAction = animal.currentProduce.Value > 0 && animal.toolUsedForHarvest.Value == "Shears";
                     break;
                 default:

@@ -24,40 +24,38 @@
         private const string PetDoneGeneric = "Pet cared for!";
         private const string PetDonePlural = "Pets cared for!";
 
-        private Action action;
         private List<NPC> trackedNPCs;
         private Func<NPC, bool> taskCheck;
         private System.Action taskSetup;
 
-        public NPCList(ModConfig config, TaskName name, Action action)
+        public NPCList(ModConfig config, TaskName name)
             : base(config, name)
         {
-            this.action = action;
             this.trackedNPCs = new List<NPC>();
-            switch (action)
+            switch (name)
             {
-                case Action.Birthday:
+                case TaskName.Birthday:
                     this.ImageTexture = GameTexture.Present;
                     this.OptionMenuLabel = BirthdayMenuGeneric;
                     this.TaskDoneMessage = BirthdayDoneGeneric;
                     this.taskCheck = this.CheckBirthday;
                     this.taskSetup = this.SetupBirthday;
                     break;
-                case Action.Spouse:
+                case TaskName.Spouse:
                     this.ImageTexture = GameTexture.HeartSmol;
                     this.OptionMenuLabel = SpouseMenuGeneric;
                     this.TaskDoneMessage = "Happy spouse, happy house!";
                     this.taskCheck = this.CheckSpouse;
                     this.taskSetup = this.SetupSpouse;
                     break;
-                case Action.Child:
+                case TaskName.Child:
                     this.ImageTexture = GameTexture.HeartSmol;
                     this.OptionMenuLabel = ChildMenuGeneric;
                     this.TaskDoneMessage = "All children hugged!";
                     this.taskCheck = this.CheckChild;
                     this.taskSetup = this.SetupChildren;
                     break;
-                case Action.Pet:
+                case TaskName.CareForPet:
                     this.ImageTexture = GameTexture.HeartSmol;
                     this.OptionMenuLabel = PetMenuGeneric;
                     this.TaskDoneMessage = PetDoneGeneric;
@@ -67,11 +65,6 @@
                 default:
                     throw new NotImplementedException();
             }
-        }
-
-        public enum Action
-        {
-            Birthday, Spouse, Child, Pet
         }
 
         protected override void InitializeObjectInfoList()
@@ -95,7 +88,7 @@
                 soi.NeedAction = this.taskCheck(npc);
             }
 
-            if (this.action == Action.Pet)
+            if (this.TaskName == TaskName.CareForPet)
             {
                 var bowlSoi = this.ObjectInfoList[this.ObjectInfoList.Count - 1];
                 bowlSoi.NeedAction = !Game1.getFarm().petBowlWatered.Value;
@@ -106,7 +99,7 @@
         {
             this.trackedNPCs.Add(npc);
             var soi = new StardewObjectInfo(npc);
-            soi.DrawOffset = this.action == Action.Pet ? StardewObjectInfo.CharacterOffset : StardewObjectInfo.TallCharacterOffset;
+            soi.DrawOffset = this.TaskName == TaskName.CareForPet ? StardewObjectInfo.CharacterOffset : StardewObjectInfo.TallCharacterOffset;
             this.ObjectInfoList.Add(soi);
         }
 
