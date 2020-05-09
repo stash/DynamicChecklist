@@ -82,6 +82,7 @@
     <Compile Include="ObjectLists\AnimalList.cs" />
     <Compile Include="ObjectLists\CropList.cs" />
     <Compile Include="ObjectLists\EggList.cs" />
+    <Compile Include="ObjectLists\FarmCaveList.cs" />
     <Compile Include="ObjectLists\FishPondList.cs" />
     <Compile Include="ObjectLists\HayList.cs" />
     <Compile Include="ObjectLists\JunimoHutList.cs" />
