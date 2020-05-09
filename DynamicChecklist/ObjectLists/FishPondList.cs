@@ -19,6 +19,8 @@
             this.TaskDoneMessage = "All fish ponds checked!";
         }
 
+        protected override bool NeedsPerItemOverlay => false; // Game already has good indicators
+
         protected override void InitializeObjectInfoList()
         {
             this.tracked.Clear();
@@ -59,10 +61,7 @@
         private bool Check(Subject subject)
         {
             var pond = subject.Pond;
-
-            // TODO separate (a) fish ready to catch, (b) pond needs servicing (quest or bucket item ready)
-            return pond.FishCount == FishPond.MAXIMUM_OCCUPANCY ||
-                pond.output.Value != null /* bucket item ready */ ||
+            return pond.output.Value != null /* bucket item ready */ ||
                 pond.HasUnresolvedNeeds(); /* active quest */
         }
 
