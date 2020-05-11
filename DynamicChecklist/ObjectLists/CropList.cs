@@ -72,11 +72,17 @@
 
         private static bool IsUnwatered(HoeDirt dirt)
         {
-            // TODO: ignore fully-grown and wierd non-recurrent crops (e.g. Spring Onion)
             return dirt != null &&
                 dirt.state.Value != HoeDirt.watered &&
                 dirt.needsWatering() &&
+                HasGrowingOrRegrowingCrop(dirt) &&
                 !IsDead(dirt);
+        }
+
+        private static bool HasGrowingOrRegrowingCrop(HoeDirt dirt)
+        {
+            var crop = dirt?.crop;
+            return crop != null && (crop.regrowAfterHarvest.Value != 0 || !crop.fullyGrown.Value) && !crop.forageCrop.Value;
         }
 
         private bool WaterFilter(TerrainFeature terrainFeature)
