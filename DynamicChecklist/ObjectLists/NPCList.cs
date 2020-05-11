@@ -27,6 +27,7 @@
         private List<NPC> trackedNPCs;
         private Func<NPC, bool> taskCheck;
         private System.Action taskSetup;
+        private Vector2 drawOffset;
 
         public NPCList(ModConfig config, TaskName name)
             : base(config, name)
@@ -40,6 +41,7 @@
                     this.TaskDoneMessage = BirthdayDoneGeneric;
                     this.taskCheck = this.CheckBirthday;
                     this.taskSetup = this.SetupBirthday;
+                    this.drawOffset = StardewObjectInfo.TallCharacterOffset;
                     break;
                 case TaskName.Spouse:
                     this.ImageTexture = GameTexture.HeartSmol;
@@ -47,6 +49,7 @@
                     this.TaskDoneMessage = "Happy spouse, happy house!";
                     this.taskCheck = this.CheckSpouse;
                     this.taskSetup = this.SetupSpouse;
+                    this.drawOffset = StardewObjectInfo.TallCharacterOffset;
                     break;
                 case TaskName.Child:
                     this.ImageTexture = GameTexture.HeartSmol;
@@ -54,6 +57,7 @@
                     this.TaskDoneMessage = "All children hugged!";
                     this.taskCheck = this.CheckChild;
                     this.taskSetup = this.SetupChildren;
+                    this.drawOffset = StardewObjectInfo.CharacterOffset;
                     break;
                 case TaskName.CareForPet:
                     this.ImageTexture = GameTexture.HeartSmol;
@@ -61,6 +65,7 @@
                     this.TaskDoneMessage = PetDoneGeneric;
                     this.taskCheck = this.CheckPet;
                     this.taskSetup = this.SetupPet;
+                    this.drawOffset = StardewObjectInfo.CharacterOffset;
                     break;
                 default:
                     throw new NotImplementedException();
@@ -99,7 +104,7 @@
         {
             this.trackedNPCs.Add(npc);
             var soi = new StardewObjectInfo(npc);
-            soi.DrawOffset = this.TaskName == TaskName.CareForPet ? StardewObjectInfo.CharacterOffset : StardewObjectInfo.TallCharacterOffset;
+            soi.DrawOffset = this.drawOffset;
             this.ObjectInfoList.Add(soi);
         }
 
