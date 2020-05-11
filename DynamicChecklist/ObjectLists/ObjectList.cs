@@ -280,8 +280,8 @@
             var destRect = new Rectangle(
                 (int)(standPos.X - Game1.viewport.X + Math.Cos(rotation) * distance),
                 (int)(standPos.Y - Game1.viewport.Y + Math.Sin(rotation) * distance),
-                sprite.Width,
-                sprite.Height);
+                sprite.Width * 3 / 4,
+                sprite.Height * 3 / 4);
             var color = isWarp ? Color.CornflowerBlue : Color.White;
             var origin = new Vector2(sprite.Width / 2, sprite.Height / 2);
             b.Draw(sprite.Tex, destRect, sprite.Src, color, rotation, origin, SpriteEffects.None, 0);
@@ -317,7 +317,7 @@
         {
             var bubble = GameTexture.TaskBubble;
             var image = this.ImageTexture;
-            var zoom = Game1.pixelZoom * 3 / 4;
+            var zoom = Game1.pixelZoom / 2;
             Rectangle dstImage = new Rectangle(2 * zoom, 2 * zoom, 16 * zoom, 16 * zoom); // draw area is inset two pixels
             Rectangle dstBubble = new Rectangle(0, 0, bubble.Width * zoom, bubble.Height * zoom);
             dstImage = MathX.CenteredScaledRectangle(dstImage, image.Width, image.Height, zoom);
