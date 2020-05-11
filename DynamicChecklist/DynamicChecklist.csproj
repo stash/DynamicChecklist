@@ -85,7 +85,7 @@
     <Compile Include="ObjectLists\FarmCaveList.cs" />
     <Compile Include="ObjectLists\FishPondList.cs" />
     <Compile Include="ObjectLists\HayList.cs" />
-    <Compile Include="ObjectLists\JunimoHutList.cs" />
+    <Compile Include="ObjectLists\BuildingOutputList.cs" />
     <Compile Include="ObjectLists\ListHelper.cs" />
     <Compile Include="ObjectLists\MachineList.cs" />
     <Compile Include="ObjectLists\NPCList.cs" />

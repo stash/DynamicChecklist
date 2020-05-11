@@ -217,7 +217,8 @@
                         this.objectLists.Add(new FishPondList(this.config, name));
                         break;
                     case TaskName.JunimoHut:
-                        this.objectLists.Add(new JunimoHutList(this.config, name));
+                    case TaskName.Mill:
+                        this.objectLists.Add(new BuildingOutputList(this.config, name));
                         break;
                     case TaskName.FarmCave:
                         this.objectLists.Add(new FarmCaveList(this.config, name));
