@@ -22,6 +22,9 @@
             this.TaskName = name;
             this.ObjectInfoList = new List<StardewObjectInfo>();
             this.enabled = this.Config.IncludeTask[this.TaskName];
+
+            Helper.Events.GameLoop.DayEnding += this.GameLoop_DayEnding;
+            Helper.Events.GameLoop.ReturnedToTitle += this.GameLoop_ReturnedToTitle;
         }
 
         public event EventHandler TaskFinished;
@@ -273,6 +276,13 @@
         /// <seealso cref="InitializeObjectInfoList"/>
         protected abstract void UpdateObjectInfoList(uint ticks);
 
+        protected virtual void Cleanup()
+        {
+            this.ClearPath();
+            this.taskDone = true; // avoid triggering event
+            this.ObjectInfoList.Clear();
+        }
+
         private static void DrawArrowCommon(SpriteBatch b, float rotation, float distance, bool isWarp)
         {
             var sprite = GameTexture.ArrowRight;
@@ -366,6 +376,18 @@
             }
 
             return found;
+        }
+
+        private void GameLoop_ReturnedToTitle(object sender, StardewModdingAPI.Events.ReturnedToTitleEventArgs e)
+        {
+            Helper.Events.GameLoop.DayEnding -= this.GameLoop_DayEnding;
+            Helper.Events.GameLoop.ReturnedToTitle -= this.GameLoop_ReturnedToTitle;
+            this.Cleanup();
+        }
+
+        private void GameLoop_DayEnding(object sender, StardewModdingAPI.Events.DayEndingEventArgs e)
+        {
+            this.Cleanup();
         }
     }
 }

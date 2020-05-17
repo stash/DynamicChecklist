@@ -38,6 +38,7 @@
         public static readonly GameTexture PointingHandCursor = new GameTexture(0, 16, 16, 16);
         public static readonly GameTexture PointingHandSmall = new GameTexture(0, 16, 10, 10);
         public static readonly GameTexture Present = new GameTexture(228, 409, 16, 16);
+        public static readonly GameTexture QueenOfSauceHead = new GameTexture(616, 363, 13, 13);
         public static readonly GameTexture SetButton = new GameTexture(294, 428, 21, 11);
         public static readonly GameTexture Scrollbar = new GameTexture(435, 463, 6, 10);
         public static readonly GameTexture ScrollbarRunner = new GameTexture(403, 383, 6, 6);
