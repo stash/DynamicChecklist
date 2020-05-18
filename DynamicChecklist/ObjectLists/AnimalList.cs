@@ -70,6 +70,12 @@
 
         private bool AnimalFilter(FarmAnimal animal)
         {
+            // Bug: occasionally null. Unsure why this happens, just that it does.
+            if (animal.currentLocation == null)
+            {
+                return false;
+            }
+
             bool needAction;
             switch (this.TaskName)
             {

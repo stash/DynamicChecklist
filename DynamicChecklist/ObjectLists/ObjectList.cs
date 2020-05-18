@@ -120,9 +120,16 @@
         {
             this.taskDone = false; // skip accessor
             this.ObjectInfoList.Clear();
-            this.InitializeObjectInfoList();
-            this.TaskDone = this.NoTasksNeedAction;
-            this.TaskExistedAtStartOfDay = !this.TaskDone;
+            try
+            {
+                this.InitializeObjectInfoList();
+                this.TaskDone = this.NoTasksNeedAction;
+                this.TaskExistedAtStartOfDay = !this.TaskDone;
+            }
+            catch (Exception e)
+            {
+                Monitor.Log($"Exception in {this.TaskName} Init: {e.Message}\n{e.StackTrace}", LogLevel.Error);
+            }
         }
 
         /// <summary>
@@ -131,8 +138,15 @@
         /// <param name="ticks">Game time in ticks</param>
         public void OnUpdateTicked(uint ticks)
         {
-            this.UpdateObjectInfoList(ticks);
-            this.TaskDone = this.NoTasksNeedAction;
+            try
+            {
+                this.UpdateObjectInfoList(ticks);
+                this.TaskDone = this.NoTasksNeedAction;
+            }
+            catch (Exception e)
+            {
+                Monitor.Log($"Exception in {this.TaskName} Update ({ticks} ticks): {e.Message}\n{e.StackTrace}", LogLevel.Error);
+            }
         }
 
         /// <summary>
