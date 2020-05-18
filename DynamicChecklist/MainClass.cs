@@ -2,6 +2,9 @@
 {
     using System;
     using System.Collections.Generic;
+#if DEBUG
+    using System.Diagnostics;
+#endif
     using System.IO;
     using System.Linq;
     using DynamicChecklist.Graph2;
@@ -129,14 +132,17 @@
         private void InitializeGraph()
         {
             this.Monitor.Log("Starting world graph generation...");
-            WorldGraph = new WorldGraph(WorldGraph.AllLocations());
-            this.Monitor.Log("Calculating interiors...");
-            WorldGraph.BuildAllInteriors();
-            this.Monitor.Log("Calculating exteriors...");
-            WorldGraph.BuildAllExteriors();
-            this.Monitor.Log("World graph generation done!");
-
 #if DEBUG
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+#endif
+            WorldGraph = new WorldGraph(WorldGraph.AllLocations());
+            WorldGraph.BuildAllInteriors();
+            WorldGraph.BuildAllExteriors();
+#if DEBUG
+            stopwatch.Stop();
+            this.Monitor.Log($"World graph generation done ({stopwatch.ElapsedMilliseconds} ms)!");
+
             var filename = Path.Combine(this.Helper.DirectoryPath, "world.dot");
             var gv = new WorldGraph.GraphViz(WorldGraph);
             gv.Write(filename);
@@ -146,7 +152,6 @@
 
         private void GameLoop_UpdateTicked(object sender, UpdateTickedEventArgs e)
         {
-            this.Monitor.VerboseLog("Update Tick");
             foreach (var ol in this.objectLists)
             {
                 ol.OnUpdateTicked(e.Ticks);

@@ -115,7 +115,6 @@
             if (!this.Passable[node.Source.Y, node.Source.X])
             {
                 this.Passable[node.Source.Y, node.Source.X] = true; // Force source to be passable
-                WorldGraph.Monitor.Log($"Forcing Passable warp source: {node.Source}", StardewModdingAPI.LogLevel.Warn);
             }
 
             var waypoint = this.GetWaypoint(node.Source);
@@ -123,12 +122,6 @@
             {
                 waypoint.OutboundWarp = node;
             }
-#if DEBUG
-            else
-            {
-                WorldGraph.Monitor.Log($"Ignoring duplicate WarpOut: {node}");
-            }
-#endif
 
             return false;
         }
@@ -227,7 +220,6 @@
 
         internal void BuildWarpOuts()
         {
-            WorldGraph.Monitor.Log($"{this.Name} Build Warps", StardewModdingAPI.LogLevel.Trace);
             this.BuildPlainWarps();
             this.BuildDoorWarps();
             this.BuildBuildingDoorWarps();
@@ -264,7 +256,6 @@
                     var sourceGraph = this.World.GetLocationGraph(centroid.Source.Location);
                     foreach (var toRemove in cluster)
                     {
-                        WorldGraph.Monitor.Log($"Concentrated {toRemove} to {centroid}", StardewModdingAPI.LogLevel.Trace);
                         waypoint.InboundWarps.Remove(toRemove);
                         sourceGraph.WarpOutIsRedundant(toRemove);
                     }
@@ -302,19 +293,7 @@
             }
 #endif
             var waypoint = this.GetWaypoint(node.Target);
-
-            if (waypoint.InboundWarps.Add(node))
-            {
-                return true;
-            }
-#if DEBUG
-            else
-            {
-                WorldGraph.Monitor.Log($"Ignoring duplicate WarpIn: {node}");
-            }
-#endif
-
-            return false;
+            return waypoint.InboundWarps.Add(node);
         }
 
         private void BuildPassability()
@@ -390,7 +369,6 @@
                         var action = parts[0];
                         if (WarpActionStrings.Contains(action))
                         {
-                            WorldGraph.Monitor.Log($"Found warp action string at {x},{y}@{this.Location.Name}: {value}");
                             if (action == "Warp" || parts.Length >= 4)
                             {
                                 var warp = new Warp(x, y, parts[3], int.Parse(parts[1]), int.Parse(parts[2]), false);
@@ -415,8 +393,12 @@
                                     }
                                 }
                             }
-
-                            // TODO: more special warps! "EnterSewer", "LockedDoorWarp", "Mine", "Theater_Entrance", "Warp", "WarpMensLocker", "WarpWomensLocker", "WizardHatch" };
+                            else
+                            {
+#if DEBUG
+                                WorldGraph.Monitor.Log($"TODO: Unhandled warp action string at {x},{y}@{this.Location.Name}: {value}", StardewModdingAPI.LogLevel.Debug);
+#endif
+                            }
                         }
                     }
                 }
@@ -529,7 +511,6 @@
 
             var oldTarget = warpNode.Target;
             warpNode = new WarpNode(warpNode.Source, new WorldPoint(this.Location, x, y));
-            WorldGraph.Monitor.Log($"Fixed up door warp {warpNode} -- old target: {oldTarget}");
             return true;
         }
 
@@ -546,7 +527,6 @@
                 {
                     // if it has no outbound, and no inbound, remove it
                     this.waypoints.Remove(nowRedundant.Source);
-                    WorldGraph.Monitor.Log($"Waypoint fully redundant {nowRedundant.Source}", StardewModdingAPI.LogLevel.Trace);
                 }
             }
         }

@@ -31,7 +31,6 @@
 #endif
             this.parent = graph;
             this.Root = root;
-            WorldGraph.Monitor.Log($"Generating exterior for {root}", StardewModdingAPI.LogLevel.Trace);
 
             this.distances = new Dictionary<WarpNode, float>();
             this.Calculate();

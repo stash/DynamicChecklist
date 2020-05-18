@@ -45,7 +45,6 @@
 
             this.directions = new Direction[this.Height, this.Width];
             this.distances = new float[this.Height, this.Width];
-            WorldGraph.Monitor.Log($"Generating interior for {root}", LogLevel.Trace);
             this.InitializeDistances();
             this.Calculate();
         }
