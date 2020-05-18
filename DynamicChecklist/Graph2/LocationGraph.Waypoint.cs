@@ -10,17 +10,18 @@
     {
         public class Waypoint
         {
+            private readonly WeakReference<LocationGraph> parent;
             private InteriorShortestPathTree interiorTree;
             private ExteriorShortestPathTree exteriorTree;
 
             public Waypoint(LocationGraph parent, WorldPoint point)
             {
-                this.Parent = parent;
+                this.parent = new WeakReference<LocationGraph>(parent);
                 this.Point = point;
                 this.InboundWarps = new HashSet<WarpNode>();
             }
 
-            public LocationGraph Parent { get; private set; }
+            public LocationGraph Parent => this.parent.TryGetTarget(out var value) ? value : null;
 
             public WorldPoint Point { get; private set; }
 

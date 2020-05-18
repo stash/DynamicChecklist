@@ -14,12 +14,27 @@
         private bool obtainedRecipe;
         private string recipeName;
 
-        public RecipeList(ModConfig config, TaskName name)
-            : base(config, name)
+        public RecipeList(TaskName name)
+            : base(name)
         {
             this.ImageTexture = GameTexture.QueenOfSauceHead;
             this.OptionMenuLabel = "Watch Queen of Sauce";
             this.TaskDoneMessage = "One step closer to culinary enlightenment";
+
+            // Watch for added or removed TVs
+            MainClass.Events.World.ObjectListChanged += this.World_ObjectListChanged;
+        }
+
+        public override void Dispose()
+        {
+            MainClass.Events.World.ObjectListChanged -= this.World_ObjectListChanged;
+            base.Dispose();
+        }
+
+        public override void Cleanup()
+        {
+            this.tvs.Clear();
+            base.Cleanup();
         }
 
         protected override void InitializeObjectInfoList()
@@ -45,9 +60,6 @@
                     }
                 }
             }
-
-            // Watch for added or removed TVs
-            Helper.Events.World.ObjectListChanged += this.World_ObjectListChanged;
         }
 
         protected override void UpdateObjectInfoList(uint ticks)
@@ -64,13 +76,6 @@
                 this.Cleanup();
                 return;
             }
-        }
-
-        protected override void Cleanup()
-        {
-            Helper.Events.World.ObjectListChanged -= this.World_ObjectListChanged;
-            this.tvs.Clear();
-            base.Cleanup();
         }
 
         private void AddTvRef(LocationReference location, KeyValuePair<Vector2, StardewValley.Object> pair)

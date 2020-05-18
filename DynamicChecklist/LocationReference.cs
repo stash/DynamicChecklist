@@ -19,7 +19,6 @@
     public class LocationReference : IEquatable<LocationReference>, IComparable<LocationReference>
     {
         private static Dictionary<string, LocationReference> allReferences;
-        private static IModHelper helper;
 
         private WeakReference<GameLocation> cached = null;
 
@@ -123,26 +122,12 @@
         /// <summary>
         /// Called from mod <c>Entry</c> to set up the static reference tables.
         /// </summary>
-        /// <param name="newHelper">The current helper</param>
-        public static void Setup(IModHelper newHelper)
+        public static void Setup()
         {
-            if (allReferences == null)
-            {
-                // Mod Entry called for first time
-                allReferences = new Dictionary<string, LocationReference>();
-            }
-            else
-            {
-                // Mod Entry called again. Clear old listeners and caches.
-                helper.Events.GameLoop.UpdateTicking -= GameLoop_UpdateTicking;
-                ClearAll();
-            }
+            allReferences = new Dictionary<string, LocationReference>();
 
-            helper = newHelper;
-
-            // Aggressively invalidate references
             // TODO: figure out a more reactive solution (like watching for a netref to update or something)
-            helper.Events.GameLoop.UpdateTicking += GameLoop_UpdateTicking;
+            MainClass.Events.GameLoop.UpdateTicking += GameLoop_UpdateTicking;
         }
 
         /// <summary>

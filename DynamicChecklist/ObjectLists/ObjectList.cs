@@ -9,27 +9,19 @@
     using StardewModdingAPI;
     using StardewValley;
 
-    public abstract class ObjectList
+    public abstract class ObjectList : IDisposable
     {
         private static readonly Color BubbleTint = Color.White * 0.75f;
         private bool enabled;
         private bool taskDone;
         private bool anyOnScreen;
 
-        public ObjectList(ModConfig config, TaskName name)
+        public ObjectList(TaskName name)
         {
-            this.Config = config;
             this.TaskName = name;
             this.ObjectInfoList = new List<StardewObjectInfo>();
-            this.enabled = this.Config.IncludeTask[this.TaskName];
-
-            Helper.Events.GameLoop.DayEnding += this.GameLoop_DayEnding;
-            Helper.Events.GameLoop.ReturnedToTitle += this.GameLoop_ReturnedToTitle;
+            this.enabled = MainClass.Instance.Config.IncludeTask[this.TaskName];
         }
-
-        public event EventHandler TaskFinished;
-
-        public event EventHandler WasEnabled;
 
         public TaskName TaskName { get; private set; }
 
@@ -43,7 +35,7 @@
         {
             get
             {
-                return this.Config.ShowAllTasks || (this.Enabled && !this.TaskDone);
+                return MainClass.Instance.Config.ShowAllTasks || (this.Enabled && !this.TaskDone);
             }
         }
 
@@ -64,10 +56,10 @@
             {
                 if (!this.enabled && value)
                 {
-                    this.WasEnabled?.Invoke(this, new EventArgs());
+                    MainClass.Instance.OnOverlayActivated(this);
                 }
 
-                this.Config.IncludeTask[this.TaskName] = value;
+                MainClass.Instance.Config.IncludeTask[this.TaskName] = value;
                 this.enabled = value;
             }
         }
@@ -89,16 +81,10 @@
                 this.taskDone = value;
                 if (this.taskDone && !oldTaskDone && Game1.timeOfDay > 600)
                 {
-                    this.TaskFinished?.Invoke(this, new EventArgs());
+                    Game1.showGlobalMessage(this.TaskDoneMessage);
                 }
             }
         }
-
-        internal static IMonitor Monitor { get; set; }
-
-        internal static IModHelper Helper { get; set; }
-
-        protected ModConfig Config { get; private set; }
 
         protected bool TaskExistedAtStartOfDay { get; private set; }
 
@@ -116,6 +102,11 @@
 
         protected Vector2 ClosestHop { get; set; }
 
+        public virtual void Dispose()
+        {
+            this.Cleanup();
+        }
+
         public void OnNewDay()
         {
             this.taskDone = false; // skip accessor
@@ -128,7 +119,7 @@
             }
             catch (Exception e)
             {
-                Monitor.Log($"Exception in {this.TaskName} Init: {e.Message}\n{e.StackTrace}", LogLevel.Error);
+                MainClass.Log($"Exception in {this.TaskName} Init: {e.Message}\n{e.StackTrace}", LogLevel.Error);
             }
         }
 
@@ -145,7 +136,7 @@
             }
             catch (Exception e)
             {
-                Monitor.Log($"Exception in {this.TaskName} Update ({ticks} ticks): {e.Message}\n{e.StackTrace}", LogLevel.Error);
+                MainClass.Log($"Exception in {this.TaskName} Update ({ticks} ticks): {e.Message}\n{e.StackTrace}", LogLevel.Error);
             }
         }
 
@@ -162,7 +153,7 @@
                 return;
             }
 
-            if (!this.Config.ShowOverlay && !this.Config.ShowArrow)
+            if (!MainClass.Instance.Config.ShowOverlay && !MainClass.Instance.Config.ShowArrow)
             {
                 return; // nothing to draw or calculate
             }
@@ -177,13 +168,13 @@
                 var onScreen = soi.IsOnScreen();
                 this.anyOnScreen |= onScreen;
 
-                if (soi.IsOnScreen() && this.NeedsPerItemOverlay && this.Config.ShowOverlay)
+                if (soi.IsOnScreen() && this.NeedsPerItemOverlay && MainClass.Instance.Config.ShowOverlay)
                 {
                     this.DrawObjectInfo(b, soi);
                     continue;
                 }
 
-                if (this.Config.ShowArrow)
+                if (MainClass.Instance.Config.ShowArrow)
                 {
                     var distance = soi.GetDistance(Game1.player);
                     if (distance < nearestDistance)
@@ -194,7 +185,7 @@
                 }
             }
 
-            if (this.Config.ShowArrow && !this.anyOnScreen)
+            if (MainClass.Instance.Config.ShowArrow && !this.anyOnScreen)
             {
                 if (nearestLocal != null)
                 {
@@ -214,7 +205,7 @@
             var oldClosestHop = this.ClosestHop;
             this.ClearPath();
 
-            if (!this.Enabled || !this.Config.ShowArrow || this.anyOnScreen || !this.AnyTasksNeedAction)
+            if (!this.Enabled || !MainClass.Instance.Config.ShowArrow || this.anyOnScreen || !this.AnyTasksNeedAction)
             {
                 return; // don't pathfind if we don't need to
             }
@@ -229,7 +220,7 @@
             bool found = false;
             try
             {
-                if (MainClass.WorldGraph.PlayerHasOnlyOneWayOut(out var onlyHop))
+                if (MainClass.Instance.WorldGraph.PlayerHasOnlyOneWayOut(out var onlyHop))
                 {
                     var firstSoi = externalSOIs.FirstOrDefault();
                     if (firstSoi != default)
@@ -252,7 +243,7 @@
             catch (KeyNotFoundException e)
             {
                 // Ignore; sometimes the game makes fake locations
-                Monitor.Log($"While attempting to update path for {this.TaskName}: {e.Message}\n{e.StackTrace}");
+                MainClass.Log($"While attempting to update path for {this.TaskName}: {e.Message}\n{e.StackTrace}");
             }
 
             if (!found && oldClosestSOI != null && oldClosestSOI.NeedAction)
@@ -273,11 +264,18 @@
         /// </summary>
         public virtual void Cancel()
         {
-            this.taskDone = true;
+            this.taskDone = true; // avoid triggering event
             foreach (var soi in this.ObjectInfoList)
             {
                 soi.NeedAction = false;
             }
+        }
+
+        public virtual void Cleanup()
+        {
+            this.ClearPath();
+            this.taskDone = true; // avoid triggering event
+            this.ObjectInfoList.Clear();
         }
 
         /// <summary>
@@ -295,13 +293,6 @@
         /// <param name="ticks">Number of elapsed game ticks (approx 60Hz)</param>
         /// <seealso cref="InitializeObjectInfoList"/>
         protected abstract void UpdateObjectInfoList(uint ticks);
-
-        protected virtual void Cleanup()
-        {
-            this.ClearPath();
-            this.taskDone = true; // avoid triggering event
-            this.ObjectInfoList.Clear();
-        }
 
         private static void DrawArrowCommon(SpriteBatch b, float rotation, float distance, bool isWarp)
         {
@@ -377,7 +368,7 @@
             {
                 try
                 {
-                    if (MainClass.WorldGraph.TryFindNextHop(player, soi.WorldPoint, out var distance, out var nextHop, limit))
+                    if (MainClass.Instance.WorldGraph.TryFindNextHop(player, soi.WorldPoint, out var distance, out var nextHop, limit))
                     {
                         if (distance < limit)
                         {
@@ -390,24 +381,11 @@
                 }
                 catch (Exception e)
                 {
-                    Monitor.Log($"Error finding next hop for player for {soi.ToTileCoordString()}: {e.Message}", LogLevel.Error);
-                    Monitor.Log(e.StackTrace, LogLevel.Trace);
+                    MainClass.Log($"Error finding next hop for player for {soi.ToTileCoordString()}: {e.Message}\n{e.StackTrace}", LogLevel.Error);
                 }
             }
 
             return found;
-        }
-
-        private void GameLoop_ReturnedToTitle(object sender, StardewModdingAPI.Events.ReturnedToTitleEventArgs e)
-        {
-            Helper.Events.GameLoop.DayEnding -= this.GameLoop_DayEnding;
-            Helper.Events.GameLoop.ReturnedToTitle -= this.GameLoop_ReturnedToTitle;
-            this.Cleanup();
-        }
-
-        private void GameLoop_DayEnding(object sender, StardewModdingAPI.Events.DayEndingEventArgs e)
-        {
-            this.Cleanup();
         }
     }
 }

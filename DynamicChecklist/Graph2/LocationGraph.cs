@@ -19,11 +19,12 @@
         // Copied from Pathoschild/Datalayers
         private static readonly HashSet<string> TouchWarpActionStrings = new HashSet<string> { "Door", "MagicWarp" };
 
+        private readonly WeakReference<WorldGraph> world;
         private Dictionary<WorldPoint, Waypoint> waypoints = new Dictionary<WorldPoint, Waypoint>();
 
         public LocationGraph(LocationReference location, WorldGraph world)
         {
-            this.World = world;
+            this.world = new WeakReference<WorldGraph>(world);
             this.Location = location;
 
             var dim = WorldGraph.LocationSize(location);
@@ -44,7 +45,7 @@
             this.BuildPassability();
         }
 
-        public WorldGraph World { get; private set; }
+        public WorldGraph World => this.world.TryGetTarget(out var value) ? value : null;
 
         public LocationReference Location { get; private set; }
 
@@ -85,12 +86,12 @@
         {
             if (!WorldPoint.InRange(LocationReference.For(warp.TargetName), warp.TargetX, warp.TargetY))
             {
-                WorldGraph.Monitor.Log($"Warp target out of range {warp.X},{warp.Y}@{this.Name} -> {warp.TargetX},{warp.TargetY}@{warp.TargetName}", StardewModdingAPI.LogLevel.Trace);
+                MainClass.Log($"Warp target out of range {warp.X},{warp.Y}@{this.Name} -> {warp.TargetX},{warp.TargetY}@{warp.TargetName}", StardewModdingAPI.LogLevel.Trace);
                 return false;
             }
             else if (!WorldPoint.InRange(this.Location, warp.X, warp.Y))
             {
-                WorldGraph.Monitor.Log($"Warp out of range {warp.X},{warp.Y}@{this.Name} -> {warp.TargetX},{warp.TargetY}@{warp.TargetName}", StardewModdingAPI.LogLevel.Trace);
+                MainClass.Log($"Warp out of range {warp.X},{warp.Y}@{this.Name} -> {warp.TargetX},{warp.TargetY}@{warp.TargetName}", StardewModdingAPI.LogLevel.Trace);
                 return false;
             }
 
@@ -396,7 +397,7 @@
                             else
                             {
 #if DEBUG
-                                WorldGraph.Monitor.Log($"TODO: Unhandled warp action string at {x},{y}@{this.Location.Name}: {value}", StardewModdingAPI.LogLevel.Debug);
+                                MainClass.Log($"TODO: Unhandled warp action string at {x},{y}@{this.Location.Name}: {value}", StardewModdingAPI.LogLevel.Debug);
 #endif
                             }
                         }
@@ -497,7 +498,7 @@
 
             if (bestInverseWarp == null)
             {
-                WorldGraph.Monitor.Log($"Unable to fixup door warp {warpNode}", StardewModdingAPI.LogLevel.Warn);
+                MainClass.Log($"Unable to fixup door warp {warpNode}", StardewModdingAPI.LogLevel.Warn);
                 return false;
             }
 

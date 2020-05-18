@@ -10,8 +10,8 @@
     {
         private List<Subject> tracked;
 
-        public FishPondList(ModConfig config, TaskName name)
-            : base(config, name)
+        public FishPondList(TaskName name)
+            : base(name)
         {
             this.tracked = new List<Subject>();
             this.ImageTexture = GameTexture.GenericFish;

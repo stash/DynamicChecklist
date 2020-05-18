@@ -14,8 +14,8 @@
         private const int FruitCave = 1;
         private const int MushroomCave = 2;
 
-        public FarmCaveList(ModConfig config, TaskName name)
-            : base(config, name)
+        public FarmCaveList(TaskName name)
+            : base(name)
         {
             this.ImageTexture = GameTexture.Plus; // Just for fruit; mushrooms have built-in overlays
             this.OptionMenuLabel = MenuLabelGeneric;

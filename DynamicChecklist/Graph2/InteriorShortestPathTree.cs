@@ -27,19 +27,16 @@
         /// </summary>
         private readonly float[,] distances; // y,x tile coordinates
 
-        /// <summary>
-        /// The LocationGraph this belongs to.
-        /// </summary>
-        private readonly LocationGraph parent;
+        private readonly WeakReference<LocationGraph> parent;
 
         public InteriorShortestPathTree(LocationGraph parent, WorldPoint root)
         {
-            this.parent = parent;
+            this.parent = new WeakReference<LocationGraph>(parent);
             this.Root = root;
-            this.RootIsPassable = this.parent.IsPassable(this.Root);
+            this.RootIsPassable = parent.IsPassable(this.Root);
             if (!this.RootIsPassable)
             {
-                WorldGraph.Monitor.Log($"Root node {this.Root} is not passable", LogLevel.Warn);
+                MainClass.Log($"Root node {this.Root} is not passable", LogLevel.Warn);
                 return;
             }
 
@@ -50,14 +47,19 @@
         }
 
         /// <summary>
+        /// Gets the LocationGraph this belongs to.
+        /// </summary>
+        public LocationGraph Parent => this.parent.TryGetTarget(out var value) ? value : null;
+
+        /// <summary>
         /// Gets the height, in tile units, of the location
         /// </summary>
-        public int Width => this.parent.Width;
+        public int Width => this.Parent.Width;
 
         /// <summary>
         /// Gets the width, in tile units, of the location.
         /// </summary>
-        public int Height => this.parent.Height;
+        public int Height => this.Parent.Height;
 
         /// <summary>
         /// Gets the root node for this tree.
@@ -82,7 +84,7 @@
             }
 
 #if DEBUG
-            if (point.Location != this.parent.Location)
+            if (point.Location != this.Parent.Location)
             {
                 throw new ArgumentException("Point is for different Location", nameof(point));
             }
@@ -117,7 +119,7 @@
             }
 
 #if DEBUG
-            if (point.Location != this.parent.Location)
+            if (point.Location != this.Parent.Location)
             {
                 throw new ArgumentException("Point is for different Location", nameof(point));
             }
@@ -211,7 +213,7 @@
             {
                 for (var x = 0; x < this.Width; x++)
                 {
-                    if (this.parent.Passable[y, x])
+                    if (this.Parent.Passable[y, x])
                     {
                         allNodes[y, x] = new CoordNode(x, y);
                         q.Enqueue(allNodes[y, x], float.PositiveInfinity);
@@ -252,7 +254,7 @@
             {
                 // Diagonal movement must be passable via at least one corner. Two adjacent corners being impassable prevents movement.
                 // Corners are simply the other two coordinates in the "square" defined by the source and destination.
-                if (this.parent.Passable[source.Y, x] || this.parent.Passable[y, source.X])
+                if (this.Parent.Passable[source.Y, x] || this.Parent.Passable[y, source.X])
                 {
                     distance = SQRT2;
                 }

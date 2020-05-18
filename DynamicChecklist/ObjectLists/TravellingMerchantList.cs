@@ -15,13 +15,19 @@
         private bool visited = false;
         private bool isOpen = false;
 
-        public TravellingMerchantList(ModConfig config, TaskName name)
-            : base(config, name)
+        public TravellingMerchantList(TaskName name)
+            : base(name)
         {
             this.ImageTexture = GameTexture.TravellingMerchant;
             this.OptionMenuLabel = "Visit Travelling Merchant";
             this.TaskDoneMessage = "Travelling Merchant Visited!";
-            Helper.Events.Display.MenuChanged += this.Display_MenuChanged;
+            MainClass.Events.Display.MenuChanged += this.Display_MenuChanged;
+        }
+
+        public override void Dispose()
+        {
+            MainClass.Events.Display.MenuChanged -= this.Display_MenuChanged;
+            base.Dispose();
         }
 
         protected override void InitializeObjectInfoList()

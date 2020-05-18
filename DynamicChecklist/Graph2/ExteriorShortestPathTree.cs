@@ -13,7 +13,7 @@
     [DebuggerDisplay("ExtTree Root={Root}")]
     internal class ExteriorShortestPathTree
     {
-        private LocationGraph parent;
+        private readonly WeakReference<LocationGraph> parent;
         private Dictionary<WarpNode, float> distances;
 
         /// <summary>
@@ -29,12 +29,17 @@
                 throw new ArgumentException($"Root {nameof(WarpNode)} isn't for the correct location", nameof(root));
             }
 #endif
-            this.parent = graph;
+            this.parent = new WeakReference<LocationGraph>(graph);
             this.Root = root;
 
             this.distances = new Dictionary<WarpNode, float>();
             this.Calculate();
         }
+
+        /// <summary>
+        /// Gets the LocationGraph this belongs to.
+        /// </summary>
+        public LocationGraph Parent => this.parent.TryGetTarget(out var value) ? value : null;
 
         public WarpNode Root { get; private set; }
 
@@ -66,7 +71,7 @@
                 this.distances.Add(inNode, distance);
                 q.ResetNode(inNode); // Sets QueueIndex to 0. Important for the q.Contains call below and re-use in other Calculate() calls
 
-                var targetGraph = this.parent.World.GetLocationGraph(inNode.Target.Location);
+                var targetGraph = this.Parent.World.GetLocationGraph(inNode.Target.Location);
                 foreach (var outNode in targetGraph.WarpOutNodes)
                 {
                     // If outNode is not in the queue, a shortest path has already been found.
@@ -88,7 +93,7 @@
         private FastPriorityQueue<WarpNode> SetupQueue()
         {
             // MUST add all nodes for the queue for cycle detection
-            var allNodes = this.parent.World.AllWarpNodes;
+            var allNodes = this.Parent.World.AllWarpNodes;
             var queue = new FastPriorityQueue<WarpNode>(allNodes.Count);
             queue.Enqueue(this.Root, 0f); // insert it first to prevent priority queue churn
             foreach (var node in allNodes.Where(node => node != this.Root))

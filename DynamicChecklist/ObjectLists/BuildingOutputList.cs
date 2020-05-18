@@ -15,8 +15,8 @@
         private bool showOverlay = false;
         private Func<BuildableGameLocation, IEnumerable<Building>> locationScanner;
 
-        public BuildingOutputList(ModConfig config, TaskName name)
-            : base(config, name)
+        public BuildingOutputList(TaskName name)
+            : base(name)
         {
             this.ImageTexture = GameTexture.Plus;
             switch (name)

@@ -7,8 +7,8 @@
 
     public class AnimalList : ObjectList
     {
-        public AnimalList(ModConfig config, TaskName name)
-            : base(config, name)
+        public AnimalList(TaskName name)
+            : base(name)
         {
             switch (name)
             {

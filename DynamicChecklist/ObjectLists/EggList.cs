@@ -28,8 +28,8 @@
             107 // Dinosaur Egg
         };
 
-        public EggList(ModConfig config, TaskName name)
-            : base(config, name)
+        public EggList(TaskName name)
+            : base(name)
         {
             this.ImageTexture = GameTexture.HandSmall;
             this.OptionMenuLabel = "Collect Animal Products";

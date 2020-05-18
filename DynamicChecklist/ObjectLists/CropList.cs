@@ -12,8 +12,8 @@
         private Func<TerrainFeature, bool> filter;
         private int fruitTreeLimit = 3;
 
-        public CropList(ModConfig config, TaskName name)
-            : base(config, name)
+        public CropList(TaskName name)
+            : base(name)
         {
             switch (name)
             {

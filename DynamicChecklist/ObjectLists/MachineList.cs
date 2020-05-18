@@ -14,8 +14,8 @@
         private readonly Func<StardewValley.Object, bool> objectFilter = (obj) => true;
         private readonly bool machinesCanUpdate = true;
 
-        public MachineList(ModConfig config, TaskName name)
-            : base(config, name)
+        public MachineList(TaskName name)
+            : base(name)
         {
             this.ImageTexture = GameTexture.Empty; // always hidden
             switch (name)

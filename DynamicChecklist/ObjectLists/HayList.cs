@@ -7,8 +7,8 @@
     {
         private const int TickOffset = 40;
 
-        public HayList(ModConfig config, TaskName name)
-            : base(config, name)
+        public HayList(TaskName name)
+            : base(name)
         {
             this.ImageTexture = GameTexture.Hay;
             this.OptionMenuLabel = "Filled Troughs";

@@ -29,8 +29,8 @@
         private System.Action taskSetup;
         private Vector2 drawOffset;
 
-        public NPCList(ModConfig config, TaskName name)
-            : base(config, name)
+        public NPCList(TaskName name)
+            : base(name)
         {
             this.trackedNPCs = new List<NPC>();
             switch (name)

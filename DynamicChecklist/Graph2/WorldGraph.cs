@@ -8,7 +8,7 @@
     using StardewValley;
     using StardewValley.Locations;
 
-    public partial class WorldGraph
+    public partial class WorldGraph : IDisposable
     {
         private static Direction[] nearbyDirectionSearch = { Direction.Up, Direction.Down, Direction.Left, Direction.Right, Direction.UpLeft, Direction.UpRight, Direction.DownLeft, Direction.DownRight };
 
@@ -26,8 +26,6 @@
             this.locationGraphs = new Dictionary<LocationReference, LocationGraph>();
             this.RebuildLocations(initialReferences);
         }
-
-        public static IMonitor Monitor { get; set; }
 
         /// <summary>
         /// Gets the list of all known warp nodes
@@ -145,6 +143,12 @@
             return location.Name.IndexOf("UndergroundMine") == 0 || location.Name == "Temp";
         }
 
+        public void Dispose()
+        {
+            this.ClearCache();
+            this.locationGraphs.Clear();
+        }
+
         /// <summary>
         /// React to the SMAPI LocationListChanged event by recomputing the world graph.
         /// </summary>
@@ -164,7 +168,7 @@
             {
                 if (!IsProceduralLocation(location) && locations.Remove(location))
                 {
-                    Monitor.Log($"Location removed: {location.NameOrUniqueName}");
+                    MainClass.Log($"Location removed: {location.NameOrUniqueName}");
                     changes++;
                 }
             }
@@ -173,7 +177,7 @@
             {
                 if (!IsProceduralLocation(location))
                 {
-                    Monitor.Log($"Location added: {location.NameOrUniqueName}");
+                    MainClass.Log($"Location added: {location.NameOrUniqueName}");
                     locations.Add(location);
                     changes++;
                 }
