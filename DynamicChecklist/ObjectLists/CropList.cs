@@ -93,13 +93,10 @@
         private bool IsHarvestable(HoeDirt dirt)
         {
             var crop = dirt?.crop;
-            if (dirt == null || !dirt.readyForHarvest() || crop == null)
-            {
-                return false;
-            }
-
-            // TODO configure this feature:
-            return ListHelper.ObjectCategories[crop.indexOfHarvest.Value] != StardewValley.Object.flowersCategory;
+            return dirt != null &&
+                dirt.readyForHarvest() &&
+                crop != null &&
+                (Game1.dayOfMonth == 28 || ListHelper.ObjectCategories[crop.indexOfHarvest.Value] != StardewValley.Object.flowersCategory);
         }
 
         private bool HarvestFilter(TerrainFeature terrainFeature)
