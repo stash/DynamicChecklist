@@ -226,27 +226,33 @@
             }
 
             var externalSOIs = this.ObjectInfoList.Where(soi => soi.NeedAction && soi.Location != currentLocation);
-            if (MainClass.WorldGraph.PlayerHasOnlyOneWayOut(out var onlyHop))
-            {
-                var firstSoi = externalSOIs.FirstOrDefault();
-                if (firstSoi != default)
-                {
-                    this.ClosestSOI = firstSoi;
-                    this.ClosestHop = onlyHop;
-                } // else, no external SOIs need action
-
-                return;
-            }
-
-            bool found;
+            bool found = false;
             try
             {
-                var start = WorldPoint.ForPlayer(); // can throw if out of range
-                found = this.FindClosestExternalSOI(externalSOIs, start);
+                if (MainClass.WorldGraph.PlayerHasOnlyOneWayOut(out var onlyHop))
+                {
+                    var firstSoi = externalSOIs.FirstOrDefault();
+                    if (firstSoi != default)
+                    {
+                        this.ClosestSOI = firstSoi;
+                        this.ClosestHop = onlyHop;
+                        found = true;
+                    } // else, no external SOIs need action
+                }
+                else
+                {
+                    var start = WorldPoint.ForPlayer(); // can throw if out of range
+                    found = this.FindClosestExternalSOI(externalSOIs, start);
+                }
             }
             catch (ArgumentOutOfRangeException)
             {
-                found = false;
+                // Ignore; sometimes the player position is out of range
+            }
+            catch (KeyNotFoundException e)
+            {
+                // Ignore; sometimes the game makes fake locations
+                Monitor.Log($"While attempting to update path for {this.TaskName}: {e.Message}\n{e.StackTrace}");
             }
 
             if (!found && oldClosestSOI != null && oldClosestSOI.NeedAction)

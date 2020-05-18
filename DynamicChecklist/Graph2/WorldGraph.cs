@@ -142,7 +142,7 @@
         public static bool IsProceduralLocation(GameLocation location)
         {
             // Both the regular and desert/skull mine levels are prefixed with this
-            return location.Name.IndexOf("UndergroundMine") == 0;
+            return location.Name.IndexOf("UndergroundMine") == 0 || location.Name == "Temp";
         }
 
         /// <summary>
