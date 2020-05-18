@@ -10,6 +10,7 @@
     {
         private const int TickOffset = 20;
         private Func<TerrainFeature, bool> filter;
+        private int fruitTreeLimit = 3;
 
         public CropList(ModConfig config, TaskName name)
             : base(config, name)
@@ -31,18 +32,12 @@
                 case TaskName.PickTree:
                     this.ImageTexture = GameTexture.BerryBush;
                     this.OptionMenuLabel = "Pick Trees";
-                    var number = "three fruits"; // TODO: "two or more fruits", "fruit"
-                    this.TaskDoneMessage = $"All trees with {number} have been picked";
+                    this.TaskDoneMessage = $"All trees with {this.fruitTreeLimit} fruits have been picked";
                     this.filter = this.PickTreeFilter;
                     break;
                 default:
                     throw new NotImplementedException();
             }
-        }
-
-        public enum Action
-        {
-            Water, Harvest, PickTree
         }
 
         protected override void InitializeObjectInfoList()
@@ -119,10 +114,10 @@
 
         private bool PickTreeFilter(TerrainFeature terrainFeature)
         {
-            if (terrainFeature is FruitTree)
+            if (terrainFeature is FruitTree tree)
             {
-                var tree = (FruitTree)terrainFeature;
-                return tree.fruitsOnTree.Value >= 3;
+                var numFruit = tree.fruitsOnTree.Value;
+                return numFruit >= this.fruitTreeLimit || (numFruit > 0 && Game1.dayOfMonth == 28 && tree.currentLocation.IsOutdoors);
             }
 
             return false;
